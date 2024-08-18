@@ -86,7 +86,7 @@ export default function signin() {
     const { closeSnackbar, snackbarVisible } = useSnackbar()
 
     // if there's user
-    if (userSession) return <Redirect href="/(tab)/" />;
+    if (userSession) return <Redirect href="/(home)/" />;
     // if there's user
 
     let [secureTextEntry, setSecureTextEntry] = useState(true);
@@ -134,10 +134,10 @@ export default function signin() {
                             style={[textInput, invalidFeildsStatus === 'invalid' && { borderColor: Colors.light.error }]}
                             placeholder='Email Address'
                             underlineColorAndroid={colors.transparent}
-                            placeholderTextColor={Colors.light.textGrey}
+                            placeholderTextColor={Colors.light.darkGrey}
                             value={email}
                             autoFocus
-                            cursorColor={Colors.light.textGrey}
+                            cursorColor={Colors.light.darkGrey}
                             onChangeText={(text) => {
                                 onChange('email', text)
                                 validateFields();
@@ -149,7 +149,7 @@ export default function signin() {
                             style={[textInput, invalidFeildsStatus === 'invalid' && { borderColor: Colors.light.error }]}
                             placeholder="Password"
                             underlineColorAndroid={colors.transparent}
-                            placeholderTextColor={Colors.light.textGrey}
+                            placeholderTextColor={Colors.light.darkGrey}
                             value={password}
                             secureTextEntry={secureTextEntry}
                             onChangeText={(text) => {
