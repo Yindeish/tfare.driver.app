@@ -13,7 +13,7 @@ const pages = {
 
     // Home
     homeScreens: {
-        home: '/',
+        home: '',
     },
     // Home
 

@@ -1,16 +1,15 @@
-import { View, StyleSheet, Pressable, } from 'react-native'
+import { View, StyleSheet, Pressable, Image } from 'react-native'
 import { Text, Button, TouchableRipple, MD2Colors } from 'react-native-paper';
 import React, { useEffect, useState } from 'react'
 import Swiper from 'react-native-swiper'
-import { Link, router } from 'expo-router';
-import { images } from '@/constants/images';
+import { Href, Link, router } from 'expo-router';
 import Colors, { colors } from '@/constants/Colors';
 import { fonts } from '@/constants/fonts';
 import SafeScreen from '@/components/shared/safeScreen';
 import { bg, flex, flexCol, itemsCenter, justifyCenter, w, wFull, wHFull } from '@/utils/styles';
 import { colorWhite, fs14, fs18, fw400, fw700, neurialGrotesk } from '@/utils/fontStyles';
 import { pages } from '@/constants/pages';
-import { Image } from 'expo-image';
+import { images } from '@/constants/images/splash';
 
 const { container, containerWrapper, skipLink, skipText, slide, slideImage, slideText, text, wrapper, activeDotStyle, ctaBtn, ctaText } = StyleSheet.create({
     containerWrapper: {
@@ -99,21 +98,21 @@ export default function IntroScreen() {
                         }}
                     >
                         <View style={[slide, wHFull, itemsCenter, justifyCenter]}>
-                            <Image style={[slideImage as any, wFull]} source={images.introScreenImage1} />
+                            <Image style={[slideImage as any, wFull]} source={{ uri: images.introScreenImage1 }} />
 
                             <Text style={slideText}>
                                 Unlock a new way to travel with loved ones through our Family Ride feature.
                             </Text>
                         </View>
                         <View style={[slide, wHFull, itemsCenter, justifyCenter]}>
-                            <Image style={[slideImage as any, wFull]} source={images.introScreenImage2} />
+                            <Image style={[slideImage as any, wFull]} source={{ uri: images.introScreenImage2 }} />
 
                             <Text style={slideText}>
                                 Experience the freedom of safe travels.
                             </Text>
                         </View>
                         <View style={[slide, wHFull, itemsCenter, justifyCenter]}>
-                            <Image style={[slideImage as any, wFull]} source={images.introScreenImage3} />
+                            <Image style={[slideImage as any, wFull]} source={{ uri: images.introScreenImage3 }} />
 
                             <Text style={slideText}>
                                 Discover the joy of shared experiences with our Co-Passenger rides.
@@ -126,12 +125,12 @@ export default function IntroScreen() {
                     (<View style={[currentSlideIndex === 2 && flexCol, wFull, {
                         opacity: currentSlideIndex === 2 ? 1 : 0, gap: 16, paddingHorizontal: 20, display: currentSlideIndex === 2 ? 'flex' : 'none'
                     }]}>
-                        <TouchableRipple onPress={() => router.replace(`/(auth)/${pages.signup}`)} rippleColor={Colors.light.tabIconDefault} style={[ctaBtn, flexCol, wFull, itemsCenter, justifyCenter]}>
+                        <TouchableRipple onPress={() => router.replace(`/(auth)/${pages.authScreens.signup}` as Href)} rippleColor={Colors.light.tabIconDefault} style={[ctaBtn, flexCol, wFull, itemsCenter, justifyCenter]}>
                             <Text style={[fw700, fs18, colorWhite, neurialGrotesk,]}>Get Started</Text>
                         </TouchableRipple>
 
                         <TouchableRipple
-                            onPress={() => router.replace(`/(auth)/${pages.signin}`)} rippleColor={colors.white} style={[ctaBtn, flexCol, wFull, itemsCenter, justifyCenter, { backgroundColor: MD2Colors.transparent, borderWidth: 1, borderColor: MD2Colors.white }]}>
+                            onPress={() => router.replace(`/(auth)/${pages.authScreens.signin}` as Href)} rippleColor={colors.white} style={[ctaBtn, flexCol, wFull, itemsCenter, justifyCenter, { backgroundColor: MD2Colors.transparent, borderWidth: 1, borderColor: MD2Colors.white }]}>
                             <Text style={[fw700, fs18, colorWhite, neurialGrotesk,]}>Sign in</Text>
                         </TouchableRipple>
                     </View>)
