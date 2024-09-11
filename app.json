@@ -13,20 +13,13 @@
       "backgroundColor": "#EF5DA8"
     },
     "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.yindeish.tfare"
+      "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/splash/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      },
-      "permissions": [
-        "android.permission.RECORD_AUDIO",
-        "android.permission.ACCESS_COARSE_LOCATION",
-        "android.permission.ACCESS_FINE_LOCATION"
-      ],
-      "package": "com.yindeish.tfare"
+      }
     },
     "web": {
       "bundler": "metro",
@@ -35,21 +28,10 @@
     },
     "plugins": [
       "expo-router",
-      "expo-font",
-      "expo-secure-store",
-      "expo-image-picker",
-      "expo-location"
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true
-    },
-    "extra": {
-      "router": {
-        "origin": false
-      },
-      "eas": {
-        "projectId": "6210a570-fa7b-4b2f-9985-5545579b0c9a"
-      }
     }
   }
 }
