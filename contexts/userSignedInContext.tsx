@@ -6,7 +6,7 @@ import { Platform, ToastAndroid } from 'react-native';
 import { IRequestData, ISigninContext, ISigninContextState, ISigninResponseData, TSigninLoadingState } from './signin.context.interface';
 import { IResponseData } from './shared.interface';
 import { useSnackbar } from './snackbar.context';
-import { IUser } from '@/state/types/account';
+import { IUserAccount } from '@/state/types/account';
 import { router } from 'expo-router';
 
 const SessionContext = React.createContext<ISigninContext>({
@@ -36,7 +36,7 @@ export function SessionProvider(props: React.PropsWithChildren) {
   const { signIn: signInwithToken, signOut: signTokenOut, tokenSession } = useTokenSession();
   const { closeSnackbar, openSnackbar, snackbarVisible } = useSnackbar();
 
-  const parsedSession = JSON.parse(session as string) as IUser;
+  const parsedSession = JSON.parse(session as string) as IUserAccount;
 
   const [contextState, setRequestState] = useState<ISigninContextState>({
     msg: '',
@@ -46,7 +46,7 @@ export function SessionProvider(props: React.PropsWithChildren) {
   })
   const { code, msg, user, loadingState } = contextState;
 
-  const onChange = (key: keyof ISigninContextState, value: string | number | boolean | TSigninLoadingState | IUser) => setRequestState((prev) => ({ ...prev, [key]: value }));
+  const onChange = (key: keyof ISigninContextState, value: string | number | boolean | TSigninLoadingState | IUserAccount) => setRequestState((prev) => ({ ...prev, [key]: value }));
 
   useEffect(() => {
     if (parsedSession && !user) {
@@ -66,40 +66,42 @@ export function SessionProvider(props: React.PropsWithChildren) {
   }
 
   const signIn = async (data: IRequestData) => {
-    onChange('loadingState', 'signingin' as TSigninLoadingState);
+    // onChange('loadingState', 'signingin' as TSigninLoadingState);
 
-    const returnedData: ISigninResponseData = await FetchService.post({ data, url: '/auth/signin' })
+    // const returnedData: ISigninResponseData = await FetchService.post({ data, url: '/auth/signin' })
 
-    onChange('loadingState', 'idle' as TSigninLoadingState);
-    onChange('code', returnedData.code as number);
-    onChange('msg', returnedData.msg);
+    // onChange('loadingState', 'idle' as TSigninLoadingState);
+    // onChange('code', returnedData.code as number);
+    // onChange('msg', returnedData.msg);
 
-    returnedData.user && setSession(JSON.stringify(returnedData.user));
-    returnedData.user && signInwithToken(returnedData.token);
+    // returnedData.user && setSession(JSON.stringify(returnedData.user));
+    // returnedData.user && signInwithToken(returnedData.token);
 
-    if (!returnedData.user || !returnedData.token) {
-      notify();
-    }
-
+    // if (!returnedData.user || !returnedData.token) {
+    //   notify();
+    // }
+    setSession(JSON.stringify({ user: 'user' }));//testing
+    signInwithToken('x');//testing
   }
 
   const signOut = async () => {
-    onChange('loadingState', 'signingout' as TSigninLoadingState);
-    const returnedData: IResponseData = await FetchService.postWithBearerToken({ url: '/auth/signout', token: tokenSession as string })
+    // onChange('loadingState', 'signingout' as TSigninLoadingState);
+    // const returnedData: IResponseData = await FetchService.postWithBearerToken({ url: '/auth/signout', token: tokenSession as string })
 
-    onChange('loadingState', 'idle' as TSigninLoadingState);
-    onChange('code', returnedData.code as number);
-    onChange('msg', returnedData.msg);
+    // onChange('loadingState', 'idle' as TSigninLoadingState);
+    // onChange('code', returnedData.code as number);
+    // onChange('msg', returnedData.msg);
 
-    if (Number(returnedData.code) === 400) {
-      notify();
-    }
-    if (Number(returnedData.code) === 200) {
-      setSession(null);
-      // signTokenOut(); just signout user
-    }
+    // if (Number(returnedData.code) === 400) {
+    //   notify();
+    // }
+    // if (Number(returnedData.code) === 200) {
+    //   setSession(null);
+    //   // signTokenOut(); just signout user
+    // }
 
-
+    signTokenOut(); //testing
+    setSession(null); //testing
   }
 
   return (

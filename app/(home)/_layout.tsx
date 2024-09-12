@@ -9,7 +9,8 @@ import { homeImgs } from '@/constants/images/home';
 
 
 export default function AppLayout() {
-  const { userSession, isLoading, } = useSession();
+  const { userSession, isLoading, signOut } = useSession();
+  // signOut()
 
   const { width, height } = Dimensions.get('window');
 
@@ -29,7 +30,7 @@ export default function AppLayout() {
           backgroundColor: colors.white,
         },
         tabBarLabel: ({ color }) => <TabBartTitle title='Home' color={color} />,
-        tabBarIcon: ({ color, focused }) => <Image style={{ width: 18, height: 19.72 }} source={{ uri: focused ? homeImgs.activeHomeImg : homeImgs.homeImg }} />,
+        tabBarIcon: ({ color, focused }) => <Image style={{ width: 18, height: 19.72 }} source={focused ? homeImgs.activeHomeImg : homeImgs.homeImg} />,
         tabBarActiveBackgroundColor: colors.white
       }}
     />
@@ -37,21 +38,21 @@ export default function AppLayout() {
       name={tabs.trip}
       options={{
         tabBarLabel: ({ color }) => <TabBartTitle title='Trip' color={color} />,
-        tabBarIcon: ({ color, focused }) => <Image style={{ width: 22, height: 19 }} source={{ uri: focused ? homeImgs.activeTripImg : homeImgs.tripImg }} />,
+        tabBarIcon: ({ color, focused }) => <Image style={{ width: 22, height: 19 }} source={focused ? homeImgs.activeTripImg : homeImgs.tripImg} />,
       }}
     />
     <Tabs.Screen
       name={tabs.offer}
       options={{
         tabBarLabel: ({ color }) => <TabBartTitle title='Offers' color={color} />,
-        tabBarIcon: ({ color, focused }) => <Image style={{ width: 20.12, height: 19.43 }} source={{ uri: focused ? homeImgs.activeOffersImg : homeImgs.offersImg }} />,
+        tabBarIcon: ({ color, focused }) => <Image style={{ width: 20.12, height: 19.43 }} source={focused ? homeImgs.activeOffersImg : homeImgs.offersImg} />,
       }}
     />
     <Tabs.Screen
       name={tabs.account}
       options={{
         tabBarLabel: ({ color }) => <TabBartTitle title='Account' color={color} />,
-        tabBarIcon: ({ color, focused }) => <Image style={{ width: 15, height: 18 }} source={{ uri: focused ? homeImgs.activeAccountImg : homeImgs.accountImg }} />,
+        tabBarIcon: ({ color, focused }) => <Image style={{ width: 15, height: 18 }} source={focused ? homeImgs.activeAccountImg : homeImgs.accountImg} />,
       }}
     />
   </Tabs>

@@ -3,13 +3,16 @@ import { Text, Button, TouchableRipple, MD2Colors } from 'react-native-paper';
 import React, { useEffect, useState } from 'react'
 import Swiper from 'react-native-swiper'
 import { Href, Link, router } from 'expo-router';
+import { images } from '../constants/images/splash';
 import Colors, { colors } from '@/constants/Colors';
 import { fonts } from '@/constants/fonts';
 import SafeScreen from '@/components/shared/safeScreen';
 import { bg, flex, flexCol, itemsCenter, justifyCenter, w, wFull, wHFull } from '@/utils/styles';
 import { colorWhite, fs14, fs18, fw400, fw700, neurialGrotesk } from '@/utils/fontStyles';
 import { pages } from '@/constants/pages';
-import { images } from '@/constants/images/splash';
+import { image, objectContain } from '@/utils/imageStyles';
+import CtaBtn from '@/components/shared/ctaBtn';
+import sharedImg from '@/constants/images/shared';
 
 const { container, containerWrapper, skipLink, skipText, slide, slideImage, slideText, text, wrapper, activeDotStyle, ctaBtn, ctaText } = StyleSheet.create({
     containerWrapper: {
@@ -37,7 +40,7 @@ const { container, containerWrapper, skipLink, skipText, slide, slideImage, slid
         gap: 15
     },
     slideImage: {
-        height: '55%', objectFit: 'cover'
+        height: '55%',
     },
     slideText: {
         fontSize: 22,
@@ -86,7 +89,7 @@ export default function IntroScreen() {
                         style={wrapper}
                         showsButtons={false}
                         dotColor='white'
-                        activeDotColor='#EF5DA8'
+                        activeDotColor='#5D5FEF'
                         activeDotStyle={activeDotStyle}
                         scrollEnabled={true}
                         index={0}
@@ -98,21 +101,21 @@ export default function IntroScreen() {
                         }}
                     >
                         <View style={[slide, wHFull, itemsCenter, justifyCenter]}>
-                            <Image style={[slideImage as any, wFull]} source={{ uri: images.introScreenImage1 }} />
+                            <Image style={[slideImage as any, wFull, objectContain]} source={images.introScreenImage1} />
 
                             <Text style={slideText}>
                                 Unlock a new way to travel with loved ones through our Family Ride feature.
                             </Text>
                         </View>
                         <View style={[slide, wHFull, itemsCenter, justifyCenter]}>
-                            <Image style={[slideImage as any, wFull]} source={{ uri: images.introScreenImage2 }} />
+                            <Image style={[slideImage as any, wFull, objectContain]} source={images.introScreenImage2} />
 
                             <Text style={slideText}>
                                 Experience the freedom of safe travels.
                             </Text>
                         </View>
                         <View style={[slide, wHFull, itemsCenter, justifyCenter]}>
-                            <Image style={[slideImage as any, wFull]} source={{ uri: images.introScreenImage3 }} />
+                            <Image style={[slideImage as any, wFull, objectContain]} source={images.introScreenImage3} />
 
                             <Text style={slideText}>
                                 Discover the joy of shared experiences with our Co-Passenger rides.
@@ -122,18 +125,30 @@ export default function IntroScreen() {
                 </View>
 
                 {currentSlideIndex === 2 ?
-                    (<View style={[currentSlideIndex === 2 && flexCol, wFull, {
-                        opacity: currentSlideIndex === 2 ? 1 : 0, gap: 16, paddingHorizontal: 20, display: currentSlideIndex === 2 ? 'flex' : 'none'
-                    }]}>
-                        <TouchableRipple onPress={() => router.replace(`/(auth)/${pages.authScreens.signup}` as Href)} rippleColor={Colors.light.tabIconDefault} style={[ctaBtn, flexCol, wFull, itemsCenter, justifyCenter]}>
-                            <Text style={[fw700, fs18, colorWhite, neurialGrotesk,]}>Get Started</Text>
-                        </TouchableRipple>
+                    // (<View style={[currentSlideIndex === 2 && flexCol, wFull, {
+                    //     opacity: currentSlideIndex === 2 ? 1 : 0, gap: 16, paddingHorizontal: 20, display: currentSlideIndex === 2 ? 'flex' : 'none'
+                    // }]}>
+                    //     <TouchableRipple onPress={() => router.replace(`/(auth)/signup` as Href)} rippleColor={Colors.light.tabIconDefault} style={[ctaBtn, flexCol, wFull, itemsCenter, justifyCenter]}>
+                    //         <Text style={[fw700, fs18, colorWhite, neurialGrotesk,]}>Get Started</Text>
+                    //     </TouchableRipple>
 
-                        <TouchableRipple
-                            onPress={() => router.replace(`/(auth)/${pages.authScreens.signin}` as Href)} rippleColor={colors.white} style={[ctaBtn, flexCol, wFull, itemsCenter, justifyCenter, { backgroundColor: MD2Colors.transparent, borderWidth: 1, borderColor: MD2Colors.white }]}>
-                            <Text style={[fw700, fs18, colorWhite, neurialGrotesk,]}>Sign in</Text>
-                        </TouchableRipple>
-                    </View>)
+                    //     <TouchableRipple
+                    //         onPress={() => router.replace(`/(auth)/signin` as Href)} rippleColor={colors.white} style={[ctaBtn, flexCol, wFull, itemsCenter, justifyCenter, { backgroundColor: MD2Colors.transparent, borderWidth: 1, borderColor: MD2Colors.white }]}>
+                    //         <Text style={[fw700, fs18, colorWhite, neurialGrotesk,]}>Sign in</Text>
+                    //     </TouchableRipple>
+                    // </View>)
+                    (
+                        <View style={[currentSlideIndex === 2 && flexCol, wFull, {
+                            opacity: currentSlideIndex === 2 ? 1 : 0, gap: 16, paddingHorizontal: 20, display: currentSlideIndex === 2 ? 'flex' : 'none'
+                        }]}>
+                            <CtaBtn
+                                img={{ src: sharedImg.proceedIcon }}
+                                onPress={() => router.push('/(auth)/' as Href)}
+                                text={{ name: `Let's Get Started`, color: colors.white }}
+                                bg={{ color: Colors.light.blueBackground, }}
+
+                            />
+                        </View>)
                     :
                     (<View style={[wFull, bg('transparent'), { flex: 1 }]} />)}
             </View>

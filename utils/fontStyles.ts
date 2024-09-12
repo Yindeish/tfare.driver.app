@@ -42,15 +42,15 @@ export const fontStyles: Record<string, TextStyle> = {
     colorBorderGrey: {
         color: Colors.light.border,
     },
-    colorTextGrey: {
-        color: Colors.light.textGrey,
+    colordarkGrey: {
+        color: Colors.light.darkGrey,
     },
     colorBlueBg: {
         color: Colors.light.background
     }
 }
 
-export const { neurialGrotesk, fw400, fw500, fw600, fw700, fs10, fs12, fs14, fs16, fs18, colorBlack, colorWhite, colorBorderGrey, colorTextGrey, colorBlueBg } = fontStyles;
+export const { neurialGrotesk, fw400, fw500, fw600, fw700, fs10, fs12, fs14, fs16, fs18, colorBlack, colorWhite, colorBorderGrey, colordarkGrey, colorBlueBg } = fontStyles;
 
 
 type TFS = <T extends string>(val: T) => TextStyle;

@@ -1,8 +1,8 @@
 import { ImageStyle } from "react-native";
 
-type ImageStyleProp = Record<string, ImageStyle>;
+type ImageStyleProp = Record<'wHFull' | 'mXAuto' | 'mYAuto' | 'absolute' | 'objectCover' | 'objectContain', ImageStyle>;
 
-export const { wHFull, mXAuto, }: ImageStyleProp = {
+export const { wHFull, mXAuto, objectCover, objectContain, absolute: imgAbsolute, mYAuto }: ImageStyleProp = {
     wHFull: {
         width: '100%',
         height: '100%'
@@ -14,6 +14,15 @@ export const { wHFull, mXAuto, }: ImageStyleProp = {
     mYAuto: {
         marginTop: 'auto',
         marginBottom: 'auto'
+    },
+    absolute: {
+        position: 'absolute'
+    },
+    objectContain: {
+        objectFit: 'contain'
+    },
+    objectCover: {
+        objectFit: 'cover'
     }
 }
 
