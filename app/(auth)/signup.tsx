@@ -1,4 +1,4 @@
-import { View, Pressable, StyleSheet, TextInput, TouchableOpacity, Platform, ScrollView } from 'react-native'
+import { View, Pressable, StyleSheet, TextInput, TouchableOpacity, Platform, ScrollView, Image } from 'react-native'
 import React, { useState } from 'react'
 import { Href, Link, router } from 'expo-router'
 import { useSignup } from '@/contexts/signupContext'
@@ -10,21 +10,17 @@ import Checkbox from 'expo-checkbox'
 import { genders } from '@/constants/gender'
 import { fonts } from '@/constants/fonts'
 import Colors, { colors } from '@/constants/Colors'
-import { bg, flex, flexCenter, flexCol, flexYCenter, gap, hFull, itemsCenter, itemsStart, justifyBetween, justifyCenter, justifyEnd, justifyStart, mt, pt, py, wFull, wHFull } from '@/utils/styles'
+import { bg, flex, flexCenter, flexCol, flexYCenter, gap, hFull, itemsCenter, itemsStart, justifyBetween, justifyCenter, justifyEnd, justifyStart, mb, mt, pt, py, rounded, w, wFull, wHFull } from '@/utils/styles'
 import { useFormik } from 'formik'
 import * as yup from 'yup'
-import { c, colordarkGrey } from '@/utils/fontStyles'
+import { c, colordarkGrey, fs, fs14, fw500, leading, neurialGrotesk, textCenter } from '@/utils/fontStyles'
 import { useSnackbar } from '@/contexts/snackbar.context'
 import { pages } from '@/constants/pages'
+import { image } from '@/utils/imageStyles'
+import authImgs from '@/constants/images/auth'
 
-const { signUpTitle, textInput, genderSelectText, genderMenuDropdown, menuItem, form, signUpBtn, signUpText, noAccount, signupLink, invalidEntryText, checkbox } = StyleSheet.create({
-    signUpTitle: {
-        fontWeight: '500',
-        fontSize: 32,
-        lineHeight: 32.08,
-        color: colors.black,
-        fontFamily: fonts.neurialGrotesk,
-    },
+const { textInput, form, signUpBtn, signUpText, noAccount, signupLink, invalidEntryText, checkbox } = StyleSheet.create({
+
     form: {
         width: '100%',
         height: 'auto',
@@ -39,24 +35,6 @@ const { signUpTitle, textInput, genderSelectText, genderMenuDropdown, menuItem, 
         paddingTop: 'auto',
         paddingBottom: 'auto',
         backgroundColor: '#F9F7F8',
-    },
-    genderSelectText: {
-        textTransform: 'capitalize',
-        paddingTop: 'auto',
-        paddingBottom: 'auto',
-        backgroundColor: '#F9F7F8',
-        fontFamily: fonts.neurialGrotesk,
-        color: Colors.light.darkGrey
-    },
-    genderMenuDropdown: {
-        width: '90%',
-        marginTop: 47,
-        backgroundColor: colors.white,
-        borderColor: colors.transparent,
-        borderRadius: 0
-    },
-    menuItem: {
-        backgroundColor: colors.white,
     },
     signUpBtn: {
         backgroundColor: Colors.light.background,
@@ -128,9 +106,16 @@ export default function Signup() {
             <ScrollView>
                 <PaddedScreen styles={wHFull}>
                     <View style={[wFull, hFull, flex, flexCol, itemsStart, justifyEnd, pt(70), { gap: 40, height: 'auto' }]}>
-                        <View style={[flexCol, { gap: 2 }]}>
-                            <Text style={[signUpTitle, py(10)]}>Create a</Text>
-                            <Text style={[signUpTitle, py(10)]}>new account</Text>
+                        <View style={[flexCol,]}>
+                            <Text style={[py(10), fw500, fs(32), leading(20), c(colors.black)]}>Create a</Text>
+                            <Text style={[py(10), fw500, fs(32), leading(20), c(colors.black)]}>new account</Text>
+                        </View>
+
+                        <View style={[flexCol, gap(16), itemsCenter, wFull]}>
+                            <Image style={[image.w(65), image.h(65), image.rounded(65)]} source={authImgs.imageUpload} />
+                            <Text style={[fs14, fw500, neurialGrotesk, leading(17), c(colors.black), textCenter, w('80%')]}>
+                                Kindly Upload a potrait picture of yourself showing your full face
+                            </Text>
                         </View>
 
                         <View style={[form, flexYCenter, { gap: 16 }]}>
@@ -225,8 +210,8 @@ export default function Signup() {
                             </Pressable>
                         </View>
 
-                        <View style={[wFull, flex, justifyCenter, itemsCenter, { gap: 8 }]}>
-                            <Text style={noAccount}>Already have an account?</Text>
+                        <View style={[wFull, flex, justifyCenter, itemsCenter, gap(8), mb(50)]}>
+                            <Text style={[noAccount,]}>Already have an account?</Text>
                             <Link href={'/(auth)/signin' as Href} asChild>
                                 <Pressable>
                                     <Text style={signupLink}>Sign in</Text>

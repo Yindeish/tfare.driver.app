@@ -47,20 +47,36 @@ export const fontStyles: Record<string, TextStyle> = {
     },
     colorBlueBg: {
         color: Colors.light.background
-    }
+    },
+    textCenter: {
+        textAlign: 'center'
+    },
+    textLeft: {
+        textAlign: 'left'
+    },
 }
 
-export const { neurialGrotesk, fw400, fw500, fw600, fw700, fs10, fs12, fs14, fs16, fs18, colorBlack, colorWhite, colorBorderGrey, colordarkGrey, colorBlueBg } = fontStyles;
+export const { neurialGrotesk, fw400, fw500, fw600, fw700, fs10, fs12, fs14, fs16, fs18, colorBlack, colorWhite, colorBorderGrey, colordarkGrey, colorBlueBg, textCenter, textLeft } = fontStyles;
 
 
-type TFS = <T extends string>(val: T) => TextStyle;
-type TFSProp = { c: TFS };
+type TFS = <T extends string | number>(val: T) => TextStyle;
+type TFSProp = { c: TFS, leading: TFS, fs: TFS };
 
-export const { c }: TFSProp = {
+export const { c, leading, fs }: TFSProp = {
     c: (val) => {
         return {
-            color: val
+            color: val as string
         }
     },
+    leading: (val) => {
+        return {
+            lineHeight: val as number
+        }
+    },
+    fs: (val) => {
+        return {
+            fontSize: val as number
+        }
+    }
 
 };

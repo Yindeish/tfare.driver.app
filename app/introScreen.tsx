@@ -78,7 +78,8 @@ export default function IntroScreen() {
             <View style={[wHFull, flexCol, itemsCenter, containerWrapper]}>
 
                 <Link
-                    href={'/(auth)/signin'}
+                    // href={'/(auth)/signin'}
+                    href={'/(auth)/carInfoUpload' as Href}//testing
                     style={skipLink}
                 >
                     <Text style={[skipText, colorWhite, fw400, fs14]}>Skip</Text>

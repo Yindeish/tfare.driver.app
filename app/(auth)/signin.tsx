@@ -5,7 +5,7 @@ import { useSession } from '../../contexts/userSignedInContext';
 import SafeScreen from '../../components/shared/safeScreen';
 import { ActivityIndicator, MD2Colors, Snackbar, Text } from 'react-native-paper';
 import { fonts } from '../../constants/fonts';
-import { wFull, wHFull, flexCol, itemsStart, justifyCenter, justifyEnd, flex, itemsCenter, justifyBetween, mXAuto, py, mt, bg } from '../../utils/styles';
+import { wFull, wHFull, flexCol, itemsStart, justifyCenter, justifyEnd, flex, itemsCenter, justifyBetween, mXAuto, py, mt, bg, mb } from '../../utils/styles';
 import Colors, { colors } from '../../constants/Colors';
 import PaddedScreen from '@/components/shared/paddedScreen';
 import { useSnackbar } from '@/contexts/snackbar.context';
@@ -153,7 +153,7 @@ export default function Signin() {
                             )}
 
                             <View style={[wFull, flex, itemsCenter, justifyEnd]}>
-                                <Text style={[forgotPassword]}>Forgot Password?</Text>
+                                <Text style={[forgotPassword]}>Forgot Pin?</Text>
                             </View>
                         </View>
 
@@ -169,7 +169,7 @@ export default function Signin() {
                             )}
                         </Pressable>
 
-                        <Text style={[noAccount, mXAuto]}>
+                        <Text style={[noAccount, mXAuto, mb(50)]}>
                             Don't have an account?
                             <Link href={'/signup'}>
                                 <Text style={signupLink}>Sign Up</Text>

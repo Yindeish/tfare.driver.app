@@ -9,59 +9,14 @@ import { Href, router } from "expo-router";
 import { StyleSheet, View } from "react-native";
 import { Text, TouchableRipple } from "react-native-paper";
 
-const { container, containerWrapper, skipLink, skipText, slide, slideImage, slideText, text, wrapper, activeDotStyle, ctaBtn, ctaText } = StyleSheet.create({
-    containerWrapper: {
-        backgroundColor: Colors.light.background,
-    },
-    skipLink: {
-        marginLeft: 'auto',
-        marginRight: 20,
-        marginTop: 102,
-    },
-    skipText: {
-        lineHeight: 17,
-    },
-    container: {
-        width: '100%',
-        paddingHorizontal: 20,
-        height: '60%',
-        backgroundColor: colors.transparent,
-        marginBottom: 30
-    },
-    wrapper: {
-    },
-    slide: {
-        backgroundColor: colors.transparent,
-        gap: 15
-    },
-    slideImage: {
-        height: '55%',
-    },
-    slideText: {
-        fontSize: 22,
-        lineHeight: 22,
-        textAlign: 'center',
-        color: 'white'
-    },
-    text: {
-        color: '#fff',
-        fontSize: 30,
-        fontWeight: 'bold',
-        fontFamily: fonts.neurialGrotesk
-    },
-    activeDotStyle: {
-        width: 14,
-        height: 7,
-        borderRadius: 10
-    },
+const { ctaBtn } = StyleSheet.create({
+
     ctaBtn: {
         borderRadius: 10,
         backgroundColor: Colors.light.tabIconDefault,
         height: 50
     },
-    ctaText: {
 
-    }
 });
 
 function AuthIndex() {

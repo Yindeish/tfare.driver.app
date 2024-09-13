@@ -11,6 +11,7 @@ import { homeImgs } from '@/constants/images/home';
 export default function AppLayout() {
   const { userSession, isLoading, signOut } = useSession();
   // signOut()
+  // console.log({ userSession })
 
   const { width, height } = Dimensions.get('window');
 
@@ -19,7 +20,7 @@ export default function AppLayout() {
   }
 
   if (!userSession) {
-    return <Redirect href={`/(home)/${pages.homeScreens.home}` as Href} />;
+    return <Redirect href={`/(auth)/signin` as Href} />;
   }
 
   else return <Tabs screenOptions={{ tabBarActiveTintColor: Colors.light.background, headerShown: false }}>
