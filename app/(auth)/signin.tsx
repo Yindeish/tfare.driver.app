@@ -93,7 +93,7 @@ export default function Signin() {
 
     // signinToken('x')
 
-    if (userSession) return <Redirect href={"/(home)/" as Href} />;
+    // if (userSession) return <Redirect href={"/(home)/" as Href} />;
 
     const formik = useFormik({
         initialValues: {

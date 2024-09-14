@@ -16,7 +16,7 @@ export default function Root() {
   const { width, height } = Dimensions.get('window')
 
   const [fontsLoaded] = useFonts({
-    [fonts.neurialGrotesk]: require('@/assets/fonts/SpaceMono-Regular.ttf'),
+    [fonts.neurialGrotesk]: require('@/assets/fonts/Fontspring-DEMO-neurialgrotesk-bold.otf'),
   });
 
   if (!fontsLoaded) {

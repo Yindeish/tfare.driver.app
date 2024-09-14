@@ -26,8 +26,7 @@ export default function Index() {
     }
 
     else {
-        // return <Redirect href={`/(auth)/signin` as Href} />;
-        return <Redirect href={`/(auth)/carInfoUpload` as Href} />; //testing
+        return <Redirect href={`/(auth)/signin` as Href} />;
         // return <View style={{ width: '100%', height: '100%', backgroundColor: 'yellow' }}>
         //     <Text>Yellow</Text>
         // </View>
