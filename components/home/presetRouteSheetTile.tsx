@@ -6,8 +6,11 @@ import { bg, flex, flexCol, gap, itemsCenter, justifyBetween, p, px, py, rounded
 import { Image, TouchableOpacity, View } from "react-native";
 import { Text } from "react-native-paper";
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import { Href, router } from "expo-router";
+import { useBottomSheet } from "@/contexts/useBottomSheetContext";
 
 function PresetRouteSheetTile() {
+    const { hideBottomSheet } = useBottomSheet()
 
 
     return (
@@ -23,7 +26,10 @@ function PresetRouteSheetTile() {
             <View style={[wFull, flex, justifyBetween, itemsCenter]}>
                 <Text style={[fw400, fs12, c(Colors.light.darkGrey), neurialGrotesk]}>Ride starts immediately</Text>
 
-                <TouchableOpacity style={[bg(Colors.light.background), flex, itemsCenter, gap(10), p(16), rounded('100%')]}>
+                <TouchableOpacity onPress={() => {
+                    hideBottomSheet();
+                    router.push('/(route)/routeDetails/1' as Href)
+                }} style={[bg(Colors.light.background), flex, itemsCenter, gap(10), p(16), rounded('100%')]}>
                     <Image style={[image.w(18), image.h(18),]} source={tripImgs.whiteBgTripWay} />
                     <Text style={[fw500, fs12, c(colors.white)]}>Select Route</Text>
                     <FontAwesome6 size={20} name="arrow-right-long" color={colors.white} />

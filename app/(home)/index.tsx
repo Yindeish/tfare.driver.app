@@ -14,8 +14,8 @@ import { image, imgAbsolute, mXAuto, wHFull } from "@/utils/imageStyles";
 import { absolute, b, bg, borderB, borderGrey, borderT, bottom0, flex, flexCol, gap, h, hFull, itemsCenter, justifyBetween, justifyCenter, justifyStart, left0, mb, mt, mTAuto, p, pb, pt, px, py, relative, rounded, t, top0, w, wFull, zIndex } from "@/utils/styles";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { Dimensions, Image, Platform, TouchableOpacity, View } from "react-native";
-import { Snackbar, Text } from "react-native-paper";
+import { Alert, Dimensions, Image, Platform, ToastAndroid, TouchableOpacity, View } from "react-native";
+import { Snackbar, Text, Tooltip } from "react-native-paper";
 
 const { height } = Dimensions.get('window')
 
@@ -41,8 +41,11 @@ const index = () => {
 
         if (eligible) {
             setOnline(true);
+            // router.push('')
         }
         else {
+            if (Platform.OS === 'android') ToastAndroid.show("You're not eligible to go online", 2000);
+            if (Platform.OS === 'ios') openSnackbar();
             return;
         }
     }
@@ -138,7 +141,7 @@ const index = () => {
                 <View style={[wFull, route && !eligible && !online ? borderT(0.7, Colors.light.darkGrey) : {}, flexCol, gap(40), itemsCenter, pt(20), pb(35), bg(route && !eligible && !online ? colors.white : colors.transparent), mTAuto, absolute, b('8%'), left0, zIndex(4)]}>
 
                     {/* //!Options */}
-                    {route && !eligible && online && <View style={[flexCol, gap(16)]}>
+                    {route && !eligible && !online && <View style={[flexCol, gap(16)]}>
                         {options.map(({ checked, id, name }, index) => (
                             <GoOnlineOptionTile
                                 onPress={() => {
@@ -167,7 +170,6 @@ const index = () => {
                                     setRoute(true);
                                     showBottomSheet([650, 750], <PresetRouteSheet />)
                                 } else goOnline()
-                                console.log('hey')
                             }}
                             text={{ name: !route ? 'CHOOSE ROUTE' : 'GO ONLINE' }}
                             bg={{ color: !route ? Colors.light.background : '#27AE65' }}
@@ -184,7 +186,7 @@ const index = () => {
                     <Snackbar
                         visible={snackbarVisible}
                         onDismiss={() => closeSnackbar()}
-                        action={{ label: 'close', onPress: () => { } }}
+                        action={{ label: 'close', onPress: () => closeSnackbar() }}
                     >
                         <Text style={[fs10, fw500, c('#CF0707')]}>You're not eligible to go online</Text>
                     </Snackbar>)

@@ -8,6 +8,7 @@ import settings from '@/assets/images/trip/setting-img.png'
 import tripWay from '@/assets/images/trip/trip-way-img.png'
 import tripDirection from '@/assets/images/trip/route-direction-img.png'
 import whiteBgTripWay from '@/assets/images/trip/white-bg-trip-way.png'
+import whiteBgTripImage from '@/assets/images/trip/white-bg-trip-img.png'
 
 const tripImgs = {
     search,
@@ -20,6 +21,7 @@ const tripImgs = {
     tripWay,
     tripDirection,
     whiteBgTripWay,
+    whiteBgTripImage,
 }
 
 export default tripImgs;
