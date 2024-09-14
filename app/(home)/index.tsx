@@ -12,7 +12,7 @@ import { useSession } from "@/contexts/userSignedInContext";
 import { c, colorBlack, colordarkGrey, fs, fs10, fs12, fs14, fs18, fw400, fw500, fw700, neurialGrotesk } from "@/utils/fontStyles";
 import { image, imgAbsolute, mXAuto, wHFull } from "@/utils/imageStyles";
 import { absolute, b, bg, borderB, borderGrey, borderT, bottom0, flex, flexCol, gap, h, hFull, itemsCenter, justifyBetween, justifyCenter, justifyStart, left0, mb, mt, mTAuto, p, pb, pt, px, py, relative, rounded, t, top0, w, wFull, zIndex } from "@/utils/styles";
-import { router } from "expo-router";
+import { Href, router } from "expo-router";
 import { useEffect, useState } from "react";
 import { Alert, Dimensions, Image, Platform, ToastAndroid, TouchableOpacity, View } from "react-native";
 import { Snackbar, Text, Tooltip } from "react-native-paper";
@@ -41,7 +41,7 @@ const index = () => {
 
         if (eligible) {
             setOnline(true);
-            // router.push('')
+            router.push('/(acceptRide)/acceptRide/1' as Href)
         }
         else {
             if (Platform.OS === 'android') ToastAndroid.show("You're not eligible to go online", 2000);
@@ -74,6 +74,7 @@ const index = () => {
                 <Image style={[imgAbsolute, image.t(0), image.l(0), wHFull, image.zIndex(-1)]} source={sharedImg.mapImage} />
                 {/* //!Backlay */}
 
+                {/* //!Header */}
                 <PaddedScreen>
                     <View style={[zIndex(3), flexCol, gap(20), mt(30),]}>
                         {/* //!Earnings Block */}
@@ -136,6 +137,7 @@ const index = () => {
 
                     </View>
                 </PaddedScreen>
+                {/* //!Header */}
 
                 {/* //!Go Online Block */}
                 <View style={[wFull, route && !eligible && !online ? borderT(0.7, Colors.light.darkGrey) : {}, flexCol, gap(40), itemsCenter, pt(20), pb(35), bg(route && !eligible && !online ? colors.white : colors.transparent), mTAuto, absolute, b('8%'), left0, zIndex(4)]}>

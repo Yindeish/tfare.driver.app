@@ -11,7 +11,7 @@ import tripImgs from "@/constants/images/trip";
 import { c, colorBlack, fs12, fs14, fw400, fw500, fw700, neurialGrotesk } from "@/utils/fontStyles";
 import { image, wHFull } from "@/utils/imageStyles";
 import { absolute, bg, borderB, borderGrey, borderY, flex, flexCol, gap, itemsCenter, justifyBetween, justifyEnd, mb, ml, mr, mt, p, pb, px, py, r, relative, rounded, t } from "@/utils/styles";
-import { router } from "expo-router";
+import { Href, router } from "expo-router";
 import { Image, ScrollView, TouchableOpacity, View } from "react-native";
 import { Text } from "react-native-paper";
 
@@ -33,7 +33,7 @@ function RouteDetails() {
                             {/* //!Page Title */}
 
                             {/* //!Customize CTA */}
-                            <TouchableOpacity style={[bg('#F9F7F8'), borderGrey(0.7), gap(10), rounded(10), p(10), flex, itemsCenter, gap(16), absolute, t(47), r(0)]}>
+                            <TouchableOpacity onPress={() => router.push('/(route)/customizeRoute/1' as Href)} style={[bg('#F9F7F8'), borderGrey(0.7), gap(16), rounded(10), py(10), px(16), flex, itemsCenter, gap(16), absolute, t(47), r(0)]}>
                                 <Image style={[image.w(24), image.h(24)]} source={sharedImg.editBtn2} />
 
                                 <Text style={[fs12, fw500, neurialGrotesk, colorBlack]}>Customize</Text>
@@ -86,7 +86,9 @@ function RouteDetails() {
                         {/* //!Select Route CTA */}
                         <CtaBtn
                             img={{ src: tripImgs.whiteBgTripImage, h: 20, w: 20 }}
-                            onPress={() => { }}
+                            onPress={() => {
+                                router.push('/(home)/')
+                            }}
                             text={{ name: 'Select Route', color: colors.white }}
                             bg={{ color: Colors.light.background }}
                             style={{ container: { ...mb(30) } }}
