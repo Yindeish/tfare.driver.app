@@ -6,6 +6,7 @@ import offersImg from '@/assets/images/home/offers-img.png';
 import activeOffersImg from '@/assets/images/home/active-offers-img.png';
 import accountImg from '@/assets/images/home/account-img.png';
 import activeAccountImg from '@/assets/images/home/active-account-img.png';
+import userProfileImg from '@/assets/images/home/user-profile-image.png';
 
 
 const homeImgs = {
@@ -16,7 +17,8 @@ const homeImgs = {
     offersImg,
     activeOffersImg,
     accountImg,
-    activeAccountImg
+    activeAccountImg,
+    userProfileImg
 }
 
 export { homeImgs }

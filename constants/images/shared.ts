@@ -8,6 +8,12 @@ import mapImage from '@/assets/images/shared/map-image.png'
 import walletImage from '@/assets/images/shared/wallet-img.png'
 import minusImage from '@/assets/images/shared/minus-image.png'
 import blackBgPlusIcon from '@/assets/images/shared/black-bg-topup.png'
+import yellowTripImage from '@/assets/images/shared/yellow-trip-image.png'
+import searchingOrderImage from '@/assets/images/shared/searching-ride-image.png'
+import chatImage from '@/assets/images/shared/chat-image.png'
+import phoneImage from '@/assets/images/shared/phone-img.png'
+import cancelImage from '@/assets/images/shared/cancel-image.png'
+import redBgCautionImage from '@/assets/images/shared/red-bg-caution-image.png'
 
 const sharedImg = {
     proceedIcon,
@@ -20,6 +26,12 @@ const sharedImg = {
     walletImage,
     minusImage,
     blackBgPlusIcon,
+    yellowTripImage,
+    searchingOrderImage,
+    chatImage,
+    phoneImage,
+    redBgCautionImage,
+    cancelImage,
 }
 
 export default sharedImg

@@ -10,6 +10,7 @@ import tripDirection from '@/assets/images/trip/route-direction-img.png'
 import whiteBgTripWay from '@/assets/images/trip/white-bg-trip-way.png'
 import whiteBgTripImage from '@/assets/images/trip/white-bg-trip-img.png'
 import locationImage from '@/assets/images/trip/location-img.png'
+import arrivedpickupImage from '@/assets/images/trip/arrived-pickup-img.png'
 
 const tripImgs = {
     search,
@@ -24,6 +25,7 @@ const tripImgs = {
     whiteBgTripWay,
     whiteBgTripImage,
     locationImage,
+    arrivedpickupImage,
 }
 
 export default tripImgs;
