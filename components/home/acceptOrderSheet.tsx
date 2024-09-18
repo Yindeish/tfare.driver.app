@@ -13,10 +13,17 @@ import { image } from "@/utils/imageStyles";
 import CtaBtn from "../shared/ctaBtn";
 import { useBottomSheet } from "@/contexts/useBottomSheetContext";
 import TicketOtpSheet from "./ticketOtpSheet";
+import { router } from "expo-router";
+import ArrivedPickupSheet from "./arrivedPickupSheet";
 
 
 function AcceptOrderSheet() {
-    const { showBottomSheet } = useBottomSheet()
+    const { showBottomSheet, hideBottomSheet } = useBottomSheet()
+
+    const cancelOrder = () => {
+        hideBottomSheet()
+        router.push(`/(home)/`)
+    }
 
     return (
         <PaddedScreen>
@@ -64,14 +71,24 @@ function AcceptOrderSheet() {
                     </View>
                     {/* //!Pick up-Drop off Block */}
 
-                    {/* //!Arrived Pickup CTA */}
-                    <CtaBtn
-                        img={{ src: tripImgs.arrivedpickupImage, w: 20, h: 20 }}
-                        onPress={() => showBottomSheet([600], <TicketOtpSheet />)}
-                        text={{ name: 'Arrived Pickup', color: colors.white }}
-                        bg={{ color: Colors.light.background }}
-                    />
-                    {/* //!Arrived Pickup CTA */}
+                    {/* //!Accept-Decline Order CTA */}
+                    <View style={[flex, gap(16), justifyBetween]}>
+                        <CtaBtn
+                            img={{ src: sharedImg.proceedIcon, w: 20, h: 20 }}
+                            onPress={() => showBottomSheet([300], <ArrivedPickupSheet />)}
+                            text={{ name: 'Accept', color: colors.white }}
+                            bg={{ color: Colors.light.background }}
+                            style={{ baseContainer: { ...w('48%') } }}
+                        />
+                        <CtaBtn
+                            img={{ src: sharedImg.cancelImage, w: 20, h: 20 }}
+                            onPress={() => cancelOrder()}
+                            text={{ name: 'Decline', color: Colors.light.darkGrey }}
+                            bg={{ color: '#F9F7F8', borderColor: Colors.light.border }}
+                            style={{ baseContainer: { ...w('48%') } }}
+                        />
+                    </View>
+                    {/* //!Accept-Decline Order CTA */}
                 </View>
 
             </View>

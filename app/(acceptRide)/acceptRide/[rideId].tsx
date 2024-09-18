@@ -28,7 +28,7 @@ function AcceptRide() {
     const [showOnline, setShowOnline] = useState(false);//testing
     const [showDropoff, setShowDropoff] = useState(false);//testing
     const [showNextBusstop, setShowNextBusstop] = useState(true);//testing
-    const [duration, setDuration] = useState(2)
+    const [duration, setDuration] = useState(0.5)
     const [countdownShown, setCountdownShown] = useState(true)
     const [riderArrived, setRiderArrived] = useState(false);
 

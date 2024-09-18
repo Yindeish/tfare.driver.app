@@ -13,9 +13,20 @@ import { image, mXAuto } from "@/utils/imageStyles";
 import CtaBtn from "../shared/ctaBtn";
 import { useBottomSheet } from "@/contexts/useBottomSheetContext";
 import { OtpInput } from "react-native-otp-entry";
+import { router } from "expo-router";
+import OnTripSheet from "./onTripSheet";
 
 function TicketOtpSheet() {
+    const { hideBottomSheet, showBottomSheet } = useBottomSheet()
 
+    const startTrip = () => {
+        showBottomSheet([300, 700], <OnTripSheet />)
+    }
+
+    const cancelTrip = () => {
+        hideBottomSheet()
+        router.push('/(home)/')
+    }
 
     return (
         <PaddedScreen>
@@ -77,10 +88,10 @@ function TicketOtpSheet() {
                 <View style={[flexCol, gap(20)]}>
                     <CtaBtn
                         img={{
-                            src: sharedImg.redBgCautionImage
+                            src: tripImgs.arrivedpickupImage
                         }}
-                        onPress={() => { }}
-                        text={{ name: 'View Trip Details' }}
+                        onPress={() => startTrip()}
+                        text={{ name: 'Start Trip' }}
                         bg={{ color: Colors.light.background }}
                     />
 
@@ -88,8 +99,8 @@ function TicketOtpSheet() {
                         img={{
                             src: sharedImg.cancelImage
                         }}
-                        onPress={() => { }}
-                        text={{ name: 'Cancel Order', color: Colors.light.darkGrey }}
+                        onPress={() => cancelTrip()}
+                        text={{ name: 'Cancel Trip', color: Colors.light.darkGrey }}
                         bg={{ color: '#F9F7F8', borderColor: Colors.light.border }}
                         style={{ container: { ...w('80%'), ...mXAuto } }}
                     />

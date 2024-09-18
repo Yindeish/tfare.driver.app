@@ -14,6 +14,7 @@ import chatImage from '@/assets/images/shared/chat-image.png'
 import phoneImage from '@/assets/images/shared/phone-img.png'
 import cancelImage from '@/assets/images/shared/cancel-image.png'
 import redBgCautionImage from '@/assets/images/shared/red-bg-caution-image.png'
+import tripChargeImage from '@/assets/images/shared/trip-charge-image.png'
 
 const sharedImg = {
     proceedIcon,
@@ -32,6 +33,7 @@ const sharedImg = {
     phoneImage,
     redBgCautionImage,
     cancelImage,
+    tripChargeImage,
 }
 
 export default sharedImg

@@ -6,10 +6,10 @@ import { Image, ImageSourcePropType, ImageStyle, TextStyle, TouchableOpacity, Vi
 import { Text } from "react-native-paper";
 
 
-function CtaBtn({ onPress, img, text, bg: background, style }: { style?: { container?: ViewStyle, text?: TextStyle, img?: ImageStyle }, onPress: Function, img: { src: ImageSourcePropType, w?: number, h?: number, }, text: { name: string, color?: string }, bg?: { color: string, borderColor?: string } }) {
+function CtaBtn({ onPress, img, text, bg: background, style }: { style?: { baseContainer?: ViewStyle, container?: ViewStyle, text?: TextStyle, img?: ImageStyle }, onPress: Function, img: { src: ImageSourcePropType, w?: number, h?: number, }, text: { name: string, color?: string }, bg?: { color: string, borderColor?: string } }) {
 
     return (
-        <TouchableOpacity onPress={() => onPress()}>
+        <TouchableOpacity onPress={() => onPress()} style={[style?.baseContainer ? style.baseContainer : {}]}>
             <View style={[wFull, h(50), rounded(10), flex, itemsCenter, justifyCenter, gap(10), bg(background?.color || Colors.light.background), background?.borderColor ? { borderWidth: 0.7, borderColor: background?.borderColor } : {}, style?.container ? style.container : {}]}>
                 <Text style={[neurialGrotesk, fw700, fs18, c(text?.color || colors.white), style?.text ? style.text : {}]}>{text.name}</Text>
 
