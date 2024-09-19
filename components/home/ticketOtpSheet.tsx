@@ -20,7 +20,7 @@ function TicketOtpSheet() {
     const { hideBottomSheet, showBottomSheet } = useBottomSheet()
 
     const startTrip = () => {
-        showBottomSheet([300, 700], <OnTripSheet />)
+        showBottomSheet([300, 550], <OnTripSheet />)
     }
 
     const cancelTrip = () => {
@@ -47,9 +47,9 @@ function TicketOtpSheet() {
                         </View>
                     </View>
 
-                    <TouchableOpacity>
+                    <View>
                         <Text style={[fw500, fs14, colorBlack]}>₦ {'0000.00'}</Text>
-                    </TouchableOpacity>
+                    </View>
 
                 </View>
                 {/* //!Rider Details Block */}

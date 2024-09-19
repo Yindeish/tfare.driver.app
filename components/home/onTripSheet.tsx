@@ -3,7 +3,7 @@ import Entypo from '@expo/vector-icons/Entypo';
 import { Href, router } from "expo-router";
 import { View, Image, TextInput, TouchableOpacity, ScrollView, FlatList, Pressable, Button, Dimensions } from "react-native";
 import PaddedScreen from "../shared/paddedScreen";
-import { absolute, bg, flex, flexCol, gap, h, hFull, itemsCenter, itemsEnd, itemsStart, justifyBetween, justifyCenter, justifyStart, left0, mLAuto, mRAuto, mXAuto, ml, mt, p, pLAuto, pXAuto, pb, pl, px, py, relative, right0, rounded, t, top0, w, wFull, wHFull, zIndex } from "@/utils/styles";
+import { absolute, bg, borderB, borderGrey, borderT, flex, flexCol, gap, h, hFull, itemsCenter, itemsEnd, itemsStart, justifyBetween, justifyCenter, justifyStart, left0, mLAuto, mRAuto, mXAuto, ml, mt, p, pLAuto, pXAuto, pb, pl, px, py, relative, right0, rounded, t, top0, w, wFull, wHFull, zIndex } from "@/utils/styles";
 import { Text, Portal, Dialog, Paragraph } from "react-native-paper";
 import { c, colorBlack, colorBlueBg, colorBorderGrey, colorWhite, fs12, fs14, fs16, fs18, fw400, fw500, fw700, neurialGrotesk } from "@/utils/fontStyles";
 import { image } from "@/utils/imageStyles";
@@ -11,13 +11,26 @@ import sharedImg from "@/constants/images/shared";
 import Colors, { colors } from "@/constants/Colors";
 import CtaBtn from "../shared/ctaBtn";
 import tripImgs from "@/constants/images/trip";
+import { useState } from "react";
+import { homeImgs } from "@/constants/images/home";
+import DropoffSheet from "./dropoffTripSheet";
+
+const { height } = Dimensions.get('window')
 
 function OnTripSheet() {
-    const pauseTrip = () => { }
+    const { showBottomSheet } = useBottomSheet()
+    const [passengersShown, setPassengersShown] = useState(false)
+
+
+    const pauseTrip = () => {
+        showBottomSheet([450], <DropoffSheet />)//testing
+    }
 
     return (
-        <PaddedScreen>
-            <View style={[wHFull, flexCol, itemsCenter, gap(44)]}>
+
+        <View style={[wHFull, flexCol, itemsCenter, gap(44)]}>
+            {/* //!Header */}
+            <PaddedScreen>
                 <View style={[flexCol, itemsCenter, gap(16)]}>
                     <View style={[flex, gap(16)]}>
                         <Image style={[image.w(30), image.h(25.91)]} source={sharedImg.tripChargeImage} />
@@ -29,26 +42,70 @@ function OnTripSheet() {
                         Navigate to Dropoff Bus Stop. You should arrive in 15 minutes
                     </Text>
                 </View>
+            </PaddedScreen>
+            {/* //!Header */}
 
-                <TouchableOpacity style={[flex, itemsCenter, gap(16), wFull]}>
+            <View style={[wFull, flexCol, gap(16)]}>
+                {/* //!Show Passengers CTA */}
+                <PaddedScreen>
+                    <TouchableOpacity onPress={() => setPassengersShown((prev) => prev === true ? false : true)} style={[flex, itemsCenter, gap(16), wFull]}>
 
-                    <Text style={[fw700, fs16, neurialGrotesk, colorBlack]}>View Passengers</Text>
+                        <Text style={[fw700, fs16, neurialGrotesk, colorBlack]}>View Passengers</Text>
 
-                    <Entypo name="chevron-thin-down" size={20} color={Colors.light.darkGrey} />
+                        <Entypo name={`${passengersShown ? "chevron-thin-up" : "chevron-thin-down"}`} size={20} color={Colors.light.darkGrey} />
 
-                </TouchableOpacity>
+                    </TouchableOpacity>
+                </PaddedScreen>
+                {/* //!Show Passengers CTA */}
 
-                <CtaBtn
-                    img={{
-                        src: tripImgs.arrivedpickupImage
-                    }}
-                    onPress={() => pauseTrip()}
-                    text={{ name: 'Pause Trip', color: colors.white }}
-                    bg={{ color: Colors.light.background }}
-                    style={{ baseContainer: { ...wFull } }}
-                />
+                {/* //!Passengers list */}
+                <ScrollView style={[flexCol, borderT(0.7, Colors.light.border), { flexBasis: '45%', opacity: passengersShown ? 1 : 0, display: passengersShown ? 'flex' : 'none' }]}>
+                    <View style={[flexCol, passengersShown ? borderT(0.7, Colors.light.border) : {}, pb(10), h(passengersShown ? height * 0.4 : 0)]}>
+
+                        {Array.from({ length: 3 }).map((_, index) => (
+                            <TouchableOpacity style={[wFull, h(80), flex, justifyBetween, bg('#F9F7F8'), py(7), borderB(0.7, Colors.light.border), px(20)]} key={index}>
+                                <Image
+                                    style={[{ width: 60, height: 60, objectFit: 'cover' }]}
+                                    source={homeImgs.userProfileImg}
+                                />
+
+                                <View style={[flexCol, justifyCenter, gap(16), { flexBasis: '55%' }]}>
+                                    <Text style={[c(colors.black), fw700, fs14]}>King John</Text>
+                                    <Text style={[c(Colors.light.darkGrey), fw400, fs12]}>Arrived location</Text>
+                                </View>
+
+                                <Text style={[fw500, fs14, colorBlack]}>₦ {'0000.00'}</Text>
+                            </TouchableOpacity>
+                        ))}
+
+                        {/* //!Seat left block */}
+                        <PaddedScreen>
+                            <View style={[w(155), rounded('100%'), flex, gap(16), itemsCenter, justifyCenter, borderGrey(0.7), h(45), mt(16)]}>
+                                <Image style={[image.w(18), image.h(15)]} source={sharedImg.passengersImage} />
+
+                                <Text style={[fw500, fs12]}>{`${1} seat Available`}</Text>
+                            </View>
+                        </PaddedScreen>
+                        {/* //!Seat left block */}
+
+                    </View>
+                </ScrollView>
+                {/* //!Passengers list */}
             </View>
-        </PaddedScreen>
+
+            {/* //!Pause Trip CTA */}
+            <CtaBtn
+                img={{
+                    src: tripImgs.arrivedpickupImage
+                }}
+                onPress={() => pauseTrip()}
+                text={{ name: 'Pause Trip', color: colors.white }}
+                bg={{ color: Colors.light.background }}
+                style={{ baseContainer: { ...wFull, ...px(20) }, }}
+            />
+            {/* //!Pause Trip CTA */}
+        </View>
+
     )
 }
 

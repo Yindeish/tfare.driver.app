@@ -13,9 +13,11 @@ import sharedImg from '@/constants/images/shared';
 import PageTitle from '@/components/shared/pageTitle';
 import { router } from 'expo-router';
 import PresetRouteSheetTile from '@/components/trip/presetRouteSheetTile';
+import { Href } from 'expo-router';
+import UpcomingTripTile from '@/components/trip/upcomingTripTile';
 
+function Trips() {
 
-function Trip() {
 
     return (
         <SafeScreen>
@@ -46,6 +48,19 @@ function Trip() {
                     </View>
                     {/* //!Search Block */}
 
+                    {/* //!Upcoming Trips Block */}
+                    <View style={[flexCol, gap(32)]}>
+                        <Text style={[neurialGrotesk, fw700, fs14, colorBlack]}>Upcoming Trips</Text>
+                        {/* //!Trips */}
+                        <View style={[flexCol, gap(16)]}>
+                            {Array.from({ length: 1 }).map((_, index) => (
+                                <UpcomingTripTile key={index} />
+                            ))}
+                        </View>
+                        {/* //!Trips */}
+                    </View>
+                    {/* //!Upcoming Trips Block */}
+
                     {/* //!Preset Route */}
                     {/* //!Header */}
                     <View style={[wFull, flex, itemsCenter, justifyBetween]}>
@@ -59,7 +74,7 @@ function Trip() {
 
                     {/* //!Routes */}
                     <View style={[wFull, flexCol, gap(24)]}>
-                        {Array.from({ length: 8 }).map((_, index) => (
+                        {Array.from({ length: 3 }).map((_, index) => (
                             <PresetRouteSheetTile key={index} />
                         ))}
                     </View>
@@ -81,5 +96,4 @@ function Trip() {
     )
 }
 
-export default Trip;
-
+export default Trips;

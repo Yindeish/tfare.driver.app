@@ -25,9 +25,9 @@ import AcceptOrderSheet from "@/components/home/acceptOrderSheet";
 function AcceptRide() {
     const { showBottomSheet } = useBottomSheet()
 
-    const [showOnline, setShowOnline] = useState(false);//testing
+    const [showOnline, setShowOnline] = useState(true);//testing
     const [showDropoff, setShowDropoff] = useState(false);//testing
-    const [showNextBusstop, setShowNextBusstop] = useState(true);//testing
+    const [showNextBusstop, setShowNextBusstop] = useState(false);//testing
     const [duration, setDuration] = useState(0.5)
     const [countdownShown, setCountdownShown] = useState(true)
     const [riderArrived, setRiderArrived] = useState(false);
