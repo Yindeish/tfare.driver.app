@@ -12,12 +12,14 @@ import { c, colorBlack, colordarkGrey, fs12, fs14, fw400, fw500, fw700, neurialG
 import { image, wHFull } from "@/utils/imageStyles";
 import { absolute, bg, borderB, borderGrey, borderY, flex, flexCol, gap, itemsCenter, justifyBetween, justifyEnd, mb, ml, mr, mt, p, pb, px, py, r, relative, rounded, t } from "@/utils/styles";
 import { Href, router } from "expo-router";
+import { useState } from "react";
 import { Image, ScrollView, TouchableOpacity, View } from "react-native";
 import { Text } from "react-native-paper";
 
 
 function TripDetails() {
-
+    const [showCustomize, setShowCustomize] = useState(true)
+    const [disabled, setDisabled] = useState(false)
 
     return (
         <SafeScreen>
@@ -32,12 +34,28 @@ function TripDetails() {
                             />
                             {/* //!Page Title */}
 
-                            {/* //!Customize CTA */}
-                            <TouchableOpacity onPress={() => router.push('/(trip)/customizeTrip/1' as Href)} style={[bg('#F9F7F8'), borderGrey(0.7), gap(16), rounded(10), py(10), px(16), flex, itemsCenter, gap(16), absolute, t(47), r(0)]}>
-                                <Image style={[image.w(24), image.h(24)]} source={sharedImg.editBtn2} />
 
-                                <Text style={[fs12, fw500, neurialGrotesk, colorBlack]}>Customize</Text>
-                            </TouchableOpacity>
+                            {/* //!Edit-Delete CTAs */}
+                            {!showCustomize &&//testing
+                                <View style={[absolute, t(47), r(0), flex, gap(10),]}>
+                                    <TouchableOpacity style={[bg('#F9F7F8'), borderGrey(0.7), gap(16), rounded(10), py(10), px(16), flex, itemsCenter, gap(16), { opacity: disabled ? 0.3 : 1 }]}>
+                                        <Image style={[image.w(24), image.h(24)]} source={sharedImg.editBtn2} />
+
+                                        <Text style={[fs12, fw500, neurialGrotesk, colorBlack]}>Edit</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity style={[bg('#F9F7F8'), borderGrey(0.7), gap(16), rounded(10), py(10), px(16), flex, itemsCenter, { opacity: disabled ? 0.3 : 1 }]}>
+                                        <Image style={[image.w(24), image.h(24)]} source={tripImgs.redBgDeleteBtn} />
+                                    </TouchableOpacity>
+                                </View>}
+                            {/* //!Edit-Delete CTAs */}
+
+                            {/* //!Customize CTA */}
+                            {showCustomize &&//testing
+                                <TouchableOpacity onPress={() => router.push('/(trip)/customizeTrip/1' as Href)} style={[bg('#F9F7F8'), borderGrey(0.7), gap(16), rounded(10), py(10), px(16), flex, itemsCenter, gap(16), absolute, t(47), r(0)]}>
+                                    <Image style={[image.w(24), image.h(24)]} source={sharedImg.editBtn2} />
+
+                                    <Text style={[fs12, fw500, neurialGrotesk, colorBlack]}>Customize</Text>
+                                </TouchableOpacity>}
                             {/* //!Customize CTA */}
                         </View>
                     </PaddedScreen>

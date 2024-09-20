@@ -18,10 +18,31 @@ import { router } from "expo-router";
 import { Image, ScrollView, TouchableOpacity, View } from "react-native";
 import { Text } from "react-native-paper";
 import { Href } from "expo-router";
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import { useState } from "react";
 
+type TDateTime = 'time' | 'date';
 
 function CustomizeTrip() {
+    const [date, setDate] = useState(new Date(1598051730000));
+    const [time, setTime] = useState(new Date(1598051730000));
+    const [mode, setMode] = useState<TDateTime | null>(null);
+    const [show, setShow] = useState(true);
 
+    const onChange = (event: DateTimePickerEvent, selectedDate: Date | undefined) => {
+        const currentDate = selectedDate;
+        setDate(currentDate as Date);
+        setTime(currentDate as Date);
+    };
+
+    const showMode = (currentMode: TDateTime) => {
+        // setShow(true);
+        setMode(currentMode);
+    };
+
+    const setModepicker = (mode: TDateTime) => {
+        showMode(mode);
+    };
 
     return (
         <SafeScreen>
@@ -54,6 +75,7 @@ function CustomizeTrip() {
 
                             {/* //!Date-Time Input Block */}
                             <View style={[flex, gap(16),]}>
+
                                 {/* //!Date */}
                                 <View style={[flexCol, gap(16), { flexBasis: '55%' }]}>
                                     <View style={[flex, itemsCenter, gap(16)]}>
@@ -61,8 +83,18 @@ function CustomizeTrip() {
 
                                         <Text style={[neurialGrotesk, fw400, fs12, colordarkGrey]}>Date</Text>
                                     </View>
-                                    <TouchableOpacity style={[bg('#F9F7F8'), rounded(10), h(50), flex, itemsCenter, justifyCenter, gap(16), borderGrey(0.7),]}>
-                                        <Text style={[fs14, fw500, colorBlack]}>{'14, April'}</Text>
+
+                                    <TouchableOpacity onPress={() => setModepicker('date')} style={[bg('#F9F7F8'), rounded(10), h(50), flex, itemsCenter, justifyCenter, gap(16), borderGrey(0.7),]}>
+
+                                        <DateTimePicker
+                                            testID="dateTimePicker"
+                                            value={date}
+                                            mode={'date'}
+                                            is24Hour={true}
+                                            onChange={onChange}
+                                            style={[fs14, fw500, colorBlack]}
+                                        />
+
                                         <FontAwesome6 name="chevron-down" size={20} color={Colors.light.darkGrey} />
                                     </TouchableOpacity>
                                 </View>
@@ -75,8 +107,16 @@ function CustomizeTrip() {
 
                                         <Text style={[neurialGrotesk, fw400, fs12, colordarkGrey]}>Time</Text>
                                     </View>
-                                    <TouchableOpacity style={[bg('#F9F7F8'), rounded(10), h(50), flex, itemsCenter, justifyCenter, gap(16), borderGrey(0.7),]}>
-                                        <Text style={[fs14, fw500, colorBlack]}>{'00:00'}</Text>
+
+                                    <TouchableOpacity onPress={() => setModepicker('time')} style={[bg('#F9F7F8'), rounded(10), h(50), flex, itemsCenter, justifyCenter, gap(16), borderGrey(0.7),]}>
+                                        <DateTimePicker
+                                            testID="dateTimePicker"
+                                            value={date}
+                                            mode={'time'}
+                                            is24Hour={true}
+                                            onChange={onChange}
+                                            style={[fs14, fw500, colorBlack]}
+                                        />
                                         <View style={[py(7), px(5), bg(Colors.light.background), rounded(5)]}>
                                             <Text style={[neurialGrotesk, fs14, fw500, colorWhite]}>AM</Text>
                                         </View>
