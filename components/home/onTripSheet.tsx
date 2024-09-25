@@ -80,7 +80,7 @@ function OnTripSheet() {
 
                         {/* //!Seat left block */}
                         <PaddedScreen>
-                            <View style={[w(155), rounded('100%'), flex, gap(16), itemsCenter, justifyCenter, borderGrey(0.7), h(45), mt(16)]}>
+                            <View style={[w(155), rounded(1000), flex, gap(16), itemsCenter, justifyCenter, borderGrey(0.7), h(45), mt(16)]}>
                                 <Image style={[image.w(18), image.h(15)]} source={sharedImg.passengersImage} />
 
                                 <Text style={[fw500, fs12]}>{`${1} seat Available`}</Text>

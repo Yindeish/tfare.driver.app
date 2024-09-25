@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "tfare",
-    "slug": "tfare",
+    "slug": "tfaredriver",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/splash/icon.png",
@@ -19,7 +19,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/splash/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.yindeish.tfare.driver"
     },
     "web": {
       "bundler": "metro",
@@ -32,6 +33,12 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "7438e77f-f972-4e35-b082-ada88e1460cd"
+      }
+    },
+    "owner": "yindeish"
   }
 }

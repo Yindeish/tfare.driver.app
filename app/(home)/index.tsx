@@ -87,8 +87,8 @@ const index = () => {
                                 <Text style={[fs(22), fw700, colorBlack]}>₦ {'0000.00'}</Text>
                             </View>
 
-                            <TouchableOpacity style={[flex, gap(10), itemsCenter, borderGrey(0.7), rounded('100%'), py(10), px(16)]}>
-                                <View style={[w(24), h(24), flex, itemsCenter, justifyCenter, rounded('100%'), borderGrey(0.7)]}>
+                            <TouchableOpacity style={[flex, gap(10), itemsCenter, borderGrey(0.7), rounded(1000), py(10), px(16)]}>
+                                <View style={[w(24), h(24), flex, itemsCenter, justifyCenter, rounded(1000), borderGrey(0.7)]}>
                                     <Image style={[image.w(22), image.h(8),]} source={sharedImg.minusImage} />
                                 </View>
                                 <Text style={[fw500, fs12, neurialGrotesk, colorBlack]}>Withdraw</Text>
@@ -175,7 +175,7 @@ const index = () => {
                             }}
                             text={{ name: !route ? 'CHOOSE ROUTE' : 'GO ONLINE' }}
                             bg={{ color: !route ? Colors.light.background : '#27AE65' }}
-                            style={{ container: { ...rounded('100%'), ...w('70%'), ...mXAuto, } }}
+                            style={{ container: { ...rounded(1000), ...w('70%'), ...mXAuto, } }}
                         />
                     </View>
                     {/* //!Go Online CTA */}

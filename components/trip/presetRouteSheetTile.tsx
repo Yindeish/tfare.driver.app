@@ -30,11 +30,11 @@ function PresetRouteSheetTile() {
                 </View>
 
                 <View style={[flex, itemsCenter,]}>
-                    <View style={[bg(colors.white), borderGrey(0.7), flex, itemsCenter, gap(10), p(16), rounded('100%')]}>
+                    <View style={[bg(colors.white), borderGrey(0.7), flex, itemsCenter, gap(10), p(16), rounded(1000)]}>
                         <Image style={[image.w(18), image.h(18),]} source={tripImgs.tripWayImage} />
                         <Text style={[fw500, fs12, c(colors.black)]}>View trip details</Text>
                     </View>
-                    <TouchableOpacity onPress={() => router.push('/(trip)/tripDetails/1' as Href)} style={[h(45), w(45), rounded('100%'), bg(Colors.light.background), flex, itemsCenter, justifyCenter, ml(-15)]}>
+                    <TouchableOpacity onPress={() => router.push('/(trip)/tripDetails/1' as Href)} style={[h(45), w(45), rounded(1000), bg(Colors.light.background), flex, itemsCenter, justifyCenter, ml(-15)]}>
                         <FontAwesome6 size={20} name="arrow-right-long" color={colors.white} />
                     </TouchableOpacity>
                 </View>

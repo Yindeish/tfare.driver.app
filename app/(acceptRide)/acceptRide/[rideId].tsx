@@ -59,9 +59,9 @@ function AcceptRide() {
 
                         {/* //!Online Status Block */}
                         {showOnline &&
-                            <TouchableOpacity style={[w(152), h(50), bg('#27AE65'), rounded('100%'), flex, itemsCenter, relative,]}>
+                            <TouchableOpacity style={[w(152), h(50), bg('#27AE65'), rounded(50), flex, itemsCenter, relative,]}>
                                 <Text style={[fw700, fs14, colorWhite, neurialGrotesk, textCenter, { flexBasis: '65%' }]}>ONLINE</Text>
-                                <View style={[w(40), h(40), rounded('100%'), bg(colors.white), absolute, t(5), r(7), { shadowColor: colors.black, shadowRadius: 10 }]} />
+                                <View style={[w(40), h(40), rounded(40), bg(colors.white), absolute, t(5), r(7), { shadowColor: colors.black, shadowRadius: 10 }]} />
                             </TouchableOpacity>}
                         {/* //!Online Status Block */}
 
@@ -105,7 +105,7 @@ function AcceptRide() {
 
                 {/* //!Time Down Block */}
                 {countdownShown && <View style={[absolute, t('45%'), wFull, h(144), flex, itemsCenter, justifyCenter, bg(colors.transparent)]}>
-                    {/* <View style={[w(144), h(144), bg(colors.white), rounded('100%')]}> */}
+                    {/* <View style={[w(144), h(144), bg(colors.white), rounded(1000)]}> */}
                     <CountdownCircleTimer
                         isPlaying
                         duration={duration * 60}
@@ -117,7 +117,7 @@ function AcceptRide() {
                         onComplete={() => setCountdownShown(false)}
                     >
                         {({ remainingTime, }) => (
-                            <View style={[flexCol, gap(15), itemsCenter, justifyCenter, bg(colors.white), w(139), h(139), rounded('100%')]}>
+                            <View style={[flexCol, gap(15), itemsCenter, justifyCenter, bg(colors.white), w(139), h(139), rounded(139)]}>
                                 <Ionicons name="timer-outline" size={24} color="#27AE65" />
 
                                 <Text style={[fs(32), fw400, colorBlack]}>{remainingTime}</Text>

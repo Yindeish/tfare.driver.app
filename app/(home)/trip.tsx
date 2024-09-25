@@ -28,14 +28,14 @@ function Trip() {
                     {/* //!Page Title */}
 
                     {/* //!Search Block */}
-                    <View style={[wFull, rounded('100%'), bg(colors.transparent), h(50), mt(-20), relative]}>
+                    <View style={[wFull, rounded(1000), bg(colors.transparent), h(50), mt(-20), relative]}>
                         {/* //! */}
                         <Image style={[image.w(20), image.h(20), imgAbsolute, image.t('30%'), image.l(20), image.zIndex(3)]} source={tripImgs.search} />
                         {/* //! */}
 
                         <TextInput
                             style={[
-                                wHFull, pl(43), borderGrey(0.7), rounded('100%'), bg('#F9F7F8')
+                                wHFull, pl(43), borderGrey(0.7), rounded(1000), bg('#F9F7F8')
                             ]}
                             placeholder='Search Bus stop'
                             placeholderTextColor={Colors.light.darkGrey}

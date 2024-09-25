@@ -19,7 +19,7 @@ function InTripDropffTile() {
             </View>
 
             <View style={[flex, itemsCenter, gap(10)]}>
-                <View style={[w(5), h(5), bg(colors.black), rounded('100%')]} />
+                <View style={[w(5), h(5), bg(colors.black), rounded(1000)]} />
                 <Text style={[fs14, fw700, c(colors.black)]}>Orogun Bus Stop</Text>
             </View>
         </View>

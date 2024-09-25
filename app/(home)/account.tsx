@@ -16,6 +16,7 @@ import { useSnackbar } from '@/contexts/snackbar.context'
 import { homeImgs } from '@/constants/images/home'
 import sharedImg from '@/constants/images/shared'
 import PageNavigator from '@/components/account/pageNavigator'
+import accountImgs from '@/constants/images/account'
 
 export default function Account() {
     const { signIn, loadingState, userSession, msg, code, signOut } = useSession();
@@ -65,7 +66,7 @@ export default function Account() {
                                     borderWidth: 0.7, borderColor: '#D7D7D7',
                                 }]}>
 
-                                    <View style={[w(24), h(24), rounded('100%'), border(0.7, Colors.light.darkGrey), flex, itemsCenter, justifyCenter]}>
+                                    <View style={[w(24), h(24), rounded(1000), border(0.7, Colors.light.darkGrey), flex, itemsCenter, justifyCenter]}>
                                         <Image style={[image.w(19), image.h(19)]} source={sharedImg.minusImage} />
                                     </View>
                                     <Text style={[neurialGrotesk, fs12, fw500, colorBlack]}>Top Up</Text>
@@ -81,47 +82,55 @@ export default function Account() {
                                 title='My Vehicle'
                                 navigate
                                 page={`/(account)/myVehicle`}
-                                source={sharedImg.blackBgPlusIcon} imageStyle={[image.w(18), image.h(16.36)]} />
+                                source={accountImgs.greyBgCar} imageStyle={[image.w(18), image.h(16.36)]} />
 
                             <PageNavigator
                                 navigate
                                 title='Personal Documents'
                                 page={`/(account)/personalDocument`}
-                                source={sharedImg.blackBgPlusIcon} imageStyle={[image.w(15), image.h(20)]} />
+                                source={accountImgs.personalDocument} imageStyle={[image.w(24), image.h(24)]} />
 
                             <PageNavigator
                                 title='Account Security'
                                 navigate
                                 page={`/(account)/accountSecurity`}
-                                source={sharedImg.blackBgPlusIcon} imageStyle={[image.w(18), image.h(14)]} />
+                                source={accountImgs.securityImg} imageStyle={[image.w(18), image.h(22)]} />
 
                             <PageNavigator
                                 title='Bank Details'
-                                navigate
+                                navigate={false}
                                 page={`/(account)/bankDetails`}
-                                source={sharedImg.blackBgPlusIcon} imageStyle={[image.w(18), image.h(22)]} />
+
+                                source={accountImgs.paymentCard} imageStyle={[image.w(18), image.h(14)]} />
+
+                            <PageNavigator
+                                title='Earnings'
+                                page={`/(earnings)/`}
+                                navigate
+                                source={accountImgs.paymentCard} imageStyle={[image.w(18), image.h(14)]} />
 
                             <PageNavigator
                                 title='Terms and Condition'
-                                navigate
+                                navigate={false}
                                 page={`/(account)/termsAndCondition`}
-                                source={sharedImg.blackBgPlusIcon} imageStyle={[image.w(18), image.h(19)]} />
+
+                                source={accountImgs.personalDocument} imageStyle={[image.w(18), image.h(19)]} />
 
                             <PageNavigator
                                 title='Notifications'
                                 navigate
                                 page={`/(account)/notifications`}
-                                source={sharedImg.blackBgPlusIcon} imageStyle={[image.w(18), image.h(14.73)]} />
+                                source={accountImgs.notificationImage} imageStyle={[image.w(18), image.h(19)]} />
 
-                            <PageNavigator navigate={false} title='Rate Us' source={sharedImg.blackBgPlusIcon} imageStyle={[image.w(18), image.h(17.13)]} />
+                            <PageNavigator navigate={false} title='Rate Us' source={accountImgs.rateStarImg} imageStyle={[image.w(18), image.h(17.13)]} />
 
                             <PageNavigator
                                 title='Contact Support'
-                                navigate
+                                navigate={false}
                                 page={`/(account)/contactSupport`}
-                                source={sharedImg.blackBgPlusIcon} imageStyle={[image.w(18), image.h(14.73)]} />
+                                source={accountImgs.headPhoneImage} imageStyle={[image.w(18), image.h(14.73)]} />
 
-                            <PageNavigator navigate={false} title='Rate Us' source={sharedImg.blackBgPlusIcon} imageStyle={[image.w(18), image.h(17.13)]} />
+                            <PageNavigator navigate title='Notification messages' source={accountImgs.notificationImage} page={`/(account)/notificationsMessages`} imageStyle={[image.w(18), image.h(19)]} />
 
                             {loadingState === 'idle' ?
                                 (<Button

@@ -64,7 +64,7 @@ export default function profileInfo() {
 
                     <AccountPageTitle
                         title='Profile Information'
-                        onPress={() => router.push(`/(tab)/${tabs.account}` as Href)}
+                        onPress={() => router.push(`/(home)/${tabs.account}` as Href)}
                         style={[]}
                     >
                         {/* Edit / Save profile Btn */}

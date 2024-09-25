@@ -17,6 +17,7 @@ import redBgCautionImage from '@/assets/images/shared/red-bg-caution-image.png'
 import tripChargeImage from '@/assets/images/shared/trip-charge-image.png'
 import passengersImage from '@/assets/images/shared/passengers-image.png'
 import calendarImage from '@/assets/images/shared/calendeer-img.png'
+import blueBgOfferImg from '@/assets/images/shared/blue-background-offer-image.png'
 
 const sharedImg = {
     proceedIcon,
@@ -38,6 +39,7 @@ const sharedImg = {
     tripChargeImage,
     passengersImage,
     calendarImage,
+    blueBgOfferImg,
 }
 
 export default sharedImg

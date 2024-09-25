@@ -6,7 +6,6 @@ import PageTitle from "@/components/shared/pageTitle";
 import SafeScreen from "@/components/shared/safeScreen";
 import Colors, { colors } from "@/constants/Colors";
 import sharedImg from "@/constants/images/shared";
-import { closeModal } from "@/state/slices/layout";
 import { c, colorBlack, colordarkGrey, colorWhite, fs, fs10, fs14, fs18, fw400, fw500, fw700, leading, neurialGrotesk, textCenter } from "@/utils/fontStyles";
 import { image, wHFull } from "@/utils/imageStyles";
 import { bg, flexYCenter, h, mt, w, wFull, absolute, b, border, flex, itemsCenter, justifyBetween, rounded, py, px, pYAuto, flexCol, gap, my, justifyCenter, m, mb, pl, p, } from "@/utils/styles";

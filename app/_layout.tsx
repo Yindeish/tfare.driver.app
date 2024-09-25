@@ -11,6 +11,8 @@ import { BottomSheetProvider } from '@/contexts/useBottomSheetContext';
 import { SignupProvider } from '@/contexts/signupContext';
 import { SnackbarProvider } from '@/contexts/snackbar.context';
 import { Dimensions, View } from 'react-native';
+import { Provider } from 'react-redux'
+import { store } from '@/state/store';
 
 export default function Root() {
   const { width, height } = Dimensions.get('window')
@@ -27,20 +29,22 @@ export default function Root() {
   SplashScreen.hideAsync();
 
   return (
-    <GestureHandlerRootView>
-      <BottomSheetProvider>
-        <PaperProvider>
-          <SnackbarProvider>
-            <SignupProvider>
-              <TokenSessionProvider>
-                <SessionProvider>
-                  <Slot />
-                </SessionProvider>
-              </TokenSessionProvider>
-            </SignupProvider>
-          </SnackbarProvider>
-        </PaperProvider>
-      </BottomSheetProvider>
-    </GestureHandlerRootView>
+    <Provider store={store}>
+      <GestureHandlerRootView>
+        <BottomSheetProvider>
+          <PaperProvider>
+            <SnackbarProvider>
+              <SignupProvider>
+                <TokenSessionProvider>
+                  <SessionProvider>
+                    <Slot />
+                  </SessionProvider>
+                </TokenSessionProvider>
+              </SignupProvider>
+            </SnackbarProvider>
+          </PaperProvider>
+        </BottomSheetProvider>
+      </GestureHandlerRootView>
+    </Provider>
   );
 }

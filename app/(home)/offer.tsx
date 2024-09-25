@@ -1,18 +1,99 @@
-import { c } from "@/utils/fontStyles";
-import { wHFull } from "@/utils/imageStyles";
-import { bg, flex, itemsCenter, justifyCenter } from "@/utils/styles";
-import { View } from "react-native";
-import { Text } from "react-native-paper";
+import { Image, TextInput, TouchableOpacity, View, } from 'react-native'
+import { Text } from 'react-native-paper'
+import React from 'react'
+import SafeScreen from '@/components/shared/safeScreen'
+import { bg, flex, flexCol, gap, h, itemsCenter, justifyBetween, justifyCenter, justifyStart, ml, mt, p, pt, px, py, relative, rounded, w, wFull, wHFull } from '@/utils/styles'
+import Colors, { colors } from '@/constants/Colors'
+import { Ionicons } from '@expo/vector-icons';
+import { c, colorBlack, colorBlueBg, colorWhite, fs12, fs14, fs16, fs18, fw400, fw500, fw700, neurialGrotesk } from '@/utils/fontStyles'
+import PaddedScreen from '@/components/shared/paddedScreen'
+import { image } from '@/utils/imageStyles'
+import { useAppDispatch } from '@/state/hooks/useReduxToolkit'
+import { homeImgs } from '@/constants/images/home'
+import PageTitle from '@/components/shared/pageTitle'
+import sharedImg from '@/constants/images/shared'
 
+export default function Offer() {
+    const dispatch = useAppDispatch()
 
-function Offer() {
 
     return (
-        <View style={[flex, itemsCenter, justifyCenter, bg('purple'), wHFull]}>
-            <Text style={[c('white')]}>Offer</Text>
-        </View>
+        <SafeScreen>
+            <View style={[wHFull, bg(colors.transparent), relative]}>
+                <PaddedScreen>
+                    <PageTitle title='Offers' />
+
+                    <View style={[mt(20), wFull, bg(colors.white), rounded(10), p(10), flexCol, gap(28), py(34), px(25), { borderWidth: 0.7, borderColor: Colors.light.border, shadowColor: colors.black, shadowRadius: 12.2, }]}>
+
+                        <View style={[flex, itemsCenter, justifyStart, gap(16), h(19.43)]}>
+                            <Image style={[image.w(20.12), image.h(19.43)]} source={homeImgs.offersImg} />
+
+                            <Text style={[neurialGrotesk, colorBlack, fw700, fs16]}>Enter Promocode</Text>
+                        </View>
+
+                        <View style={[wFull, py(20), flexCol, gap(16), { borderTopWidth: 0.7, borderTopColor: Colors.light.border, }]}>
+
+                            <View style={[wFull, h(50), rounded(10), p(16), flex, itemsCenter, gap(10), bg('#F9F7F8')]}>
+
+                                <TextInput
+                                    style={[fs14, fw500, h(20), { color: false ? Colors.light.darkGrey : Colors.light.error, borderColor: colors.transparent, borderWidth: 0, flex: 0.8 }]}
+                                    keyboardType="number-pad"
+                                    placeholderTextColor={Colors.light.darkGrey}
+                                    cursorColor={Colors.light.darkGrey}
+                                    placeholder="Input Code"
+                                //     value={userProposedAmount?.toString()}
+                                //     onChangeText={(text) => {
+                                //         dispatch(setUserProposedAmount(Number(text)));
+                                // }}
+                                />
+                            </View>
+                        </View>
+
+                        <TouchableOpacity>
+                            <View style={[wFull, h(50), rounded(10), flex, itemsCenter, justifyCenter, gap(10), bg(Colors.light.background)]}>
+                                <Text style={[neurialGrotesk, fw700, fs18, colorWhite]}>Apply</Text>
+
+                                <Image style={[image.w(20), image.h(20)]} source={sharedImg.proceedIcon} />
+                            </View>
+                        </TouchableOpacity>
+                    </View>
+
+                    <View style={[wFull, h(178), flexCol, gap(20), mt(32)]}>
+
+                        <TouchableOpacity style={[bg('#F9F7F8'), flex, itemsCenter, justifyBetween, rounded(10), py(17), px(9), h(79)]}>
+
+                            <View style={[flex, itemsCenter, gap(12)]}>
+                                <View style={[w(45), h(45), bg(Colors.light.background), rounded(45), flex, itemsCenter, justifyCenter]}>
+                                    <Image style={[image.w(20.12), image.h(19.43)]} source={sharedImg.blueBgOfferImg} />
+                                </View>
+
+                                <View style={[flexCol, gap(12)]}>
+                                    <Text style={[neurialGrotesk, fw700, fs14, colorBlack]}>Happy Eid Fitri</Text>
+                                    <Text style={[fw400, fs12, c(Colors.light.darkGrey)]}>20% off your rides</Text>
+                                </View>
+                            </View>
+
+                            <View style={[w(20), h(20), rounded(20), bg(colors.white), { borderWidth: 2, borderColor: Colors.light.background }]} />
+                        </TouchableOpacity>
+
+                        <TouchableOpacity style={[bg('#F9F7F8'), flex, itemsCenter, justifyBetween, rounded(10), py(17), px(9), h(79)]}>
+
+                            <View style={[flex, itemsCenter, gap(12)]}>
+                                <View style={[w(45), h(45), bg(Colors.light.background), rounded(45), flex, itemsCenter, justifyCenter]}>
+                                    <Image style={[image.w(20.12), image.h(19.43)]} source={sharedImg.blueBgOfferImg} />
+                                </View>
+
+                                <View style={[flexCol, gap(12)]}>
+                                    <Text style={[neurialGrotesk, fw700, fs14, colorBlack]}>Happy Eid Fitri</Text>
+                                    <Text style={[fw400, fs12, c(Colors.light.darkGrey)]}>20% off your rides</Text>
+                                </View>
+                            </View>
+
+                            <View style={[w(20), h(20), rounded(20), bg(colors.white), { borderWidth: 2, borderColor: Colors.light.background }]} />
+                        </TouchableOpacity>
+                    </View>
+                </PaddedScreen>
+            </View>
+        </SafeScreen>
     )
 }
-
-export default Offer;
-

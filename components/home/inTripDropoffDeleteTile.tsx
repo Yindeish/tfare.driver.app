@@ -21,12 +21,12 @@ function InTripDropoffDeleteTile() {
                 </View>
 
                 <View style={[flex, itemsCenter, gap(10)]}>
-                    <View style={[w(5), h(5), bg(colors.black), rounded('100%')]} />
+                    <View style={[w(5), h(5), bg(colors.black), rounded(1000)]} />
                     <Text style={[fs14, fw700, c(colors.black)]}>Orogun Bus Stop</Text>
                 </View>
             </View>
 
-            <TouchableOpacity style={[w(45), h(45), rounded('100%'), flex, itemsCenter, justifyCenter, bg('#F9F7F8'), borderGrey(0.7)]}>
+            <TouchableOpacity style={[w(45), h(45), rounded(1000), flex, itemsCenter, justifyCenter, bg('#F9F7F8'), borderGrey(0.7)]}>
                 <Ionicons name="close-circle-outline" size={24} color={Colors.light.darkGrey} />
             </TouchableOpacity>
         </View>

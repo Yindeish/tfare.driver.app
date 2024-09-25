@@ -34,6 +34,7 @@ export default function AppLayout() {
     <Stack.Screen name={'termsAndConditions'} />
     <Stack.Screen name={'notifications'} />
     <Stack.Screen name={'contactSupport'} />
+    <Stack.Screen name={'notificationsMessages'} />
   </Stack>
 }
 

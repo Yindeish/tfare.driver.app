@@ -29,7 +29,7 @@ function PresetRouteSheetTile() {
                 <TouchableOpacity onPress={() => {
                     hideBottomSheet();
                     router.push('/(route)/routeDetails/1' as Href)
-                }} style={[bg(Colors.light.background), flex, itemsCenter, gap(10), p(16), rounded('100%')]}>
+                }} style={[bg(Colors.light.background), flex, itemsCenter, gap(10), p(16), rounded(1000)]}>
                     <Image style={[image.w(18), image.h(18),]} source={tripImgs.whiteBgTripWay} />
                     <Text style={[fw500, fs12, c(colors.white)]}>Select Route</Text>
                     <FontAwesome6 size={20} name="arrow-right-long" color={colors.white} />

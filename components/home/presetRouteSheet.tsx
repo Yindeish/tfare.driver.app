@@ -23,14 +23,14 @@ function PresetRouteSheet() {
             <TouchableOpacity onPress={() => {
                 hideBottomSheet()
                 router.push('/(route)/searchRoute' as Href)
-            }} style={[wFull, rounded('100%'), borderGrey(0.7), bg('#F9F7F8'), flex, itemsCenter, gap(20), px(25), h(50), relative]}>
+            }} style={[wFull, rounded(1000), borderGrey(0.7), bg('#F9F7F8'), flex, itemsCenter, gap(20), px(25), h(50), relative]}>
                 {/* //! */}
                 <Image style={[image.w(20), image.h(20),]} source={tripImgs.search} />
                 {/* //! */}
 
                 <Text
                     style={[
-                        rounded('100%'), c(Colors.light.darkGrey)
+                        rounded(1000), c(Colors.light.darkGrey)
                     ]}
 
                 >Search Bus stop</Text>
