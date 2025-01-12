@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/splash/icon.png",
-    "scheme": "myapp",
+    "scheme": "tfaredriver",
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/images/splash/splash.png",
@@ -29,7 +29,8 @@
     },
     "plugins": [
       "expo-router",
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true
