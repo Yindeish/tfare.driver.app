@@ -66,22 +66,22 @@ export function SessionProvider(props: React.PropsWithChildren) {
   }
 
   const signIn = async (data: IRequestData) => {
-    // onChange('loadingState', 'signingin' as TSigninLoadingState);
+    onChange('loadingState', 'signingin' as TSigninLoadingState);
 
-    // const returnedData: ISigninResponseData = await FetchService.post({ data, url: '/auth/signin' })
+    const returnedData: ISigninResponseData = await FetchService.post({ data, url: '/auth/signin' })
 
-    // onChange('loadingState', 'idle' as TSigninLoadingState);
-    // onChange('code', returnedData.code as number);
-    // onChange('msg', returnedData.msg);
+    onChange('loadingState', 'idle' as TSigninLoadingState);
+    onChange('code', returnedData.code as number);
+    onChange('msg', returnedData.msg);
 
-    // returnedData.user && setSession(JSON.stringify(returnedData.user));
-    // returnedData.user && signInwithToken(returnedData.token);
+    returnedData.user && setSession(JSON.stringify(returnedData.user));
+    returnedData.user && signInwithToken(returnedData.token);
 
-    // if (!returnedData.user || !returnedData.token) {
-    //   notify();
-    // }
-    setSession(JSON.stringify({ user: 'user' }));//testing
-    signInwithToken('x');//testing
+    if (!returnedData.user || !returnedData.token) {
+      notify();
+    }
+    // setSession(JSON.stringify({ user: 'user' }));//testing
+    // signInwithToken('x');//testing
   }
 
   const signOut = async () => {

@@ -1,13 +1,14 @@
 import Colors, { colors } from "@/constants/Colors";
 import { homeImgs } from "@/constants/images/home";
 import tripImgs from "@/constants/images/trip";
+import { IBusStop } from "@/state/types/ride";
 import { c, fs12, fs14, fw400, fw500, fw700 } from "@/utils/fontStyles";
 import { image } from "@/utils/imageStyles";
 import { bg, border, borderB, borderL, borderR, borderT, borderX, flex, flexCol, gap, h, itemsCenter, justifyBetween, pb, pt, rounded, w } from "@/utils/styles";
 import { Image, View } from "react-native";
 import { Text } from "react-native-paper";
 
-function InTripDropffTile() {
+function InTripDropffTile({dropoff, index}:{dropoff: IBusStop, index: number}) {
 
 
     return (
@@ -15,12 +16,13 @@ function InTripDropffTile() {
             <View style={[flex, itemsCenter, gap(16)]}>
                 <Image style={[image.w(20), image.h(20)]} source={homeImgs.tripImg} />
 
-                <Text style={[fs12, fw400, c(Colors.light.darkGrey)]}>1st Bus stop</Text>
+                {/* <Text style={[fs12, fw400, c(Colors.light.darkGrey)]}>{index}st Bus stop</Text> */}
+                <Text style={[fs12, fw400, c(Colors.light.darkGrey)]}>{index}. Bus stop</Text>
             </View>
 
             <View style={[flex, itemsCenter, gap(10)]}>
                 <View style={[w(5), h(5), bg(colors.black), rounded(1000)]} />
-                <Text style={[fs14, fw700, c(colors.black)]}>Orogun Bus Stop</Text>
+                <Text style={[fs14, fw700, c(colors.black)]}>{dropoff?.name}</Text>
             </View>
         </View>
     )

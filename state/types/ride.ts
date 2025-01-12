@@ -1,27 +1,63 @@
-type TBusStop = 'pickupBusstop' | 'dropoffBusstop';
+import { IDriverDetails } from "./driver";
+
 type TLoadingStatus = 'idle' | 'succeeded' | 'failed';
 type TLoadingType = string;
 type TCurrentrideView = 'orderRide' | 'availableRides';
 type TActiveTab = 'pending' | 'completed' | 'cancelled';
 type TCounterFareStatus = 'idle' | 'pending' | 'accepted' | 'rejected';
 
-interface IRoute {
-    routeName: string;
-    routeDesc: string;
-    routeDistance: string;
+type TBusStop = 'pickupBusstop' | 'dropoffBusstop';
+export type TPlanName = 'standard' | 'premium';
+export type TCategoryOrigin = 'ajah' | 'lekki' | 'obalende' | 'cms';
+export type TCategoryDestination = 'lekki' | 'obalende' | 'cms' | 'oshodi';
+export type TRideDirection = 'forward' | 'backward';
+export type TRideStatus = 'requesting' | 'cancelled' | 'accepted' | 'declined' | 'started' | 'booked' | 'ended';
+
+
+export interface IBusStop {
+    _id?: string,
+    name: string,
+    order?: {
+        forward: { number: number },
+        backward: { number: number }
+    },
+    category?: {
+        origin: TCategoryOrigin,
+        destination: TCategoryDestination,
+    }
 }
 
-interface IBusStop extends Partial<IRoute> {
-    type: TBusStop;
-    saved?: boolean;
+export interface ISavedBusStop {
+    userId: string,
+    busstopTitle: string,
+    busStop: IBusStop,
 }
 
-interface ILoading {
+export interface IRoute {
+    // _id: string,
+    // pickupBusstopId: string,
+    // dropoffBusstopId: string,
+    // rideDirection: 'forward' | 'backward',
+    // inTripDropoffsIds: string[],
+    // inTripDropoffs?: IBusStop[]
+    _id: string,
+    pickupBusstop: IBusStop,
+    dropoffBusstop: IBusStop,
+    rideDirection: 'forward' | 'backward',
+    inTripDropoffs: IBusStop[]
+}
+
+export interface IRecentBusStop {
+    userId: string,
+    busStop: IBusStop,
+}
+
+export interface ILoading {
     status: TLoadingStatus;
     type: TLoadingType;
 }
 
-interface ITicket {
+export interface ITicket {
     id?: string,
     owner?: {},
     pickupBusstop?: IBusStop | null,
@@ -33,22 +69,55 @@ interface ITicket {
     rideFee?: number
 }
 
-interface IDriverDetails {
-    // vehiccle info
-    // driver info
-}
 
-interface IStateInput {
-    pickupBusstopInput: string,
-    dropoffBusstopInput: string,
+
+export interface IStateInput {
+    pickupBusstopInput: IBusStop | null,
+    dropoffBusstopInput: IBusStop | null,
     userCounterFareInput: number | null,
     driverRatingInput: number | null,
     driverRatingCommentInput: string,
     cancelRideReasonInput: string,
+    userRideInput: Partial<IRide>,
+    paymentOptionInput: string,
+}
+// ? Ride
+
+export interface IPlan {
+    planName: TPlanName,
+    vehicleSeats: number,
+    ride?: {
+        rideFee: number
+    },
+    trip?: {
+        tripFee: number
+    }
 }
 
-interface IRide {
-    id?: string,
+export interface ICurrentRide {
+    _id: string,
+    driverId: string,
+    availableSeats: number,
+    vehicleName: string,
+    inRideDropoffsIds: string[],
+    ridersRidesIds: string[],
+}
+
+export interface IRiderRideDetails {
+    _id: string,
+    pickupBusstopId: string,
+    dropoffBusstopId: string,
+    riderId: string,
+    ticketsIds: string[],
+    duration: string,
+    ridePlan: IPlan
+    rideStatus: TRideStatus,
+    riderCounterOffer: number,
+    currentRideId: string
+}
+
+export interface IRide {
+    _id?: string,
     pickupBusstop: IBusStop,
     dropoffBusstop: IBusStop,
     saved: boolean,
@@ -61,18 +130,15 @@ interface IRide {
     busStops?: IBusStop[] | [],
 }
 
-interface IRideState {
-    loading: ILoading,
-    searchMatchBusstops: IBusStop[] | [],
-    currentRideView: TCurrentrideView,
-    userRide: IRide | null,
-    availableRides: IRide[] | [],
-    currentNumberOfTickets: number,
-    activeTab: TActiveTab
-    stateInput: IStateInput,
-    currentTicket: ITicket | null,
-    counterFareStatus: TCounterFareStatus,
-    allTicketsFilled: boolean,
+export interface IRideState {
+    pickupBusstopInput: IBusStop | null,
+    dropoffBusstopInput: IBusStop | null,
+    currentRoute: IRoute | null,
+    driverOnline: boolean,
+    driverEligible: boolean,
+    ridersOffers: IRiderRideDetails[],
+    currentRiderOfferIndex: number| null
 }
+// ? Ride
 
-export type { TBusStop, TLoadingStatus, IBusStop, ILoading, IRide, IRideState, TLoadingType, TCurrentrideView, ITicket, IRoute, TActiveTab, IStateInput, TCounterFareStatus }
+export type { TBusStop, TLoadingStatus, TLoadingType, TCurrentrideView, TActiveTab, TCounterFareStatus }

@@ -10,21 +10,62 @@ import { homeImgs } from "@/constants/images/home";
 import sharedImg from "@/constants/images/shared";
 import { images } from "@/constants/images/splash";
 import tripImgs from "@/constants/images/trip";
+import { useStorageState } from "@/hooks/useStorageState";
+import FetchService from "@/services/api/fetch.service";
+import { useAppDispatch, useAppSelector } from "@/state/hooks/useReduxToolkit";
+import { RootState } from "@/state/store";
 import { c, colorBlack, colorWhite, fs12, fs14, fw400, fw500, fw700, neurialGrotesk } from "@/utils/fontStyles";
 import { image, wHFull } from "@/utils/imageStyles";
 import { absolute, bg, borderB, borderGrey, borderY, flex, flexCol, gap, itemsCenter, justifyBetween, justifyEnd, mb, ml, mr, mt, p, pb, px, py, r, relative, rounded, t } from "@/utils/styles";
 import { router } from "expo-router";
-import { Image, ScrollView, TouchableOpacity, View } from "react-native";
+import { useState } from "react";
+import { Image, ScrollView, TouchableOpacity, View, ViewStyle } from "react-native";
 import { Text } from "react-native-paper";
 
 
 function CustomizeRoute() {
+     const {currentRoute, dropoffBusstopInput, pickupBusstopInput} = useAppSelector((state: RootState) => state.ride)
+        const dispatch = useAppDispatch();
+        const [[tokenLoading, token], setTokenSession] = useStorageState('token')
 
+        const [fetchState, setFetchState] = useState({
+                loading: false,
+                msg: "",
+                code: null,
+              });
+              const { code, msg, loading } = fetchState;
+
+        const customizeRoute = async () => {
+            setFetchState((prev) => ({ ...prev, loading: true }));
+            const returnedData = await FetchService.postWithBearerToken({
+              url: "/user/rider/me/available-rides/find",
+              data: {
+                pickupBusstopId: pickupBusstopInput?._id,
+                dropoffBusstopId: dropoffBusstopInput?._id,
+              },
+              token: token as string,
+            });
+        
+            const code = returnedData?.code;
+            const msg = returnedData?.msg;
+        
+            setFetchState((prev) => ({ ...prev, loading: false, msg, code }));
+        
+            // if (code && code == 201) {
+            //     hideBottomSheet();
+            //     router.push(`/${pages.availableRides}` as Href)
+            //     setFetchState((prev) => ({ ...prev, loading: false, msg: '', code: null }));
+            // }
+            // else if (code && code == 400) {
+            //     showBottomSheet([477, 601], <RideRouteDetails code={code} msg={msg} />)
+            //     setFetchState((prev) => ({ ...prev, loading: false, msg: '', code: null }));
+            // }
+          };
 
     return (
         <SafeScreen>
             <ScrollView>
-                <View style={[wHFull, relative]}>
+                <View style={[wHFull as ViewStyle, relative]}>
                     <PaddedScreen>
                         {/* //!Page Header */}
                         <View style={[flex, itemsCenter, justifyBetween, mb(10),]}>
@@ -59,8 +100,10 @@ function CustomizeRoute() {
                             </View>
 
                             <View style={[flexCol, gap(16), { overflow: 'scroll' }]}>
-                                {Array.from({ length: 7 }).map((_, index) => (
-                                    <InTripDropoffDeleteTile
+                                {currentRoute?.inTripDropoffs.map((dropoff, index) => (
+                                    <InTripDropffTile
+                                    dropoff={dropoff}
+                                    index={index+1}
                                         key={index}
                                     />
                                 ))}

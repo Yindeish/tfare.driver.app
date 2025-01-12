@@ -8,19 +8,21 @@ import { Text } from "react-native-paper";
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { Href, router } from "expo-router";
 import { useBottomSheet } from "@/contexts/useBottomSheetContext";
+import { IRoute } from "@/state/types/ride";
 
-function PresetRouteSheetTile() {
+function PresetRouteSheetTile({route}:{route: IRoute}) {
+    console.log({route})
     const { hideBottomSheet } = useBottomSheet()
 
 
     return (
         <View style={[wFull, bg('#F9F7F8'), px(9), py(17), rounded(10), flexCol, gap(20)]}>
             <View style={[flex, justifyBetween, itemsCenter]}>
-                <Text style={[fw700, fs14, c(colors.black)]}>Bus Stop A</Text>
+                <Text style={[fw700, fs14, c(colors.black)]}>{route?.pickupBusstop?.name}</Text>
 
                 <Image style={[image.w(90), image.h(5)]} source={tripImgs.tripDirection} />
 
-                <Text style={[fw700, fs14, c(colors.black)]}>Bus Stop B</Text>
+                <Text style={[fw700, fs14, c(colors.black)]}>{route?.dropoffBusstop?.name}</Text>
             </View>
 
             <View style={[wFull, flex, justifyBetween, itemsCenter]}>
@@ -28,7 +30,7 @@ function PresetRouteSheetTile() {
 
                 <TouchableOpacity onPress={() => {
                     hideBottomSheet();
-                    router.push('/(route)/routeDetails/1' as Href)
+                    router.push('/(route)/routeDetails' as Href)
                 }} style={[bg(Colors.light.background), flex, itemsCenter, gap(10), p(16), rounded(1000)]}>
                     <Image style={[image.w(18), image.h(18),]} source={tripImgs.whiteBgTripWay} />
                     <Text style={[fw500, fs12, c(colors.white)]}>Select Route</Text>

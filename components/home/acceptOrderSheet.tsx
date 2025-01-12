@@ -15,15 +15,31 @@ import { useBottomSheet } from "@/contexts/useBottomSheetContext";
 import TicketOtpSheet from "./ticketOtpSheet";
 import { router } from "expo-router";
 import ArrivedPickupSheet from "./arrivedPickupSheet";
+import { useAppDispatch, useAppSelector } from "@/state/hooks/useReduxToolkit";
+import { setRideState } from "@/state/slices/ride";
+import { RootState } from "@/state/store";
+import { useEffect } from "react";
 
 
 function AcceptOrderSheet() {
-    const { showBottomSheet, hideBottomSheet } = useBottomSheet()
+    const dispatch = useAppDispatch()
+    const { showBottomSheet, hideBottomSheet } = useBottomSheet();
+    const {ridersOffers, currentRiderOfferIndex} = useAppSelector((state: RootState) => state.ride);
 
     const cancelOrder = () => {
         hideBottomSheet()
-        router.push(`/(home)/`)
+        router.push(`/(home)`);
+        dispatch(setRideState({key:'currentRoute', value: null}));
+        dispatch(setRideState({key:'driverEligible', value: false}));
+        dispatch(setRideState({key:'driverOnline', value: false}));
+        dispatch(setRideState({key:'dropoffBusstopInput', value: null}));
+        dispatch(setRideState({key:'pickupBusstopInput', value: null}));
+        dispatch(setRideState({key:'ridersOffers', value: []}));
     }
+
+    useEffect(() => {
+        if(!currentRiderOfferIndex) hideBottomSheet();
+    }, [])
 
     return (
         <PaddedScreen>
@@ -41,7 +57,7 @@ function AcceptOrderSheet() {
                             </View>
 
                             <View style={[hFull, flexCol, justifyCenter, gap(12)]}>
-                                <Text style={[c(colors.black), fw700, fs14]}>King John</Text>
+                                <Text style={[c(colors.black), fw700, fs14]}>{ridersOffers[currentRiderOfferIndex as number]?.}</Text>
                                 <Text style={[c(Colors.light.darkGrey), fw400, fs12]}>{'5 min'} away</Text>
                             </View>
                         </View>

@@ -70,7 +70,6 @@ const { signInTitle, textInput, form, forgotPassword, signInBtn, signInText, noA
         fontWeight: '500',
         fontSize: 14,
         lineHeight: 18.48,
-        fontFamily: fonts.neurialGrotesk
     }
 });
 
@@ -81,7 +80,7 @@ interface ISigninFormData {
 
 const SignInSchema = Yup.object().shape({
     email: Yup.string().email('Invalid email').required('Email is required'),
-    pin: Yup.string().min(4, 'Pin must be at least 4 characters').max(4, 'Pin must be 4-digits').required('Pin is required'),
+    pin: Yup.string().min(4, 'Pin must be at least 4 characters').max(6, 'Pin must be 6-digits').required('Pin is required'),
 });
 
 const { height } = Dimensions.get('screen');

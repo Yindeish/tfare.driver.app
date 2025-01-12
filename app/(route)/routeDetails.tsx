@@ -8,21 +8,25 @@ import { homeImgs } from "@/constants/images/home";
 import sharedImg from "@/constants/images/shared";
 import { images } from "@/constants/images/splash";
 import tripImgs from "@/constants/images/trip";
+import { useAppDispatch, useAppSelector } from "@/state/hooks/useReduxToolkit";
+import { setRideState } from "@/state/slices/ride";
+import { RootState } from "@/state/store";
 import { c, colorBlack, fs12, fs14, fw400, fw500, fw700, neurialGrotesk } from "@/utils/fontStyles";
 import { image, wHFull } from "@/utils/imageStyles";
 import { absolute, bg, borderB, borderGrey, borderY, flex, flexCol, gap, itemsCenter, justifyBetween, justifyEnd, mb, ml, mr, mt, p, pb, px, py, r, relative, rounded, t } from "@/utils/styles";
 import { Href, router } from "expo-router";
-import { Image, ScrollView, TouchableOpacity, View } from "react-native";
+import { Image, ScrollView, TouchableOpacity, View, ViewStyle } from "react-native";
 import { Text } from "react-native-paper";
 
 
 function RouteDetails() {
-
+    const {currentRoute} = useAppSelector((state: RootState) => state.ride)
+    const dispatch = useAppDispatch();
 
     return (
         <SafeScreen>
             <ScrollView>
-                <View style={[wHFull, relative]}>
+                <View style={[wHFull as ViewStyle, relative]}>
                     {/* //!Page Header */}
                     <PaddedScreen>
                         <View style={[flex, itemsCenter, justifyBetween, mb(10),]}>
@@ -33,7 +37,7 @@ function RouteDetails() {
                             {/* //!Page Title */}
 
                             {/* //!Customize CTA */}
-                            <TouchableOpacity onPress={() => router.push('/(route)/customizeRoute/1' as Href)} style={[bg('#F9F7F8'), borderGrey(0.7), gap(16), rounded(10), py(10), px(16), flex, itemsCenter, gap(16), absolute, t(47), r(0)]}>
+                            <TouchableOpacity onPress={() => router.push('/(route)/customizeRoute' as Href)} style={[bg('#F9F7F8'), borderGrey(0.7), gap(16), rounded(10), py(10), px(16), flex, itemsCenter, gap(16), absolute, t(47), r(0)]}>
                                 <Image style={[image.w(24), image.h(24)]} source={sharedImg.editBtn2} />
 
                                 <Text style={[fs12, fw500, neurialGrotesk, colorBlack]}>Customize</Text>
@@ -50,7 +54,7 @@ function RouteDetails() {
                                 <Image style={[image.w(14), image.h(20)]} source={tripImgs.greenBgLocation} />
                                 <Text style={[neurialGrotesk, fw400, fs12, c(Colors.light.darkGrey)]}>Startoff</Text>
                             </View>
-                            <Text style={[fw700, fs14, c(colors.black)]}>Ojoo Bus Stop</Text>
+                            <Text style={[fw700, fs14, c(colors.black)]}>{currentRoute?.pickupBusstop?.name}</Text>
                         </View>
 
                         <Image style={[image.w(90), image.h(5), { objectFit: 'contain' }]} source={tripImgs.tripDirection} />
@@ -60,7 +64,7 @@ function RouteDetails() {
                                 <Image style={[image.w(14), image.h(20)]} source={tripImgs.redBgLocation} />
                                 <Text style={[neurialGrotesk, fw400, fs12, c(Colors.light.darkGrey)]}>Endpoint</Text>
                             </View>
-                            <Text style={[fw700, fs14, c(colors.black)]}>Ojoo Bus Stop</Text>
+                            <Text style={[fw700, fs14, c(colors.black)]}>{currentRoute?.dropoffBusstop?.name}</Text>
                         </View>
                     </View>
                     {/* //!Route Block */}
@@ -73,8 +77,10 @@ function RouteDetails() {
                             </View>
 
                             <View style={[flexCol, gap(16), { overflow: 'scroll' }]}>
-                                {Array.from({ length: 7 }).map((_, index) => (
+                                {currentRoute?.inTripDropoffs.map((dropoff, index) => (
                                     <InTripDropffTile
+                                    dropoff={dropoff}
+                                    index={index+1}
                                         key={index}
                                     />
                                 ))}
@@ -87,7 +93,9 @@ function RouteDetails() {
                         <CtaBtn
                             img={{ src: tripImgs.whiteBgTripImage, h: 20, w: 20 }}
                             onPress={() => {
-                                router.push('/(home)/')
+                                dispatch(setRideState({key:'pickupBusstopInput', value: currentRoute?.pickupBusstop}))
+                                dispatch(setRideState({key:'dropoffBusstopInput', value: currentRoute?.dropoffBusstop}))
+                                router.push('/(home)')
                             }}
                             text={{ name: 'Select Route', color: colors.white }}
                             bg={{ color: Colors.light.background }}

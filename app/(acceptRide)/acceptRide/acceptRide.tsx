@@ -17,7 +17,7 @@ import { image, imgAbsolute, mXAuto, wHFull } from "@/utils/imageStyles";
 import { absolute, b, bg, borderB, borderGrey, borderT, bottom0, flex, flexCol, gap, h, hFull, itemsCenter, justifyBetween, justifyCenter, justifyStart, left0, mb, mt, mTAuto, p, pb, pt, px, py, r, relative, rounded, t, top0, w, wFull, zIndex } from "@/utils/styles";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { Alert, Dimensions, Image, Platform, ToastAndroid, TouchableOpacity, View } from "react-native";
+import { Alert, Dimensions, Image, Platform, ToastAndroid, TouchableOpacity, View, ViewStyle } from "react-native";
 import { Snackbar, Text, Tooltip } from "react-native-paper";
 import { CountdownCircleTimer } from 'react-native-countdown-circle-timer'
 import AcceptOrderSheet from "@/components/home/acceptOrderSheet";
@@ -34,15 +34,15 @@ function AcceptRide() {
 
     useEffect(() => {
         showBottomSheet([300], <SearchingOrder />)
-        setTimeout(() => {
-            showBottomSheet([400], <AcceptOrderSheet />)
-        }, 3000)
+        // setTimeout(() => {
+        //     showBottomSheet([400], <AcceptOrderSheet />)
+        // }, 3000)
     }, [])
 
 
     return (
         <SafeScreen>
-            <View style={[wHFull, relative,]}>
+            <View style={[wHFull as ViewStyle, relative,]}>
                 {/* //!Backlay */}
                 <Image style={[imgAbsolute, image.t(0), image.l(0), wHFull, image.zIndex(-1)]} source={sharedImg.mapImage} />
                 {/* //!Backlay */}

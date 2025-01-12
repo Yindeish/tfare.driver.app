@@ -9,6 +9,9 @@ import tripImgs from "@/constants/images/trip";
 import { useSnackbar } from "@/contexts/snackbar.context";
 import { useBottomSheet } from "@/contexts/useBottomSheetContext";
 import { useSession } from "@/contexts/userSignedInContext";
+import { useAppDispatch, useAppSelector } from "@/state/hooks/useReduxToolkit";
+import { setRideState } from "@/state/slices/ride";
+import { RootState } from "@/state/store";
 import { c, colorBlack, colordarkGrey, fs, fs10, fs12, fs14, fs18, fw400, fw500, fw700, neurialGrotesk } from "@/utils/fontStyles";
 import { image, imgAbsolute, mXAuto, wHFull } from "@/utils/imageStyles";
 import { absolute, b, bg, borderB, borderGrey, borderT, bottom0, flex, flexCol, gap, h, hFull, itemsCenter, justifyBetween, justifyCenter, justifyStart, left0, mb, mt, mTAuto, p, pb, pt, px, py, relative, rounded, t, top0, w, wFull, zIndex } from "@/utils/styles";
@@ -23,6 +26,8 @@ const index = () => {
     const { } = useSession()
     const { showBottomSheet } = useBottomSheet()
     const { closeSnackbar, snackbarVisible, openSnackbar } = useSnackbar();
+    const {currentRoute, pickupBusstopInput,dropoffBusstopInput, driverOnline,driverEligible} = useAppSelector((state: RootState) => state.ride);
+    const dispatch = useAppDispatch()
 
     const [options, updateOptions] = useState(
         [
@@ -32,16 +37,12 @@ const index = () => {
         ].map((option, index) => ({ ...option, checked: false, id: index + 1 }))
     );
 
-    const [online, setOnline] = useState(false);
-    const [eligible, setEligible] = useState(false);
-    const [route, setRoute] = useState(false);//testing
-
     const goOnline = () => {
         const eligible = options.every((option) => option.checked === true);
 
         if (eligible) {
-            setOnline(true);
-            router.push('/(acceptRide)/acceptRide/1' as Href)
+            dispatch(setRideState({key:'driverOnline', value: true}))
+            router.push('/(acceptRide)/acceptRide' as Href)
         }
         else {
             if (Platform.OS === 'android') ToastAndroid.show("You're not eligible to go online", 2000);
@@ -54,14 +55,14 @@ const index = () => {
     useEffect(() => {
         const eligible = options.every((option) => option.checked === true);
 
-        if (eligible) setEligible(true)
-        else setEligible(false)
+        if (eligible) dispatch(setRideState({key:'driverEligible', value: true}))
+        else dispatch(setRideState({key:'driverEligible', value: false}))
     }, [options])
     // !Updating eligibility status
 
     // !Updating the preset route pop up
     useEffect(() => {
-        if (!route) { //testing .This conditon will be modified during api calls
+        if (!currentRoute) { //testing .This conditon will be modified during api calls
             showBottomSheet([650, 750], <PresetRouteSheet />)
         }
     }, [router])
@@ -97,27 +98,27 @@ const index = () => {
                         {/* //!Earnings Block */}
 
                         {/* //!Pick up-Drop off Block */}
-                        <View style={[wFull, h(112), flexCol, pt(16), px(32), borderGrey(0.7), bg(colors.white), rounded(10), gap(10)]}>
+                        {(pickupBusstopInput && dropoffBusstopInput) && <View style={[wFull, h(112), flexCol, pt(16), px(32), borderGrey(0.7), bg(colors.white), rounded(10), gap(10)]}>
                             {/* //!Pick up Block */}
                             <View style={[wFull, flex, gap(16), itemsCenter, justifyStart, borderB(0.7, Colors.light.border), pb(16)]}>
                                 <Image style={[image.w(14), image.h(20)]} source={tripImgs.greenBgLocation} />
-                                <Text style={[fw500, fs14, colorBlack]}>{'Sangotedo Bus Stop'}</Text>
+                                <Text style={[fw500, fs14, colorBlack]}>{pickupBusstopInput?.name}</Text>
                             </View>
                             {/* //!Pick up Block */}
 
                             {/* //!Drop off Block */}
                             <View style={[wFull, flex, gap(16), itemsCenter, justifyStart,]}>
                                 <Image style={[image.w(14), image.h(20)]} source={tripImgs.redBgLocation} />
-                                <Text style={[fw500, fs14, colorBlack]}>{'Ojodu Berger Bus Stop'}</Text>
+                                <Text style={[fw500, fs14, colorBlack]}>{dropoffBusstopInput?.name}</Text>
                             </View>
                             {/* //!Drop off Block */}
-                        </View>
+                        </View>}
                         {/* //!Pick up-Drop off Block */}
 
                         {/* //!Route CTAs */}
-                        <View style={[wFull, h(45), flex, justifyBetween,]}>
+                        {(pickupBusstopInput && dropoffBusstopInput) && <View style={[wFull, h(45), flex, justifyBetween,]}>
                             {/* //!Change Route CTA */}
-                            <TouchableOpacity onPress={() => { }} style={[w('45%'), hFull, rounded(10), flex, itemsCenter, justifyCenter, gap(10), bg(Colors.light.blueBackground)]}>
+                            <TouchableOpacity onPress={() => showBottomSheet([650, 750], <PresetRouteSheet />)} style={[w('45%'), hFull, rounded(10), flex, itemsCenter, justifyCenter, gap(10), bg(Colors.light.blueBackground)]}>
                                 <Text style={[neurialGrotesk, fw700, fs18, c(colors.white),]}>Change Route</Text>
 
                                 <Image style={[image.w(24), image.h(24),]} source={tripImgs.whiteBgShuffle} />
@@ -125,14 +126,14 @@ const index = () => {
                             {/* //!Change Route CTA */}
 
                             {/* //!Edit Route CTA */}
-                            <TouchableOpacity onPress={() => { }} style={[w('45%'), hFull, rounded(10), flex, itemsCenter, justifyCenter, gap(10), bg(Colors.light.background)]}>
+                            <TouchableOpacity onPress={() => router.push('/(route)/customizeRoute')} style={[w('45%'), hFull, rounded(10), flex, itemsCenter, justifyCenter, gap(10), bg(Colors.light.background)]}>
                                 <Text style={[neurialGrotesk, fw700, fs18, c(colors.white),]}>Edit Route</Text>
 
                                 <Image style={[image.w(24), image.h(24),]} source={tripImgs.whiteBgEditBtn} />
                             </TouchableOpacity>
                             {/* //!Edit Route CTA */}
 
-                        </View>
+                        </View>}
                         {/* //!Route CTAs */}
 
                     </View>
@@ -140,10 +141,10 @@ const index = () => {
                 {/* //!Header */}
 
                 {/* //!Go Online Block */}
-                <View style={[wFull, route && !eligible && !online ? borderT(0.7, Colors.light.darkGrey) : {}, flexCol, gap(40), itemsCenter, pt(20), pb(35), bg(route && !eligible && !online ? colors.white : colors.transparent), mTAuto, absolute, b('8%'), left0, zIndex(4)]}>
+                <View style={[wFull, currentRoute && !driverEligible && !driverOnline ? borderT(0.7, Colors.light.darkGrey) : {}, flexCol, gap(40), itemsCenter, pt(20), pb(35), bg(currentRoute && !driverEligible && !driverOnline ? colors.white : colors.transparent), mTAuto, absolute, b('8%'), left0, zIndex(4)]}>
 
                     {/* //!Options */}
-                    {route && !eligible && !online && <View style={[flexCol, gap(16)]}>
+                    {currentRoute && !driverEligible && !driverOnline && <View style={[flexCol, gap(16)]}>
                         {options.map(({ checked, id, name }, index) => (
                             <GoOnlineOptionTile
                                 onPress={() => {
@@ -168,13 +169,12 @@ const index = () => {
                         <CtaBtn
                             img={{ src: tripImgs.whiteBgCardinalLocation, w: 22, h: 22 }}
                             onPress={() => {
-                                if (!route && !eligible) {
-                                    setRoute(true);
+                                if (!currentRoute && !driverEligible) {
                                     showBottomSheet([650, 750], <PresetRouteSheet />)
                                 } else goOnline()
                             }}
-                            text={{ name: !route ? 'CHOOSE ROUTE' : 'GO ONLINE' }}
-                            bg={{ color: !route ? Colors.light.background : '#27AE65' }}
+                            text={{ name: !currentRoute ? 'CHOOSE ROUTE' : 'GO ONLINE' }}
+                            bg={{ color: !currentRoute ? Colors.light.background : '#27AE65' }}
                             style={{ container: { ...rounded(1000), ...w('70%'), ...mXAuto, } as ViewStyle }}
                         />
                     </View>
