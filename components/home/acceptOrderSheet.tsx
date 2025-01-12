@@ -26,15 +26,19 @@ function AcceptOrderSheet() {
     const { showBottomSheet, hideBottomSheet } = useBottomSheet();
     const {ridersOffers, currentRiderOfferIndex} = useAppSelector((state: RootState) => state.ride);
 
-    const cancelOrder = () => {
+    const acceptOffer = async () => {
+
+    }
+
+    const cancelOffer = () => {
         hideBottomSheet()
-        router.push(`/(home)`);
         dispatch(setRideState({key:'currentRoute', value: null}));
         dispatch(setRideState({key:'driverEligible', value: false}));
         dispatch(setRideState({key:'driverOnline', value: false}));
         dispatch(setRideState({key:'dropoffBusstopInput', value: null}));
         dispatch(setRideState({key:'pickupBusstopInput', value: null}));
         dispatch(setRideState({key:'ridersOffers', value: []}));
+        router.push(`/(home)`);
     }
 
     useEffect(() => {
@@ -57,13 +61,13 @@ function AcceptOrderSheet() {
                             </View>
 
                             <View style={[hFull, flexCol, justifyCenter, gap(12)]}>
-                                <Text style={[c(colors.black), fw700, fs14]}>{ridersOffers[currentRiderOfferIndex as number]?.}</Text>
+                                <Text style={[c(colors.black), fw700, fs14]}>King John</Text>
                                 <Text style={[c(Colors.light.darkGrey), fw400, fs12]}>{'5 min'} away</Text>
                             </View>
                         </View>
 
                         <TouchableOpacity>
-                            <Text style={[fw500, fs14, colorBlack]}>₦ {'0000.00'}</Text>
+                            <Text style={[fw500, fs14, colorBlack]}>₦ {ridersOffers[currentRiderOfferIndex as number]?.riderCounterOffer}</Text>
                         </TouchableOpacity>
 
                     </View>
@@ -74,14 +78,14 @@ function AcceptOrderSheet() {
                         {/* //!Pick up Block */}
                         <View style={[wFull, flex, gap(16), itemsCenter, justifyStart, borderB(0.7, Colors.light.border), pb(16)]}>
                             <Image style={[image.w(14), image.h(20)]} source={tripImgs.greenBgLocation} />
-                            <Text style={[fw500, fs14, colorBlack]}>{'Sangotedo Bus Stop'}</Text>
+                            <Text style={[fw500, fs14, colorBlack]}>{ridersOffers[currentRiderOfferIndex as number]?.pickupBusstopId} Busstop</Text>
                         </View>
                         {/* //!Pick up Block */}
 
                         {/* //!Drop off Block */}
                         <View style={[wFull, flex, gap(16), itemsCenter, justifyStart,]}>
                             <Image style={[image.w(14), image.h(20)]} source={tripImgs.redBgLocation} />
-                            <Text style={[fw500, fs14, colorBlack]}>{'Ojodu Berger Bus Stop'}</Text>
+                            <Text style={[fw500, fs14, colorBlack]}>{ridersOffers[currentRiderOfferIndex as number]?.dropoffBusstopId} Busstop</Text>
                         </View>
                         {/* //!Drop off Block */}
                     </View>
@@ -98,7 +102,7 @@ function AcceptOrderSheet() {
                         />
                         <CtaBtn
                             img={{ src: sharedImg.cancelImage, w: 20, h: 20 }}
-                            onPress={() => cancelOrder()}
+                            onPress={() => cancelOffer()}
                             text={{ name: 'Decline', color: Colors.light.darkGrey }}
                             bg={{ color: '#F9F7F8', borderColor: Colors.light.border }}
                             style={{ baseContainer: { ...w('48%') } }}
