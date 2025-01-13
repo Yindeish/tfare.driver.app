@@ -10,7 +10,9 @@ const initialState: IRideState = {
     driverOnline: false,
     driverEligible: false,
     ridersOffers:[],
-    currentRiderOfferIndex: null
+    currentRiderOfferIndex: null,
+    presetRoutes: [],
+    rideAcceptStage: "searching"
 }
 
 const RideSlice = createSlice({

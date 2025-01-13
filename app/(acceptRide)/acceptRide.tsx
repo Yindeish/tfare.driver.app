@@ -21,14 +21,18 @@ import { Alert, Dimensions, Image, Platform, ToastAndroid, TouchableOpacity, Vie
 import { Snackbar, Text, Tooltip } from "react-native-paper";
 import { CountdownCircleTimer } from 'react-native-countdown-circle-timer'
 import AcceptOrderSheet from "@/components/home/acceptOrderSheet";
+import { useAppSelector } from "@/state/hooks/useReduxToolkit";
+import { RootState } from "@/state/store";
+import { ERideAcceptStage } from "@/state/types/ride";
 
 function AcceptRide() {
-    const { showBottomSheet } = useBottomSheet()
+    const { showBottomSheet } = useBottomSheet();
+    const {driverOnline, rideAcceptStage} = useAppSelector((state: RootState) => state.ride)
 
-    const [showOnline, setShowOnline] = useState(true);//testing
-    const [showDropoff, setShowDropoff] = useState(false);//testing
+    // const [showOnline, setShowOnline] = useState(true);//testing
+    // const [showDropoff, setShowDropoff] = useState(false);//testing
     const [showNextBusstop, setShowNextBusstop] = useState(false);//testing
-    const [duration, setDuration] = useState(0.5)
+    const [duration, setDuration] = useState(1)
     const [countdownShown, setCountdownShown] = useState(true)
     const [riderArrived, setRiderArrived] = useState(false);
 
@@ -58,7 +62,7 @@ function AcceptRide() {
                     <View style={[zIndex(3)]}>
 
                         {/* //!Online Status Block */}
-                        {showOnline &&
+                        {driverOnline &&
                             <TouchableOpacity style={[w(152), h(50), bg('#27AE65'), rounded(50), flex, itemsCenter, relative,]}>
                                 <Text style={[fw700, fs14, colorWhite, neurialGrotesk, textCenter, { flexBasis: '65%' }]}>ONLINE</Text>
                                 <View style={[w(40), h(40), rounded(40), bg(colors.white), absolute, t(5), r(7), { shadowColor: colors.black, shadowRadius: 10 }]} />
@@ -66,7 +70,7 @@ function AcceptRide() {
                         {/* //!Online Status Block */}
 
                         {/* //!Drop off Block */}
-                        {showDropoff && <View style={[wFull, h(112), flexCol, pt(16), px(32), borderGrey(0.7), bg(colors.white), rounded(10), gap(10)]}>
+                        {rideAcceptStage === ERideAcceptStage.start_trip && <View style={[wFull, h(112), flexCol, pt(16), px(32), borderGrey(0.7), bg(colors.white), rounded(10), gap(10)]}>
                             {/* //!Dropoff lable Block */}
                             <View style={[wFull, flex, gap(16), itemsCenter, justifyStart, borderB(0.7, Colors.light.border), pb(16)]}>
                                 <Image style={[image.w(14), image.h(20)]} source={tripImgs.redBgLocation} />

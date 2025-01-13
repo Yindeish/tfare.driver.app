@@ -32,7 +32,9 @@ export function useSession() {
 }
 
 export function SessionProvider(props: React.PropsWithChildren) {
-  const [[isLoading, session], setSession] = useStorageState('userSignedIn');
+  // const [[isLoading, session], setSession] = useStorageState('userSignedIn');
+  const [[isLoading, session], setSession] = useStorageState('user');
+  const [[signedinTimeLoading, signedinTime], setSignedinTimeSession] = useStorageState('signedinTime');
   const { signIn: signInwithToken, signOut: signTokenOut, tokenSession } = useTokenSession();
   const { closeSnackbar, openSnackbar, snackbarVisible } = useSnackbar();
 
@@ -76,6 +78,9 @@ export function SessionProvider(props: React.PropsWithChildren) {
 
     returnedData.user && setSession(JSON.stringify(returnedData.user));
     returnedData.user && signInwithToken(returnedData.token);
+    const signedinTime = new Date();
+                
+    returnedData.user && setSignedinTimeSession(JSON.stringify(signedinTime));
 
     if (!returnedData.user || !returnedData.token) {
       notify();
@@ -100,8 +105,13 @@ export function SessionProvider(props: React.PropsWithChildren) {
     //   // signTokenOut(); just signout user
     // }
 
-    signTokenOut(); //testing
-    setSession(null); //testing
+    // For now, we want to singout synchronously
+      setSession(null);
+      // signTokenOut(); just signout user
+    // For now, we want to singout synchronously
+
+    // signTokenOut(); //testing
+    // setSession(null); //testing
   }
 
   return (

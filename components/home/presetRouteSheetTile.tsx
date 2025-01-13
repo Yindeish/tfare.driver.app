@@ -9,9 +9,11 @@ import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { Href, router } from "expo-router";
 import { useBottomSheet } from "@/contexts/useBottomSheetContext";
 import { IRoute } from "@/state/types/ride";
+import { useAppDispatch } from "@/state/hooks/useReduxToolkit";
+import { setRideState } from "@/state/slices/ride";
 
 function PresetRouteSheetTile({route}:{route: IRoute}) {
-    console.log({route})
+    const dispatch = useAppDispatch();
     const { hideBottomSheet } = useBottomSheet()
 
 
@@ -30,6 +32,7 @@ function PresetRouteSheetTile({route}:{route: IRoute}) {
 
                 <TouchableOpacity onPress={() => {
                     hideBottomSheet();
+                    dispatch(setRideState({key:'currentRoute', value: route}));
                     router.push('/(route)/routeDetails' as Href)
                 }} style={[bg(Colors.light.background), flex, itemsCenter, gap(10), p(16), rounded(1000)]}>
                     <Image style={[image.w(18), image.h(18),]} source={tripImgs.whiteBgTripWay} />

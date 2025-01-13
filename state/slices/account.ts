@@ -40,43 +40,43 @@ const saveNewAddress: IStateInputSaveNewAddress = {
 
 const initialState: IAccountState = {
     emergencyContacts: [
-        {
-            email: 'one@gmail.com',
-            name: 'one',
-            phoneNo: 8899879,
-            whatsAppNo: 9808023,
-        },
-        {
-            email: 'one@gmail.com',
-            name: 'one',
-            phoneNo: 8899879,
-            whatsAppNo: 9808023,
-        },
-        {
-            email: 'one@gmail.com',
-            name: 'one',
-            phoneNo: 8899879,
-            whatsAppNo: 9808023,
-        },
+        // {
+        //     email: 'one@gmail.com',
+        //     name: 'one',
+        //     phoneNo: 8899879,
+        //     whatsAppNo: 9808023,
+        // },
+        // {
+        //     email: 'one@gmail.com',
+        //     name: 'one',
+        //     phoneNo: 8899879,
+        //     whatsAppNo: 9808023,
+        // },
+        // {
+        //     email: 'one@gmail.com',
+        //     name: 'one',
+        //     phoneNo: 8899879,
+        //     whatsAppNo: 9808023,
+        // },
     ],
     loading: null,
     savedAddresses: [
-        {
-            name: 'badagry',
-            routeDesc: 'badagry desc',
-            routeDistance: '3km',
-            routeName: 'badagry rd',
-            saved: true,
-            type: 'pickupBusstop'
-        },
-        {
-            name: 'ojo',
-            routeDesc: 'ojo desc',
-            routeDistance: '3km',
-            routeName: 'ojo rd',
-            saved: true,
-            type: 'dropoffBusstop'
-        },
+        // {
+        //     name: 'badagry',
+        //     routeDesc: 'badagry desc',
+        //     routeDistance: '3km',
+        //     routeName: 'badagry rd',
+        //     saved: true,
+        //     type: 'pickupBusstop'
+        // },
+        // {
+        //     name: 'ojo',
+        //     routeDesc: 'ojo desc',
+        //     routeDistance: '3km',
+        //     routeName: 'ojo rd',
+        //     saved: true,
+        //     type: 'dropoffBusstop'
+        // },
     ],
     userAccount: null,
     profileCta: 'edit',

@@ -1,4 +1,4 @@
-import { Image, View, TouchableOpacity, ScrollView, Pressable, Platform } from 'react-native'
+import { Image, View, TouchableOpacity, ScrollView, Pressable, Platform, ViewStyle, TextStyle } from 'react-native'
 import { ActivityIndicator, Button, Snackbar, Text } from 'react-native-paper'
 import React, { useEffect } from 'react'
 import SafeScreen from '@/components/shared/safeScreen'
@@ -24,7 +24,7 @@ export default function Account() {
 
     return (
         <SafeScreen>
-            <ScrollView style={[wHFull, relative]}>
+            <ScrollView style={[wHFull as ViewStyle, relative]}>
                 <PaddedScreen>
                     <PageTitle
                         title='Account'
@@ -42,7 +42,7 @@ export default function Account() {
                                 </View>
                             </View>
 
-                            <Ionicons style={[mr(16)]} name="chevron-forward" size={20} color={Colors.light.darkGrey} />
+                            <Ionicons style={[mr(16)] as TextStyle[]} name="chevron-forward" size={20} color={Colors.light.darkGrey} />
                         </TouchableOpacity>
 
                         {/* Wallet Block */}

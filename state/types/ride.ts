@@ -1,3 +1,4 @@
+import { IUserAccount } from "./account";
 import { IDriverDetails } from "./driver";
 
 type TLoadingStatus = 'idle' | 'succeeded' | 'failed';
@@ -12,6 +13,16 @@ export type TCategoryOrigin = 'ajah' | 'lekki' | 'obalende' | 'cms';
 export type TCategoryDestination = 'lekki' | 'obalende' | 'cms' | 'oshodi';
 export type TRideDirection = 'forward' | 'backward';
 export type TRideStatus = 'requesting' | 'cancelled' | 'accepted' | 'declined' | 'started' | 'booked' | 'ended';
+export type TRideAcceptStage = 'searching' | 'accepting' | 'arrived-pickup' | 'start-trip' | 'pause-trip' | 'dropoff';
+
+export enum ERideAcceptStage {
+    searching = 'searching',
+    accepting = 'accepting',
+    arrived_pickup = 'arrived-pickup',
+    start_trip = 'start-trip',
+    pause_trip = 'pause-trip',
+    dropoff = 'dropoff',
+};
 
 
 export interface IBusStop {
@@ -113,7 +124,10 @@ export interface IRiderRideDetails {
     ridePlan: IPlan
     rideStatus: TRideStatus,
     riderCounterOffer: number,
-    currentRideId: string
+    currentRideId: string,
+    pickupBusstop?: IBusStop,
+    dropoffBusstop?: IBusStop,
+    rider?: IUserAccount,
 }
 
 export interface IRide {
@@ -137,7 +151,9 @@ export interface IRideState {
     driverOnline: boolean,
     driverEligible: boolean,
     ridersOffers: IRiderRideDetails[],
-    currentRiderOfferIndex: number| null
+    currentRiderOfferIndex: number| null,
+    presetRoutes: IRoute[],
+    rideAcceptStage: TRideAcceptStage
 }
 // ? Ride
 

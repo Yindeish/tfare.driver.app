@@ -41,9 +41,9 @@ function AcceptOrderSheet() {
         router.push(`/(home)`);
     }
 
-    useEffect(() => {
-        if(!currentRiderOfferIndex) hideBottomSheet();
-    }, [])
+    // useEffect(() => {
+    //     if(!currentRiderOfferIndex) hideBottomSheet();
+    // }, [])
 
     return (
         <PaddedScreen>
@@ -61,8 +61,9 @@ function AcceptOrderSheet() {
                             </View>
 
                             <View style={[hFull, flexCol, justifyCenter, gap(12)]}>
-                                <Text style={[c(colors.black), fw700, fs14]}>King John</Text>
-                                <Text style={[c(Colors.light.darkGrey), fw400, fs12]}>{'5 min'} away</Text>
+                                <Text style={[c(colors.black), fw700, fs14]}>{ridersOffers[currentRiderOfferIndex as number]?.rider?.name}</Text>
+                                {/* <Text style={[c(Colors.light.darkGrey), fw400, fs12]}>{'5 min'} away</Text> */}
+                                <Text style={[c(Colors.light.darkGrey), fw400, fs12]}>{'some mins'} away</Text>
                             </View>
                         </View>
 

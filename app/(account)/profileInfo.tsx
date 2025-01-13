@@ -1,4 +1,4 @@
-import { View, ImageSourcePropType, Image } from 'react-native'
+import { View, ImageSourcePropType, Image, ViewStyle } from 'react-native'
 import { Text, } from 'react-native-paper'
 import React, { useEffect, useState } from 'react'
 import SafeScreen from '@/components/shared/safeScreen'
@@ -57,7 +57,7 @@ export default function profileInfo() {
 
     return (
         <SafeScreen>
-            <View style={[wHFull,]}>
+            <View style={[wHFull as ViewStyle,]}>
                 <PaddedScreen>
 
                     {/* Page Header */}

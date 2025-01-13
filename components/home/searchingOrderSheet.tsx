@@ -85,6 +85,7 @@ const SearchingOrder = () => {
     (state: RootState) => state.ride
   );
 
+
   // setTimeout(() => {
   //     // hideBottomSheet();
   //     // router.push(`/`)
@@ -101,11 +102,10 @@ const SearchingOrder = () => {
   const getRidersOffers = async () => {
     setFetchState((prev) => ({ ...prev, loading: true, msg: "", code: null }));
     await FetchService.getWithBearerToken({
-      url: `user/driver/me/ride/requests?pickupBusstopId=${pickupBusstopInput?._id}&dropoffBusstopId=${dropoffBusstopInput?._id}`,
+      url: `/user/driver/me/ride/requests?pickupBusstopId=${pickupBusstopInput?._id}&dropoffBusstopId=${dropoffBusstopInput?._id}`,
       token: session as string,
     })
       .then(async (res) => {
-        console.log({ res });
 
         const data = res?.body ? await res.body : res;
         const code = data?.code;
@@ -128,8 +128,8 @@ const SearchingOrder = () => {
   };
 
   useEffect(() => {
-    ridersOffers.length == 0 && getRidersOffers();
-  }, [ridersOffers]);
+    getRidersOffers();
+  }, []);
 
   return (
     <PaddedScreen>

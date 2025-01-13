@@ -1,4 +1,4 @@
-import { Image, View, TouchableOpacity, ScrollView, Pressable, Platform, TextInput, Dimensions, FlatList, TextStyle } from 'react-native'
+import { Image, View, TouchableOpacity, ScrollView, Pressable, Platform, TextInput, Dimensions, FlatList, TextStyle, ActivityIndicator } from 'react-native'
 import { FontAwesome6 } from '@expo/vector-icons';
 import { Text, } from 'react-native-paper'
 import React, { useEffect, useState } from 'react'
@@ -17,20 +17,22 @@ import { RootState } from '@/state/store';
 import { useStorageState } from '@/hooks/useStorageState';
 import Spinner from '../shared/spinner';
 import { setRideState } from '@/state/slices/ride';
+import { ErrorMessage } from 'formik';
+import ErrorMsg from '../shared/error_msg';
 
 
 
 function PresetRouteSheet() {
     const dispatch = useAppDispatch();
     const { hideBottomSheet } = useBottomSheet();
-    const {dropoffBusstopInput, pickupBusstopInput, } = useAppSelector((state: RootState) => state.ride);
+    const {dropoffBusstopInput, pickupBusstopInput, currentRoute, presetRoutes: allPresetRoutes} = useAppSelector((state: RootState) => state.ride);
     const [[isLoading, session], setSession] = useStorageState("token");
 
     const [fetchState, setFetchState] = useState({
         loading: false,
         msg: "",
         code: null,
-        presetRoutes: []
+        presetRoutes: allPresetRoutes
       });
       const { code, msg, loading, presetRoutes } = fetchState;
     
@@ -50,7 +52,7 @@ function PresetRouteSheet() {
             setFetchState((prev) => ({ ...prev, loading: false, msg, code }));
         
             if (code && code == 200 && presetRoutes) {
-              dispatch(setRideState({key:'currentRoute', value: presetRoutes}))
+              dispatch(setRideState({key:'presetRoutes', value: presetRoutes}))
               setFetchState((prev) => ({
                 ...prev,
                 presetRoutes
@@ -58,13 +60,18 @@ function PresetRouteSheet() {
             }
         })
         .catch(err => console.log({err}))
+        .finally(() => {
+            setFetchState((prev) => ({ ...prev, loading: false }));
+        })
         ;
         
       };
 
       useEffect(() => {
-        presetRoutes.length == 0 && getPresetRoutes();
-      }, [presetRoutes])
+        if(allPresetRoutes.length === 0) {
+                getPresetRoutes();
+        }
+      }, [(new Date()).getSeconds(), allPresetRoutes.length])
 
     return (
         <View style={[flexCol, gap(32), p(20)]}>
@@ -89,18 +96,19 @@ function PresetRouteSheet() {
             <View style={[wFull, flex, itemsCenter, justifyBetween]}>
                 <Text style={[fw700, fs14, neurialGrotesk]}>Preset Routes</Text>
 
-                <TouchableOpacity>
+                <TouchableOpacity onPress={getPresetRoutes}>
                     <Image style={[image.w(18), image.h(16)]} source={tripImgs.settings} />
                 </TouchableOpacity>
             </View>
 
-            <View style={[wFull, flexCol, gap(24)]}>
+
+           {!loading?( <View style={[wFull, flexCol, gap(24)]}>
                 {presetRoutes.map((route, index) => (
                     <PresetRouteSheetTile route={route} key={index} />
                 ))}
-            </View>
+            </View>):<ActivityIndicator />}
 
-            <TouchableOpacity onPress={() => router.push('/(route)/customizeRoute')}>
+            <TouchableOpacity onPress={() => currentRoute && router.push('/(route)/customizeRoute')}>
                 <View style={[w('60%'), h(50), rounded(10), flex, itemsCenter, justifyCenter, gap(10), bg(colors.white), borderGrey(0.7), { shadowColor: '#000000', shadowOpacity: 0.05, shadowRadius: 10 }]}>
                     <Image style={[image.w(20), image.h(20),]} source={sharedImg.blackBgPlusIcon} />
 
@@ -108,7 +116,10 @@ function PresetRouteSheet() {
                 </View>
             </TouchableOpacity>
 
-            <Spinner visible={loading} />
+            {((Number(code )!== 201 || Number(code )!== 200) && code) &&<ErrorMsg msg={msg} />}
+
+            {/* <Spinner visible={loading} /> */}
+            
         </View>
     )
 }

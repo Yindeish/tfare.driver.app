@@ -17,7 +17,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/splash/adaptive-icon.png",
+        "foregroundImage": "./assets/images/splash/splash.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.yindeish.tfare.driver"

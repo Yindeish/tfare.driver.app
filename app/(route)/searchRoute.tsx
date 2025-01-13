@@ -1,7 +1,7 @@
-import { Image, View, TouchableOpacity, ScrollView, Pressable, Platform, TextInput, Dimensions, FlatList } from 'react-native'
+import { Image, View, TouchableOpacity, ScrollView, Pressable, Platform, TextInput, Dimensions, FlatList, TextStyle } from 'react-native'
 import { FontAwesome6 } from '@expo/vector-icons';
 import { ActivityIndicator, Button, Snackbar, Text, } from 'react-native-paper'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import SafeScreen from '@/components/shared/safeScreen'
 import { image, imgAbsolute, wHFull } from '@/utils/imageStyles'
 import { absolute, bg, borderGrey, flex, flexCenter, flexCol, gap, h, itemsCenter, justifyBetween, justifyCenter, maxh, mb, ml, mr, mt, p, pb, pl, px, py, relative, rounded, w, wFull } from '@/utils/styles'
@@ -13,11 +13,73 @@ import PresetRouteSheetTile from '@/components/home/presetRouteSheetTile';
 import sharedImg from '@/constants/images/shared';
 import PageTitle from '@/components/shared/pageTitle';
 import { router } from 'expo-router';
+import FetchService from '@/services/api/fetch.service';
+import { useAppDispatch, useAppSelector } from '@/state/hooks/useReduxToolkit';
+import { RootState } from '@/state/store';
+import { useStorageState } from '@/hooks/useStorageState';
+import { setRideState } from '@/state/slices/ride';
+import { IRoute } from '@/state/types/ride';
 
 const { height } = Dimensions.get('window')
 
 function SearchRoute() {
+    const {presetRoutes: allPresetRoutes} = useAppSelector((state: RootState) => state.ride);
+    const dispatch = useAppDispatch();
+    const [[_, session], __] = useStorageState('token');
 
+
+    const [fetchState, setFetchState] = useState<{
+        loading: boolean,
+        msg: string,
+        code: number | null,
+        presetRoutes: IRoute[]
+      }>({
+        loading: false,
+        msg: "",
+        code: null,
+        presetRoutes: allPresetRoutes
+      });
+      const { code, msg, loading, presetRoutes } = fetchState;
+      const [searchText, setSearchText] = useState('')
+    
+      const getPresetRoutes = async () => {
+        setFetchState((prev) => ({ ...prev, loading: true, msg: '', code: null }));
+        await FetchService.getWithBearerToken({
+          url: "/user/driver/me/routes/preset-routes",
+          token: session as string,
+        })
+        .then(async res => {
+            
+            const data = res?.body? await res.body:res;
+            const code = data?.code;
+            const msg = data?.msg;
+            const presetRoutes = data?.presetRoutes;
+        
+            setFetchState((prev) => ({ ...prev, loading: false, msg, code }));
+        
+            if (code && code == 200 && presetRoutes) {
+              dispatch(setRideState({key:'presetRoutes', value: presetRoutes}))
+              setFetchState((prev) => ({
+                ...prev,
+                presetRoutes
+              }));
+            }
+        })
+        .catch(err => console.log({err}))
+        ;
+        
+      };
+
+      const searchRoute = () => {
+        const filterList = (presetRoutes as IRoute[]).filter(route => route?.pickupBusstop.name?.includes(searchText) || route?.dropoffBusstop.name?.includes(searchText));
+
+        if(searchText == '') setFetchState((prev) => ({...prev, presetRoutes: filterList}))
+        else setFetchState((prev) => ({...prev, presetRoutes: filterList}));
+      }
+
+    //   useEffect(() => {
+    //     presetRoutes.length == 0 && getPresetRoutes();
+    //   }, [presetRoutes])
 
     return (
         <SafeScreen>
@@ -39,12 +101,14 @@ function SearchRoute() {
                         <TextInput
                             style={[
                                 wHFull, pl(43), borderGrey(0.7), rounded(1000), bg('#F9F7F8')
-                            ]}
+                            ] as TextStyle[]}
                             placeholder='Search Bus stop'
                             placeholderTextColor={Colors.light.darkGrey}
                             value={''}
-                            onChangeText={() => { }}
-
+                            onChangeText={(text) => { 
+                                setSearchText(text);
+                                searchRoute();
+                            }}
                         />
                     </View>
                     {/* //!Search Block */}
@@ -61,8 +125,8 @@ function SearchRoute() {
 
                     {/* //!Routes */}
                     <View style={[wFull, flexCol, gap(24)]}>
-                        {Array.from({ length: 8 }).map((_, index) => (
-                            <PresetRouteSheetTile key={index} />
+                        {presetRoutes.map((route, index) => (
+                            <PresetRouteSheetTile route={route} key={index} />
                         ))}
                     </View>
                     {/* //!Routes */}
