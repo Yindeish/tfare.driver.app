@@ -12,6 +12,7 @@ import { useSession } from "@/contexts/userSignedInContext";
 import { useAppDispatch, useAppSelector } from "@/state/hooks/useReduxToolkit";
 import { setRideState } from "@/state/slices/ride";
 import { RootState } from "@/state/store";
+import { ERideAcceptStage } from "@/state/types/ride";
 import { c, colorBlack, colordarkGrey, fs, fs10, fs12, fs14, fs18, fw400, fw500, fw700, neurialGrotesk } from "@/utils/fontStyles";
 import { image, imgAbsolute, mXAuto, wHFull } from "@/utils/imageStyles";
 import { absolute, b, bg, borderB, borderGrey, borderT, bottom0, flex, flexCol, gap, h, hFull, itemsCenter, justifyBetween, justifyCenter, justifyStart, left0, mb, mt, mTAuto, p, pb, pt, px, py, relative, rounded, t, top0, w, wFull, zIndex } from "@/utils/styles";
@@ -26,7 +27,7 @@ const index = () => {
     const { } = useSession()
     const { showBottomSheet } = useBottomSheet()
     const { closeSnackbar, snackbarVisible, openSnackbar } = useSnackbar();
-    const {currentRoute, pickupBusstopInput,dropoffBusstopInput, driverOnline,driverEligible} = useAppSelector((state: RootState) => state.ride);
+    const {currentRoute, pickupBusstopInput,dropoffBusstopInput, driverOnline,driverEligible, rideAcceptStage} = useAppSelector((state: RootState) => state.ride);
     const dispatch = useAppDispatch()
 
     const [options, updateOptions] = useState(
@@ -42,6 +43,9 @@ const index = () => {
 
         if (eligible) {
             dispatch(setRideState({key:'driverOnline', value: true}))
+            router.push('/(acceptRide)/acceptRide' as Href)
+        }
+        if(rideAcceptStage === ERideAcceptStage.searching) {
             router.push('/(acceptRide)/acceptRide' as Href)
         }
         else {

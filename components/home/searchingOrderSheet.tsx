@@ -128,8 +128,8 @@ const SearchingOrder = () => {
   };
 
   useEffect(() => {
-    getRidersOffers();
-  }, []);
+    if(ridersOffers.length === 0) getRidersOffers();
+  }, [(new Date()).getSeconds(),ridersOffers.length]);
 
   return (
     <PaddedScreen>

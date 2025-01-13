@@ -21,27 +21,29 @@ import { Alert, Dimensions, Image, Platform, ToastAndroid, TouchableOpacity, Vie
 import { Snackbar, Text, Tooltip } from "react-native-paper";
 import { CountdownCircleTimer } from 'react-native-countdown-circle-timer'
 import AcceptOrderSheet from "@/components/home/acceptOrderSheet";
-import { useAppSelector } from "@/state/hooks/useReduxToolkit";
+import { useAppDispatch, useAppSelector } from "@/state/hooks/useReduxToolkit";
 import { RootState } from "@/state/store";
 import { ERideAcceptStage } from "@/state/types/ride";
+import { setRideState } from "@/state/slices/ride";
 
 function AcceptRide() {
     const { showBottomSheet } = useBottomSheet();
-    const {driverOnline, rideAcceptStage} = useAppSelector((state: RootState) => state.ride)
+    const dispatch = useAppDispatch();
+    const {driverOnline, rideAcceptStage,currentRiderOfferIndex} = useAppSelector((state: RootState) => state.ride)
 
     // const [showOnline, setShowOnline] = useState(true);//testing
     // const [showDropoff, setShowDropoff] = useState(false);//testing
     const [showNextBusstop, setShowNextBusstop] = useState(false);//testing
-    const [duration, setDuration] = useState(1)
+    const [duration, setDuration] = useState(60);
     const [countdownShown, setCountdownShown] = useState(true)
     const [riderArrived, setRiderArrived] = useState(false);
 
     useEffect(() => {
-        showBottomSheet([300], <SearchingOrder />)
+        rideAcceptStage === ERideAcceptStage.searching && showBottomSheet([300], <SearchingOrder />)
         // setTimeout(() => {
         //     showBottomSheet([400], <AcceptOrderSheet />)
         // }, 3000)
-    }, [])
+    }, [rideAcceptStage])
 
 
     return (
@@ -108,17 +110,24 @@ function AcceptRide() {
                 {/* //!Header */}
 
                 {/* //!Time Down Block */}
-                {countdownShown && <View style={[absolute, t('45%'), wFull, h(144), flex, itemsCenter, justifyCenter, bg(colors.transparent)]}>
+                {rideAcceptStage === ERideAcceptStage.accepting && <View style={[absolute, t('45%'), wFull, h(144), flex, itemsCenter, justifyCenter, bg(colors.transparent)]}>
                     {/* <View style={[w(144), h(144), bg(colors.white), rounded(1000)]}> */}
-                    <CountdownCircleTimer
+                   {countdownShown && <CountdownCircleTimer
                         isPlaying
-                        duration={duration * 60}
+                        duration={duration}
                         strokeWidth={5}
                         colors={['#27AE65', '#27AE65', '#27AE65', '#27AE65']}
                         colorsTime={[7, 5, 2, 0]}
                         size={144}
                         trailColor={colors.transparent}
-                        onComplete={() => setCountdownShown(false)}
+                        onComplete={() => {
+                            dispatch(setRideState({key:'currentRiderOfferIndex', value: Number(currentRiderOfferIndex)+1}));
+                            setDuration(60);
+
+                            setTimeout(() => {
+                                setCountdownShown(true);
+                            }, 2000)
+                        }}
                     >
                         {({ remainingTime, }) => (
                             <View style={[flexCol, gap(15), itemsCenter, justifyCenter, bg(colors.white), w(139), h(139), rounded(139)]}>
@@ -129,7 +138,7 @@ function AcceptRide() {
                                 <Text style={[fs(14), fw400, colordarkGrey, neurialGrotesk]}>seconds</Text>
                             </View>
                         )}
-                    </CountdownCircleTimer>
+                    </CountdownCircleTimer>}
                     {/* </View> */}
                 </View>}
                 {/* //!Time Down Block */}

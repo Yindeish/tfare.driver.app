@@ -19,6 +19,7 @@ import { useAppDispatch, useAppSelector } from "@/state/hooks/useReduxToolkit";
 import { setRideState } from "@/state/slices/ride";
 import { RootState } from "@/state/store";
 import { useEffect } from "react";
+import { ERideAcceptStage } from "@/state/types/ride";
 
 
 function AcceptOrderSheet() {
@@ -40,6 +41,10 @@ function AcceptOrderSheet() {
         dispatch(setRideState({key:'ridersOffers', value: []}));
         router.push(`/(home)`);
     }
+
+    useEffect(() => {
+        dispatch(setRideState({key:'rideAcceptStage', value: ERideAcceptStage.accepting}));
+    }, [])
 
     // useEffect(() => {
     //     if(!currentRiderOfferIndex) hideBottomSheet();
