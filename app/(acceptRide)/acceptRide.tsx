@@ -25,6 +25,10 @@ import { useAppDispatch, useAppSelector } from "@/state/hooks/useReduxToolkit";
 import { RootState } from "@/state/store";
 import { ERideAcceptStage } from "@/state/types/ride";
 import { setRideState } from "@/state/slices/ride";
+import ArrivedPickupSheet from "@/components/home/arrivedPickupSheet";
+import TicketOtpSheet from "@/components/home/ticketOtpSheet";
+import OnTripSheet from "@/components/home/onTripSheet";
+import DropoffSheet from "@/components/home/dropoffTripSheet";
 
 function AcceptRide() {
     const { showBottomSheet } = useBottomSheet();
@@ -40,6 +44,21 @@ function AcceptRide() {
 
     useEffect(() => {
         rideAcceptStage === ERideAcceptStage.searching && showBottomSheet([300], <SearchingOrder />)
+        if(rideAcceptStage === ERideAcceptStage.accepting) {
+            showBottomSheet([400], <AcceptOrderSheet />)
+        }
+        if(rideAcceptStage === ERideAcceptStage.arrived_pickup) {
+            showBottomSheet([300], <ArrivedPickupSheet />);
+        }
+        if(rideAcceptStage === ERideAcceptStage.start_trip) {
+            showBottomSheet([500, 600], <TicketOtpSheet />)
+        }
+        if(rideAcceptStage === ERideAcceptStage.pause_trip) {
+            showBottomSheet([300, 550], <OnTripSheet />);
+        }
+        if(rideAcceptStage === ERideAcceptStage.dropoff) {
+            showBottomSheet([450], <DropoffSheet />);
+        }
         // setTimeout(() => {
         //     showBottomSheet([400], <AcceptOrderSheet />)
         // }, 3000)

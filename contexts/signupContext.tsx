@@ -63,6 +63,7 @@ export function SignupProvider(props: React.PropsWithChildren) {
         onChange('msg', returnedData.msg);
         onChange('signedUpUser', returnedData.signedUpUser as IUserAccount);
 
+
         if (returnedData.code === 201) router.replace(`/(auth)/signin`);
     }
 

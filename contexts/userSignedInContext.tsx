@@ -67,7 +67,7 @@ export function SessionProvider(props: React.PropsWithChildren) {
     if (Platform.OS == 'android') ToastAndroid.show(msg, ToastAndroid.SHORT)
   }
 
-  const signIn = async (data: IRequestData) => {
+  const signIn = async (data: IRequestData & {role: string}) => {
     onChange('loadingState', 'signingin' as TSigninLoadingState);
 
     const returnedData: ISigninResponseData = await FetchService.post({ data, url: '/auth/signin' })

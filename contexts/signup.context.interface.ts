@@ -8,6 +8,9 @@ interface ISignUpRequestData extends IRequestData {
     profileName: string,
     phoneNumber: string,
     confirmedPin: string,
+    role: string,
+    fullName: string,
+    picture: string
 }
 
 interface ISetSecurityQuestionRequestData extends Pick<IRequestData, 'email'> {

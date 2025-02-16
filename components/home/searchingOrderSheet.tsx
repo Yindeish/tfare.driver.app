@@ -76,12 +76,15 @@ import { RootState } from "@/state/store";
 import { setRideState } from "@/state/slices/ride";
 import ScaleUpDown from "../shared/scale_animator";
 import AcceptOrderSheet from "./acceptOrderSheet";
+import { ERideAcceptStage } from "@/state/types/ride";
+import tw from "@/constants/tw";
+import ErrorMsg from "../shared/error_msg";
 
 const SearchingOrder = () => {
   const { showBottomSheet, hideBottomSheet } = useBottomSheet();
-  const [[isLoading, session], setSession] = useStorageState("token");
+  const {token} = useAppSelector((state: RootState) => state.user);
   const dispatch = useAppDispatch();
-  const { pickupBusstopInput, dropoffBusstopInput } = useAppSelector(
+  const { pickupBusstopInput, dropoffBusstopInput, selectedRoute } = useAppSelector(
     (state: RootState) => state.ride
   );
 
@@ -102,19 +105,19 @@ const SearchingOrder = () => {
   const getRidersOffers = async () => {
     setFetchState((prev) => ({ ...prev, loading: true, msg: "", code: null }));
     await FetchService.getWithBearerToken({
-      url: `/user/driver/me/ride/requests?pickupBusstopId=${pickupBusstopInput?._id}&dropoffBusstopId=${dropoffBusstopInput?._id}`,
-      token: session as string,
+      url: `/user/driver/me/ride/requests/${selectedRoute?._id}`,
+      token: token as string,
     })
       .then(async (res) => {
 
         const data = res?.body ? await res.body : res;
         const code = data?.code;
         const msg = data?.msg;
-        const ridersOffers = data?.ridersOffers;
+        const ridersOffers = data?.todayRidersRides;
 
         setFetchState((prev) => ({ ...prev, loading: false, msg, code }));
 
-        if (code && code == 200 && ridersOffers) {
+        if ((code && code == 200) && (ridersOffers && Number(ridersOffers?.length) > 0)) {
           dispatch(setRideState({ key: "ridersOffers", value: ridersOffers }));
           setFetchState((prev) => ({
             ...prev,
@@ -124,7 +127,11 @@ const SearchingOrder = () => {
           showBottomSheet([400], <AcceptOrderSheet />)
         }
       })
-      .catch((err) => console.log({ err }));
+      .catch((err) => {
+        console.log({ err });
+
+        setTimeout(() => router.back(), 1000);
+    });
   };
 
   useEffect(() => {
@@ -157,6 +164,10 @@ const SearchingOrder = () => {
             source={sharedImg.searchingOrderImage}
           />
         </ScaleUpDown>
+
+        <View style={tw `w-full flex flex-row justify-center`}>
+            {code !== 200 && <ErrorMsg msg={msg} />}
+        </View>
       </View>
     </PaddedScreen>
   );

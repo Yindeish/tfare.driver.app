@@ -6,13 +6,17 @@ import { IBusStop, ILoading, IRide, IRideState, IStateInput, ITicket, TActiveTab
 const initialState: IRideState = {
     dropoffBusstopInput: null,
     pickupBusstopInput: null,
-    currentRoute: null,
     driverOnline: false,
     driverEligible: false,
     ridersOffers:[],
     currentRiderOfferIndex: null,
     presetRoutes: [],
-    rideAcceptStage: "searching"
+    rideAcceptStage: "searching",
+    ridesAccepted: [],
+    selectedRoute: null,
+    currentRequest: null,
+    currentRide: null,
+    rides: []
 }
 
 const RideSlice = createSlice({

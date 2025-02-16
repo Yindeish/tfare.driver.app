@@ -14,6 +14,7 @@ export type TCategoryDestination = 'lekki' | 'obalende' | 'cms' | 'oshodi';
 export type TRideDirection = 'forward' | 'backward';
 export type TRideStatus = 'requesting' | 'cancelled' | 'accepted' | 'declined' | 'started' | 'booked' | 'ended';
 export type TRideAcceptStage = 'searching' | 'accepting' | 'arrived-pickup' | 'start-trip' | 'pause-trip' | 'dropoff';
+export type TAllowedPaymentOptions = "cash" | "online" | "wallet" | "point";
 
 export enum ERideAcceptStage {
     searching = 'searching',
@@ -24,18 +25,18 @@ export enum ERideAcceptStage {
     dropoff = 'dropoff',
 };
 
+interface ICity {
+    _id: string;
+    name: string;
+    stateName: string;
+  }
+
 
 export interface IBusStop {
     _id?: string,
-    name: string,
-    order?: {
-        forward: { number: number },
-        backward: { number: number }
-    },
-    category?: {
-        origin: TCategoryOrigin,
-        destination: TCategoryDestination,
-    }
+    name: string;
+    city: ICity;
+    order: number;
 }
 
 export interface ISavedBusStop {
@@ -45,17 +46,20 @@ export interface ISavedBusStop {
 }
 
 export interface IRoute {
-    // _id: string,
-    // pickupBusstopId: string,
-    // dropoffBusstopId: string,
-    // rideDirection: 'forward' | 'backward',
-    // inTripDropoffsIds: string[],
-    // inTripDropoffs?: IBusStop[]
-    _id: string,
-    pickupBusstop: IBusStop,
-    dropoffBusstop: IBusStop,
-    rideDirection: 'forward' | 'backward',
-    inTripDropoffs: IBusStop[]
+    _id: string;
+  pickupBusstop: IBusStop;
+  dropoffBusstop: IBusStop;
+  inTripDirection: "forward" | "backward";
+  city: ICity;
+  inTripDropoffs: {
+    name: string;
+    city: ICity;
+    order: number;
+    plan: IPlan;
+  }[];
+  editable: boolean;
+  active: boolean;
+  allowedPaymentOptions: TAllowedPaymentOptions[];
 }
 
 export interface IRecentBusStop {
@@ -110,8 +114,8 @@ export interface ICurrentRide {
     driverId: string,
     availableSeats: number,
     vehicleName: string,
-    inRideDropoffsIds: string[],
-    ridersRidesIds: string[],
+    inRideDropoffs: IBusStop[],
+    ridersRides: IRiderRideDetails[],
 }
 
 export interface IRiderRideDetails {
@@ -147,13 +151,17 @@ export interface IRide {
 export interface IRideState {
     pickupBusstopInput: IBusStop | null,
     dropoffBusstopInput: IBusStop | null,
-    currentRoute: IRoute | null,
     driverOnline: boolean,
     driverEligible: boolean,
     ridersOffers: IRiderRideDetails[],
     currentRiderOfferIndex: number| null,
     presetRoutes: IRoute[],
-    rideAcceptStage: TRideAcceptStage
+    rideAcceptStage: TRideAcceptStage,
+    ridesAccepted: IRiderRideDetails[],
+    selectedRoute: IRoute | null,
+    currentRequest: IRiderRideDetails | null,
+    currentRide: ICurrentRide | null,
+    rides: IRiderRideDetails[]
 }
 // ? Ride
 

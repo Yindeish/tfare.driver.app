@@ -25,13 +25,13 @@ function FileUploadTile({ layout, label, placeholder, styles }: {
 
     return (
         <View style={[stack ? flexCol : flex, stack ? itemsStart : itemsCenter, stack ? gap(8) : gap(13), flat ? justifyStart : justifyCenter, styles?.container ? styles?.container : {}]}>
-            {stack && <Text style={[fw500, fs14, c(colors.black), styles?.label ? styles?.label : {}, placeholder.imgNotClear ? pb(20) : {}]}>{label}</Text>}
+            {stack && <Text style={[fw500, fs14, c(colors.black), styles?.label ? styles?.label : {}, placeholder.imgNotClear ? pb(20) : {}] as TextStyle[]}>{label}</Text>}
 
             <View style={[stack ? wFull : w('50%'), placeholder.imgNotClear ? h(100) : h(88), rounded(15), flexCol, itemsCenter, justifyCenter, gap(10), stack ? border(1.5, Colors.light.border) : {}, stack ? { borderStyle: 'dashed' } : {}]}>
 
                 {placeholder.imgNotClear && (<Text style={[c('#CF0707'), fw500, fs14]}>Picture isn’t clear enough,Try again!</Text>)}
 
-                {placeholder.success ? (
+                {!placeholder.success ? (
                     <TouchableOpacity onPress={() => placeholder.uploadHelper()} style={[stack ? w('45%') : wFull, h('45%'), rounded(1000), flex, gap(9.25), itemsCenter, justifyCenter, gap(10), border(0.65, placeholder.hasError ? '#CF0707' : Colors.light.border),]}>
 
                         <Image style={[image.w(18.5), image.h(18.5)]} source={sharedImg.plusIcon} />

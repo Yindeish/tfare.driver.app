@@ -4,10 +4,48 @@ import accountImgs from "@/constants/images/account";
 import { homeImgs } from "@/constants/images/home";
 import sharedImg from "@/constants/images/shared";
 import tripImgs from "@/constants/images/trip";
-import { c, colorBlack, colordarkGrey, fs12, fs14, fw400, fw500, fw700, neurialGrotesk } from "@/utils/fontStyles";
-import { bg, borderB, borderGrey, flex, flexCol, gap, h, hFull, itemsCenter, justifyBetween, justifyCenter, justifyStart, mb, mt, pb, pt, px, py, rounded, w, wFull } from "@/utils/styles";
-import { View, StyleSheet, Image, TouchableOpacity } from "react-native";
-import { Text } from "react-native-paper"
+import {
+  c,
+  colorBlack,
+  colordarkGrey,
+  fs12,
+  fs14,
+  fw400,
+  fw500,
+  fw700,
+  neurialGrotesk,
+} from "@/utils/fontStyles";
+import {
+  bg,
+  borderB,
+  borderGrey,
+  flex,
+  flexCol,
+  gap,
+  h,
+  hFull,
+  itemsCenter,
+  justifyBetween,
+  justifyCenter,
+  justifyStart,
+  mb,
+  mt,
+  pb,
+  pt,
+  px,
+  py,
+  rounded,
+  w,
+  wFull,
+} from "@/utils/styles";
+import {
+  View,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  ViewStyle,
+} from "react-native";
+import { Text } from "react-native-paper";
 import PaddedScreen from "../shared/paddedScreen";
 import { image, mXAuto } from "@/utils/imageStyles";
 import CtaBtn from "../shared/ctaBtn";
@@ -15,100 +53,291 @@ import { useBottomSheet } from "@/contexts/useBottomSheetContext";
 import { OtpInput } from "react-native-otp-entry";
 import { router } from "expo-router";
 import OnTripSheet from "./onTripSheet";
+import { useAppDispatch, useAppSelector } from "@/state/hooks/useReduxToolkit";
+import { RootState } from "@/state/store";
+import * as Linking from "expo-linking";
+import tw from "@/constants/tw";
+import { useState } from "react";
+import { useFormik } from "formik";
+import { number, ObjectSchema, string } from "yup";
+import { Ionicons } from "@expo/vector-icons";
+import { setRideState } from "@/state/slices/ride";
+import { ERideAcceptStage, IRiderRideDetails } from "@/state/types/ride";
+import ArrivedPickupSheet from "./arrivedPickupSheet";
+import FetchService from "@/services/api/fetch.service";
 
 function TicketOtpSheet() {
-    const { hideBottomSheet, showBottomSheet } = useBottomSheet()
+  const { hideBottomSheet, showBottomSheet } = useBottomSheet();
+  const dispatch = useAppDispatch();
+  const { currentRequest, currentRide, ridesAccepted } = useAppSelector(
+    (state: RootState) => state.ride
+  );
+  const { token } = useAppSelector((state: RootState) => state.user);
 
-    const startTrip = () => {
-        showBottomSheet([300, 550], <OnTripSheet />)
-    }
+  console.log({currentRide})
 
-    const cancelTrip = () => {
-        hideBottomSheet()
-        router.push('/(home)/')
-    }
+  const [fetchState, setFetchState] = useState({
+    loading: false,
+    msg: "",
+    code: null,
+  });
+  const { code, msg, loading } = fetchState;
 
-    return (
-        <PaddedScreen>
-            <View style={[wFull, flexCol, bg(colors.white), h(205), gap(32), mt(40), mb(20)]}>
-                {/* //!Rider Details Block */}
-                <View style={[wFull, flex, justifyBetween, itemsCenter, { height: 61, }]}>
-                    <View style={[flex, justifyBetween, { gap: 14 }]}>
-                        <View>
-                            <Image
-                                style={[{ width: 60, height: 60, objectFit: 'cover' }]}
-                                source={homeImgs.userProfileImg}
-                            />
-                        </View>
+  const openCallerApp = (phoneNumber: string) => {
+    const url = `tel:${phoneNumber}`;
+    Linking.openURL(url).catch((err) => {
+      console.error("Failed to open dialer:", err);
+    });
+  };
 
-                        <View style={[hFull, flexCol, justifyCenter, gap(12)]}>
-                            <Text style={[c(colors.black), fw700, fs14]}>King John</Text>
-                            <Text style={[c(Colors.light.darkGrey), fw400, fs12]}>Arrived location</Text>
-                        </View>
-                    </View>
+  const openWhatsApp = (phoneNumber: string) => {
+    const url = `whatsapp://send?phone=${phoneNumber}`;
+    Linking.openURL(url).catch((err) => {
+      console.error("Failed to open WhatsApp:", err);
+    });
+  };
 
-                    <View>
-                        <Text style={[fw500, fs14, colorBlack]}>₦ {'0000.00'}</Text>
-                    </View>
+  const startTrip = async (otp: string) => {
 
-                </View>
-                {/* //!Rider Details Block */}
+    setFetchState((prev) => ({
+      ...prev,
+      loading: true,
+      msg: "",
+      code: null,
+    }));
+    await FetchService.postWithBearerToken({
+      url: `/user/driver/me/ride/${currentRide?._id}/start-ride`,
+      data: {
+        riderRideId: currentRequest?._id,
+        ticketOtp: otp,
+      },
+      token: token as string,
+    })
+      .then(async (res) => {
+        const data = res?.body ? await res.body : res;
+        const code = data?.code;
+        const msg = data?.msg;
+        const riderRide: IRiderRideDetails | null = data?.riderRide;
+        const currentRide = data?.currentRide;
+        console.log({ currentRide, riderRide });
 
-                {/* //!Chat-Call CTAs */}
-                <View style={[flex, itemsCenter, gap(20), mXAuto]}>
-                    <TouchableOpacity onPress={() => { }} style={[flex, rounded(100), gap(10), py(13), px(26), itemsCenter, bg('#F9F7F8'), { borderColor: Colors.light.border, borderWidth: 0.7 }]}>
-                        <Image source={sharedImg.chatImage} style={[image.w(18), image.h(18),]} />
+        setFetchState((prev) => ({ ...prev, loading: false, }));
 
-                        <Text style={[neurialGrotesk, fs12, fw500, colorBlack]}>Chat</Text>
-                    </TouchableOpacity>
+        if (code && code == 200 && riderRide && currentRide) {
+          const rideSaved = ridesAccepted.find(
+            (ride) => ride._id == riderRide?._id
+          );
+          if (!rideSaved) {
+            dispatch(
+              setRideState({
+                key: "ridesAccepted",
+                value: [...ridesAccepted, riderRide],
+              })
+            );
 
-                    <TouchableOpacity onPress={() => { }} style={[flex, rounded(100), gap(10), py(13), px(26), itemsCenter, bg('#F9F7F8'), { borderColor: Colors.light.border, borderWidth: 0.7 }]}>
-                        <Image source={sharedImg.phoneImage} style={[image.w(18), image.h(18),]} />
+            dispatch(setRideState({ key: "currentRide", value: currentRide }));
+            dispatch(setRideState({key:'currentRequest', value: riderRide}));
 
-                        <Text style={[neurialGrotesk, fs12, fw500, colorBlack]}>Call</Text>
-                    </TouchableOpacity>
-                </View>
-                {/* //!Chat-Call CTAs */}
+            showBottomSheet([300, 550], <OnTripSheet />);
+          }
+        }
+        if(code != 200) setFetchState((prev) => ({ ...prev, msg, code }));
+      })
+      .catch((err: any) => {
+        console.log({ err });
+        setFetchState((prev) => ({ ...prev, msg: err?.message }));
+      });
+  };
 
-                {/* //!Ticket ID Block */}
-                <View style={[flexCol, gap(12), itemsCenter, wFull]}>
-                    <Text style={[colordarkGrey, fs14, fw500, neurialGrotesk]}>Enter Ticket ID</Text>
+  const cancelTrip = () => {
+    dispatch(setRideState({key:'selectedRoute', value: false}));
+    dispatch(setRideState({key:'driverOnline', value: false}));
+    dispatch(setRideState({key:'selectedRoute', value: null}));
+    dispatch(setRideState({key:'rideAcceptStage', value: ERideAcceptStage.searching}));
 
-                    <OtpInput
-                        numberOfDigits={4}
-                        blurOnFilled
-                        autoFocus={false}
-                        onTextChange={(text) => console.log(text)}
-                        type="alphanumeric"
-                        theme={{ containerStyle: { ...w('70%'), ...gap(12), }, }} />
-                </View>
-                {/* //!Ticket ID Block */}
+    hideBottomSheet();
+    router.push("/(home)");
+  };
 
-                {/* //!Start-Cancel Trip CTAs */}
-                <View style={[flexCol, gap(20)]}>
-                    <CtaBtn
-                        img={{
-                            src: tripImgs.arrivedpickupImage
-                        }}
-                        onPress={() => startTrip()}
-                        text={{ name: 'Start Trip' }}
-                        bg={{ color: Colors.light.background }}
-                    />
+  const { handleChange, handleSubmit, values, errors } = useFormik({
+    initialValues: { otp: "" },
+    validationSchema: new ObjectSchema({
+      otp: number()
+        .required("Ticket ID is required!")
+        .min(4, "ID must be 4-digits"),
+    }),
+    onSubmit: ({ otp }) => startTrip(otp),
+  });
 
-                    <CtaBtn
-                        img={{
-                            src: sharedImg.cancelImage
-                        }}
-                        onPress={() => cancelTrip()}
-                        text={{ name: 'Cancel Trip', color: Colors.light.darkGrey }}
-                        bg={{ color: '#F9F7F8', borderColor: Colors.light.border }}
-                        style={{ container: { ...w('80%'), ...mXAuto } }}
-                    />
-                </View>
-                {/* //!Start-Cancel Trip CTAs */}
+  return (
+    <PaddedScreen>
+      <View
+        style={[
+          wFull,
+          flexCol,
+          bg(colors.white),
+          h(205),
+          gap(32),
+          mt(40),
+          mb(20),
+        ]}
+      >
+        {/* Back Btn CTA */}
+        <TouchableOpacity
+          style={tw`w-auto flex flex-row items-center`}
+          onPress={() => {
+            dispatch(
+              setRideState({
+                key: "rideAcceptStage",
+                value: ERideAcceptStage.arrived_pickup,
+              })
+            );
+            showBottomSheet([500], <ArrivedPickupSheet />);
+          }}
+        >
+          <Ionicons name="chevron-back" size={24} color="black" />
+          <Text>Back</Text>
+        </TouchableOpacity>
+        {/* Back Btn CTA */}
+
+        {/* //!Rider Details Block */}
+        <View
+          style={[wFull, flex, justifyBetween, itemsCenter, { height: 61 }]}
+        >
+          <View style={[flex, justifyBetween, { gap: 14 }]}>
+            <View>
+              <Image
+                style={[
+                  { width: 60, height: 60, objectFit: "cover" },
+                  tw`rounded-full`,
+                ]}
+                source={{
+                  uri:
+                    (currentRequest?.rider?.picture as string) ||
+                    (currentRequest?.rider?.avatar as string),
+                }}
+              />
             </View>
-        </PaddedScreen>
-    )
+
+            <View style={[hFull, flexCol, justifyCenter, gap(12)]}>
+              <Text style={[c(colors.black), fw700, fs14]}>
+                {currentRequest?.rider?.fullName}
+              </Text>
+              <Text style={[c(Colors.light.darkGrey), fw400, fs12]}>
+                Arrived location
+              </Text>
+            </View>
+          </View>
+
+          <View>
+            <Text style={[fw500, fs14, colorBlack]}>
+              ₦ {currentRequest?.riderCounterOffer}
+            </Text>
+          </View>
+        </View>
+        {/* //!Rider Details Block */}
+
+        {/* //!Chat-Call CTAs */}
+        <View style={[flex, itemsCenter, gap(20), mXAuto] as ViewStyle[]}>
+          <TouchableOpacity
+            onPress={() => openWhatsApp(String(currentRequest?.rider?.phoneNo))}
+            style={[
+              flex,
+              rounded(100),
+              gap(10),
+              py(13),
+              px(26),
+              itemsCenter,
+              bg("#F9F7F8"),
+              { borderColor: Colors.light.border, borderWidth: 0.7 },
+            ]}
+          >
+            <Image
+              source={sharedImg.chatImage}
+              style={[image.w(18), image.h(18)]}
+            />
+
+            <Text style={[neurialGrotesk, fs12, fw500, colorBlack]}>Chat</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() =>
+              openCallerApp(String(currentRequest?.rider?.phoneNo))
+            }
+            style={[
+              flex,
+              rounded(100),
+              gap(10),
+              py(13),
+              px(26),
+              itemsCenter,
+              bg("#F9F7F8"),
+              { borderColor: Colors.light.border, borderWidth: 0.7 },
+            ]}
+          >
+            <Image
+              source={sharedImg.phoneImage}
+              style={[image.w(18), image.h(18)]}
+            />
+
+            <Text style={[neurialGrotesk, fs12, fw500, colorBlack]}>Call</Text>
+          </TouchableOpacity>
+        </View>
+        {/* //!Chat-Call CTAs */}
+
+        {/* //!Ticket ID Block */}
+        <View style={[flexCol, gap(12), itemsCenter, wFull]}>
+          <Text style={[colordarkGrey, fs14, fw500, neurialGrotesk]}>
+            Enter Ticket ID
+          </Text>
+
+          <OtpInput
+            numberOfDigits={4}
+            blurOnFilled
+            autoFocus={false}
+            textInputProps={{
+              value: values.otp,
+              style: {
+                borderColor:
+                  errors?.otp != "" || !errors?.otp
+                    ? colors.grey500
+                    : colors.red500,
+              },
+            }}
+            onTextChange={handleChange("otp")}
+            type="alphanumeric"
+            theme={{ containerStyle: { ...w("70%"), ...gap(12) } }}
+          />
+        </View>
+        {/* //!Ticket ID Block */}
+
+        {/* //!Start-Cancel Trip CTAs */}
+        <View style={[flexCol, gap(20)]}>
+          <CtaBtn
+            img={{
+              src: tripImgs.arrivedpickupImage,
+            }}
+            onPress={() => handleSubmit()}
+            text={{ name: "Start Trip" }}
+            bg={{ color: Colors.light.background }}
+          />
+
+          <CtaBtn
+            img={{
+              src: sharedImg.cancelImage,
+            }}
+            onPress={() => cancelTrip()}
+            text={{ name: "Cancel Trip", color: Colors.light.darkGrey }}
+            bg={{ color: "#F9F7F8", borderColor: Colors.light.border }}
+            style={{ container: { ...w("80%"), ...mXAuto } as ViewStyle }}
+          />
+        </View>
+        {/* //!Start-Cancel Trip CTAs */}
+
+        <Text style={tw `text-[10px] font-medium text-red-500`}>{msg}</Text>
+      </View>
+    </PaddedScreen>
+  );
 }
 
 export default TicketOtpSheet;

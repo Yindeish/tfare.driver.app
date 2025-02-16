@@ -14,7 +14,7 @@ interface ISigninContextState extends IContextState {
 }
 
 interface ISigninContext extends ISigninContextState {
-    signIn: (data: IRequestData) => void;
+    signIn: (data: IRequestData & {role: string}) => void;
     signOut: () => void,
     isLoading: boolean,
     userSession: string | null,

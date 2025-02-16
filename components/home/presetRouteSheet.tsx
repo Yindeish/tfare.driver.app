@@ -25,8 +25,8 @@ import ErrorMsg from '../shared/error_msg';
 function PresetRouteSheet() {
     const dispatch = useAppDispatch();
     const { hideBottomSheet } = useBottomSheet();
-    const {dropoffBusstopInput, pickupBusstopInput, currentRoute, presetRoutes: allPresetRoutes} = useAppSelector((state: RootState) => state.ride);
-    const [[isLoading, session], setSession] = useStorageState("token");
+    const {dropoffBusstopInput, pickupBusstopInput, selectedRoute, presetRoutes: allPresetRoutes} = useAppSelector((state: RootState) => state.ride);
+    const {token} = useAppSelector((state: RootState) => state.user);
 
     const [fetchState, setFetchState] = useState({
         loading: false,
@@ -39,15 +39,16 @@ function PresetRouteSheet() {
       const getPresetRoutes = async () => {
         setFetchState((prev) => ({ ...prev, loading: true, msg: '', code: null }));
         await FetchService.getWithBearerToken({
-          url: "/user/driver/me/routes/preset-routes",
-          token: session as string,
+          url: "/ride/routes",
+          token: token as string,
         })
         .then(async res => {
             
             const data = res?.body? await res.body:res;
             const code = data?.code;
             const msg = data?.msg;
-            const presetRoutes = data?.presetRoutes;
+            const presetRoutes = data?.allRoutes;            ;
+            console.log({presetRoutes})
         
             setFetchState((prev) => ({ ...prev, loading: false, msg, code }));
         
@@ -108,7 +109,7 @@ function PresetRouteSheet() {
                 ))}
             </View>):<ActivityIndicator />}
 
-            <TouchableOpacity onPress={() => currentRoute && router.push('/(route)/customizeRoute')}>
+            <TouchableOpacity onPress={() => selectedRoute && router.push('/(route)/customizeRoute')}>
                 <View style={[w('60%'), h(50), rounded(10), flex, itemsCenter, justifyCenter, gap(10), bg(colors.white), borderGrey(0.7), { shadowColor: '#000000', shadowOpacity: 0.05, shadowRadius: 10 }]}>
                     <Image style={[image.w(20), image.h(20),]} source={sharedImg.blackBgPlusIcon} />
 
@@ -116,7 +117,7 @@ function PresetRouteSheet() {
                 </View>
             </TouchableOpacity>
 
-            {((Number(code )!== 201 || Number(code )!== 200) && code) &&<ErrorMsg msg={msg} />}
+            {/* {((Number(code )!== 201 || Number(code )!== 200) && code) &&<ErrorMsg msg={msg} />} */}
 
             {/* <Spinner visible={loading} /> */}
             

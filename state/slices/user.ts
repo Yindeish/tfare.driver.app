@@ -2,14 +2,23 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { IUserAccount } from "../types/account";
 
 
+export interface IWallet {
+    balance: number,
+    bank_name: string,
+    account_number: number,
+    user_id: string,
+}
+
 export interface IUserState {
     user: IUserAccount | null,
-    token: string
+    token: string,
+    wallet: IWallet | null,
 }
 
 const initialState: IUserState = {
     token: '',
-    user: null
+    user: null,
+    wallet: null
 }
 
 const userSlice = createSlice({

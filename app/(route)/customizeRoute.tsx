@@ -24,7 +24,7 @@ import { Text } from "react-native-paper";
 
 
 function CustomizeRoute() {
-     const {currentRoute, dropoffBusstopInput, pickupBusstopInput} = useAppSelector((state: RootState) => state.ride)
+     const {selectedRoute, dropoffBusstopInput, pickupBusstopInput} = useAppSelector((state: RootState) => state.ride)
         const dispatch = useAppDispatch();
         const [[tokenLoading, token], setTokenSession] = useStorageState('token')
 
@@ -100,7 +100,7 @@ function CustomizeRoute() {
                             </View>
 
                             <View style={[flexCol, gap(16), { overflow: 'scroll' }]}>
-                                {currentRoute?.inTripDropoffs.map((dropoff, index) => (
+                                {selectedRoute?.inTripDropoffs.map((dropoff, index) => (
                                     <InTripDropffTile
                                     dropoff={dropoff}
                                     index={index+1}

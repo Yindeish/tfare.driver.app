@@ -17,10 +17,14 @@ import { homeImgs } from '@/constants/images/home'
 import sharedImg from '@/constants/images/shared'
 import PageNavigator from '@/components/account/pageNavigator'
 import accountImgs from '@/constants/images/account'
+import { useAppSelector } from '@/state/hooks/useReduxToolkit'
+import { RootState } from '@/state/store'
+import tw from '@/constants/tw'
 
 export default function Account() {
     const { signIn, loadingState, userSession, msg, code, signOut } = useSession();
     const { closeSnackbar, snackbarVisible } = useSnackbar()
+    const {user, wallet} = useAppSelector((state: RootState) => state.user)
 
     return (
         <SafeScreen>
@@ -34,11 +38,11 @@ export default function Account() {
 
                         <TouchableOpacity onPress={() => router.push(`/(account)/profileInfo` as Href)} style={[wFull, flex, itemsCenter, justifyBetween]}>
                             <View style={[flex, gap(14), itemsCenter, { flex: 0.8 }]}>
-                                <Image source={homeImgs.userProfileImg} style={[image.w(60), image.h(60),]} />
+                                <Image source={{uri: user?.picture as string || user?.avatar as string}} style={[image.w(60), image.h(60), image.rounded(60)]} />
 
                                 <View style={[flexCol, gap(16)]}>
                                     <Text style={[c(Colors.light.darkGrey), fs12, fw400, neurialGrotesk]}>Welcome back</Text>
-                                    <Text style={[colorBlack, fw700, fs14]}>King John</Text>
+                                    <Text style={[colorBlack, fw700, fs14]}>{user?.fullName}</Text>
                                 </View>
                             </View>
 
@@ -47,7 +51,7 @@ export default function Account() {
 
                         {/* Wallet Block */}
 
-                        <View style={[wFull, flex, gap(10), justifyBetween, itemsCenter, bg('#EDEDFD'), rounded(10), h(94), py(17), px(9), {}]}>
+                        <View style={[wFull, flex, gap(10), justifyBetween, itemsCenter, bg('#EDEDFD'), rounded(10), h(94), py(17), px(9), {},]}>
                             <View style={[flexCol, gap(16), w(126), h(60)]}>
 
                                 <View style={[flex, itemsCenter, { gap: 16 }]}>
@@ -58,7 +62,7 @@ export default function Account() {
 
                                 </View>
 
-                                <Text style={[colorBlack, fw700, { fontSize: 22 }]}> ₦{'0000.00'}</Text>
+                                <Text style={[colorBlack, fw700, { fontSize: 22 }]}> ₦{wallet?.balance || '0000.00'}</Text>
                             </View>
 
                             <TouchableOpacity>
@@ -98,8 +102,9 @@ export default function Account() {
 
                             <PageNavigator
                                 title='Bank Details'
-                                navigate={false}
-                                page={`/(account)/bankDetails`}
+                                // navigate={false}
+                                // page={`/(account)/bankDetails`}
+                                page={`/(earnings)/`}
 
                                 source={accountImgs.paymentCard} imageStyle={[image.w(18), image.h(14)]} />
 

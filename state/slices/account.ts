@@ -35,7 +35,8 @@ const profile: IStateInputProfile = {
 
 const saveNewAddress: IStateInputSaveNewAddress = {
     addressName: '',
-    routeName: ''
+    name: ''
+    // routeName: ''
 };
 
 const initialState: IAccountState = {
@@ -87,13 +88,20 @@ const initialState: IAccountState = {
         notifications,
         profile,
         saveNewAddress
-    }
+    },
+    transactions: [],
 }
 
 const accountSlice = createSlice({
     name: ESlicesNames.account,
     initialState,
     reducers: {
+        setAccountState: (state, action: PayloadAction<{key: keyof IAccountState, value: any}>) => {
+            const {key, value} = action.payload;
+
+            state[key] = value;
+        },
+
         setEmergencyContactField: (state, action: PayloadAction<{ key: keyof IStateInputAddNewContact, value: string }>) => {
             const { key, value } = action.payload;
             state.stateInput.addNewContact[key] = value;
@@ -111,7 +119,7 @@ const accountSlice = createSlice({
         },
 
         setUserAccount: (state, action: PayloadAction<IUserAccount>) => {
-            state.userAccount = action.payload;
+            state.userAccount = action.payload as any;
         },
 
         setUserWallet: (state, action: PayloadAction<IUserAccountWallet>) => {
@@ -142,8 +150,9 @@ const accountSlice = createSlice({
                 const { emailInput, nameInput, phoneNoInput, userNameInput } = state.stateInput.profile;
                 state.userAccount = {
                     email: emailInput,
-                    name: nameInput,
+                    fullName: nameInput,
                     phoneNo: Number(phoneNoInput),
+                    // role: 
                     userName: userNameInput,
                 }
             }
@@ -176,6 +185,7 @@ const accountSlice = createSlice({
 })
 
 export const {
+    setAccountState,
     seLoading, setSavedAddresses,
     setEmergencyContactField,
     setProfileCta, setUserProfileInfo,

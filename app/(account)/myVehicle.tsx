@@ -1,4 +1,4 @@
-import { View, ImageSourcePropType, Image, ScrollView, FlatList } from 'react-native'
+import { View, ImageSourcePropType, Image, ScrollView, FlatList, ViewStyle, TextStyle } from 'react-native'
 import { Text, TextInput, } from 'react-native-paper'
 import React, { useEffect, useState } from 'react'
 import SafeScreen from '@/components/shared/safeScreen'
@@ -19,9 +19,15 @@ import tripImgs from '@/constants/images/trip'
 import AccountTextField from '@/components/account/accountTextFeild'
 import { homeImgs } from '@/constants/images/home'
 import MenuTile from '@/components/shared/menuTile'
+import { useAppSelector } from '@/state/hooks/useReduxToolkit'
+import { RootState } from '@/state/store'
 
 function MyVehicle() {
     const [profileCta, setProfileCta] = useState('edit');
+    const {user} = useAppSelector((state: RootState) => state.user);
+
+    const vehicle = user?.driverProfile?.vehicle;
+    const vehicleImages = vehicle?.vehicleImages;
 
     const editProfile = () => {
         setProfileCta('save');
@@ -33,7 +39,7 @@ function MyVehicle() {
 
     return (
         <SafeScreen>
-            <View style={[wHFull,]}>
+            <View style={[wHFull,] as ViewStyle[]}>
                 {/* //!Page Header */}
                 <PaddedScreen>
                     <AccountPageTitle
@@ -72,13 +78,13 @@ function MyVehicle() {
                     </ScrollView> */}
                     <FlatList
                         horizontal
-                        data={Array.from({ length: 7 })}
-                        renderItem={({ index, }) => (<Image style={[image.h('100%'), image.w(100), image.mr(10)]} source={homeImgs.accountImg} key={index} />)}
+                        data={[vehicleImages?.backViewImage, vehicleImages?.frontViewImage, vehicleImages?.interiorImage, vehicleImages?.sideViewImage]}
+                        renderItem={({ index, item }) => (<Image style={[image.h('100%'), image.w(100), image.mr(10)]} source={{uri: item as string}} key={index} />)}
                         style={[flex, gap(10), h(100),]}
                     />
                 </View>
 
-                <View style={[flexCol, gap(16), mt(32), w('90%'), mXAuto]}>
+                <View style={[flexCol, gap(16), mt(32), w('90%'), mXAuto] as ViewStyle[]}>
                     <MenuTile
                         label={'Vehicle Type'}
                         onSelect={() => { }}
@@ -90,8 +96,8 @@ function MyVehicle() {
 
                     <TextInput
                         onChangeText={() => { }}
-                        value={''} placeholder={'Vehicle Year'}
-                        style={[py(0), px(10), rounded(10), bg(colors.transparent), colorBlack, fs14, fw500, h(50), { borderWidth: 0.7, borderColor: Colors.light.border }]}
+                        value={vehicle?.vehicleType} placeholder={'Vehicle Year'}
+                        style={[py(0), px(10), rounded(10), bg(colors.transparent), colorBlack, fs14, fw500, h(50), { borderWidth: 0.7, borderColor: Colors.light.border }] as TextStyle[]}
                         keyboardType='numeric'
                         cursorColor={colors.transparent}
                         selectionColor={colors.transparent}
@@ -101,8 +107,8 @@ function MyVehicle() {
 
                     <TextInput
                         onChangeText={() => { }}
-                        value={''} placeholder={'Vehicle Model'}
-                        style={[py(0), px(10), rounded(10), bg(colors.transparent), colorBlack, fs14, fw500, h(50), { borderWidth: 0.7, borderColor: Colors.light.border }]}
+                        value={vehicle?.vehicleModel} placeholder={'Vehicle Model'}
+                        style={[py(0), px(10), rounded(10), bg(colors.transparent), colorBlack, fs14, fw500, h(50), { borderWidth: 0.7, borderColor: Colors.light.border }] as TextStyle[]}
                         cursorColor={colors.transparent}
                         selectionColor={colors.transparent}
                         underlineColorAndroid={colors.transparent}
@@ -123,8 +129,8 @@ function MyVehicle() {
 
                     <TextInput
                         onChangeText={() => { }}
-                        value={''} placeholder={'License Plate'}
-                        style={[py(0), px(10), rounded(10), bg(colors.transparent), colorBlack, fs14, fw500, h(50), { borderWidth: 0.7, borderColor: Colors.light.border }]}
+                        value={String(vehicle?.vehicleYear)} placeholder={'License Plate'}
+                        style={[py(0), px(10), rounded(10), bg(colors.transparent), colorBlack, fs14, fw500, h(50), { borderWidth: 0.7, borderColor: Colors.light.border }] as TextStyle[]}
                         keyboardType='numeric'
                         cursorColor={colors.transparent}
                         selectionColor={colors.transparent}

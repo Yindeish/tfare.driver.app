@@ -9,8 +9,10 @@ import tripImgs from "@/constants/images/trip";
 import { useSnackbar } from "@/contexts/snackbar.context";
 import { useBottomSheet } from "@/contexts/useBottomSheetContext";
 import { useSession } from "@/contexts/userSignedInContext";
+import FetchService from "@/services/api/fetch.service";
 import { useAppDispatch, useAppSelector } from "@/state/hooks/useReduxToolkit";
 import { setRideState } from "@/state/slices/ride";
+import { setUserState } from "@/state/slices/user";
 import { RootState } from "@/state/store";
 import { ERideAcceptStage } from "@/state/types/ride";
 import { c, colorBlack, colordarkGrey, fs, fs10, fs12, fs14, fs18, fw400, fw500, fw700, neurialGrotesk } from "@/utils/fontStyles";
@@ -25,10 +27,11 @@ const { height } = Dimensions.get('window')
 
 const index = () => {
     const { } = useSession()
-    const { showBottomSheet } = useBottomSheet()
+    const { showBottomSheet, hideBottomSheet } = useBottomSheet()
     const { closeSnackbar, snackbarVisible, openSnackbar } = useSnackbar();
-    const {currentRoute, pickupBusstopInput,dropoffBusstopInput, driverOnline,driverEligible, rideAcceptStage} = useAppSelector((state: RootState) => state.ride);
-    const dispatch = useAppDispatch()
+    const {selectedRoute, pickupBusstopInput,dropoffBusstopInput, driverOnline,driverEligible, rideAcceptStage} = useAppSelector((state: RootState) => state.ride);
+    const dispatch = useAppDispatch();
+    const { token, wallet} = useAppSelector((state:RootState) => state.user)
 
     const [options, updateOptions] = useState(
         [
@@ -38,6 +41,30 @@ const index = () => {
         ].map((option, index) => ({ ...option, checked: false, id: index + 1 }))
     );
 
+     const [fetchState, setFetchState] = useState({
+        loading: false,
+      });
+      const { loading } = fetchState;
+
+    const getUserWallet = async () => {
+        setFetchState({ loading: true });
+        const returnedData = await FetchService.getWithBearerToken({ url: '/user/me', token: token as string });
+    
+        const wallet = returnedData?.wallet;
+        setFetchState({ loading: false });
+        if (wallet) {
+            console.log({wallet})
+            
+            dispatch(setUserState({
+                key: 'wallet', value: wallet
+            }))
+        }
+    }
+
+    useEffect(() => {
+        !wallet && getUserWallet()
+    }, [])
+
     const goOnline = () => {
         const eligible = options.every((option) => option.checked === true);
 
@@ -45,7 +72,7 @@ const index = () => {
             dispatch(setRideState({key:'driverOnline', value: true}))
             router.push('/(acceptRide)/acceptRide' as Href)
         }
-        if(rideAcceptStage === ERideAcceptStage.searching) {
+        if (driverOnline) {
             router.push('/(acceptRide)/acceptRide' as Href)
         }
         else {
@@ -66,7 +93,7 @@ const index = () => {
 
     // !Updating the preset route pop up
     useEffect(() => {
-        if (!currentRoute) { //testing .This conditon will be modified during api calls
+        if (!selectedRoute) { //testing .This conditon will be modified during api calls
             showBottomSheet([650, 750], <PresetRouteSheet />)
         }
     }, [router])
@@ -89,10 +116,15 @@ const index = () => {
                                     <Image style={[image.w(19), image.h(18)]} source={sharedImg.walletImage} />
                                     <Text style={[neurialGrotesk, fs12, fw400, colordarkGrey]}>Your earnings</Text>
                                 </View>
-                                <Text style={[fs(22), fw700, colorBlack]}>₦ {'0000.00'}</Text>
+                                <Text style={[fs(22), fw700, colorBlack]}>₦ {wallet?.balance || '0000.00'}</Text>
                             </View>
 
-                            <TouchableOpacity style={[flex, gap(10), itemsCenter, borderGrey(0.7), rounded(1000), py(10), px(16)]}>
+                            <TouchableOpacity 
+                            onPress={() => {
+                                hideBottomSheet();
+                                router.push('/(earnings)')
+                            }}
+                            style={[flex, gap(10), itemsCenter, borderGrey(0.7), rounded(1000), py(10), px(16)]}>
                                 <View style={[w(24), h(24), flex, itemsCenter, justifyCenter, rounded(1000), borderGrey(0.7)]}>
                                     <Image style={[image.w(22), image.h(8),]} source={sharedImg.minusImage} />
                                 </View>
@@ -145,10 +177,10 @@ const index = () => {
                 {/* //!Header */}
 
                 {/* //!Go Online Block */}
-                <View style={[wFull, currentRoute && !driverEligible && !driverOnline ? borderT(0.7, Colors.light.darkGrey) : {}, flexCol, gap(40), itemsCenter, pt(20), pb(35), bg(currentRoute && !driverEligible && !driverOnline ? colors.white : colors.transparent), mTAuto, absolute, b('8%'), left0, zIndex(4)]}>
+                <View style={[wFull, selectedRoute && !driverEligible && !driverOnline ? borderT(0.7, Colors.light.darkGrey) : {}, flexCol, gap(40), itemsCenter, pt(20), pb(35), bg(selectedRoute && !driverEligible && !driverOnline ? colors.white : colors.transparent), mTAuto, absolute, b('8%'), left0, zIndex(4)]}>
 
                     {/* //!Options */}
-                    {currentRoute && !driverEligible && !driverOnline && <View style={[flexCol, gap(16)]}>
+                    {selectedRoute && !driverEligible && !driverOnline && <View style={[flexCol, gap(16)]}>
                         {options.map(({ checked, id, name }, index) => (
                             <GoOnlineOptionTile
                                 onPress={() => {
@@ -173,12 +205,12 @@ const index = () => {
                         <CtaBtn
                             img={{ src: tripImgs.whiteBgCardinalLocation, w: 22, h: 22 }}
                             onPress={() => {
-                                if (!currentRoute && !driverEligible) {
+                                if (!selectedRoute && !driverEligible) {
                                     showBottomSheet([650, 750], <PresetRouteSheet />)
                                 } else goOnline()
                             }}
-                            text={{ name: !currentRoute ? 'CHOOSE ROUTE' : 'GO ONLINE' }}
-                            bg={{ color: !currentRoute ? Colors.light.background : '#27AE65' }}
+                            text={{ name: !selectedRoute ? 'CHOOSE ROUTE' : 'GO ONLINE' }}
+                            bg={{ color: !selectedRoute ? Colors.light.background : '#27AE65' }}
                             style={{ container: { ...rounded(1000), ...w('70%'), ...mXAuto, } as ViewStyle }}
                         />
                     </View>

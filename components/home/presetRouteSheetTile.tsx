@@ -32,8 +32,8 @@ function PresetRouteSheetTile({route}:{route: IRoute}) {
 
                 <TouchableOpacity onPress={() => {
                     hideBottomSheet();
-                    dispatch(setRideState({key:'currentRoute', value: route}));
-                    router.push('/(route)/routeDetails' as Href)
+                    dispatch(setRideState({key:'selectedRoute', value: route}));
+                    router.push(`/(route)/routeDetails?id=${route?._id}` as Href)
                 }} style={[bg(Colors.light.background), flex, itemsCenter, gap(10), p(16), rounded(1000)]}>
                     <Image style={[image.w(18), image.h(18),]} source={tripImgs.whiteBgTripWay} />
                     <Text style={[fw500, fs12, c(colors.white)]}>Select Route</Text>
