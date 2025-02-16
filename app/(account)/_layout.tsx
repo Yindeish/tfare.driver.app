@@ -13,15 +13,16 @@ export default function AppLayout() {
 
   const { width, height } = Dimensions.get('window');
 
-  if (isLoading) {
-    return <View style={{ width, height, backgroundColor: '#D8D8D8' }} />;
-  }
+  // if (isLoading) {
+  //   return <View style={{ width, height, backgroundColor: '#D8D8D8' }} />;
+  // }
 
-  if (!userSession) {
-    return <Redirect href="/(auth)/signin" />;
-  }
+  // if (!userSession) {
+  //   return <Redirect href="/(auth)/signin" />;
+  // }
 
-  else return <Stack
+  // else 
+  return <Stack
     screenOptions={{
       animation: 'slide_from_left',
       headerShown: false

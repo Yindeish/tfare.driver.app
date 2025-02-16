@@ -15,15 +15,16 @@ export default function AppLayout() {
 
   const { width, height } = Dimensions.get('window');
 
-  if (isLoading) {
-    return <View style={{ width, height, backgroundColor: '#D8D8D8' }} />;
-  }
+  // if (isLoading) {
+  //   return <View style={{ width, height, backgroundColor: '#D8D8D8' }} />;
+  // }
 
-  if (!userSession) {
-    return <Redirect href={`/(auth)/signin` as Href} />;
-  }
+  // if (!userSession) {
+  //   return <Redirect href={`/(auth)/signin` as Href} />;
+  // }
 
-  else return <Tabs screenOptions={{ tabBarActiveTintColor: Colors.light.background, headerShown: false }}>
+  // else 
+  return <Tabs screenOptions={{ tabBarActiveTintColor: Colors.light.background, headerShown: false }}>
     <Tabs.Screen
       name={tabs.home}
       options={{

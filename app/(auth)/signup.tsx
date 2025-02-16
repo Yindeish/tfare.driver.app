@@ -61,6 +61,8 @@ import { pages } from "@/constants/pages";
 import { image } from "@/utils/imageStyles";
 import authImgs from "@/constants/images/auth";
 import FetchService from "@/services/api/fetch.service";
+import { launchImageLibraryAsync, MediaTypeOptions, requestMediaLibraryPermissionsAsync } from "expo-image-picker";
+import CloudinaryServices from "@/cloudinary/cloudinary.services";
 
 const {
   textInput,
@@ -167,11 +169,11 @@ export default function Signup() {
         setFetchState((prev) => ({ ...prev, loading: true, msg: "" }));
 
         const returnedData = await FetchService.post({
-          data: { ...values, fullName: values.profileName, role: "driver" },
+          data: { ...values, fullName: values.profileName, picture: imgUploadState.img, role: "driver" },
           url: "/auth/signup",
         });
 
-        notify({msg});
+        notify({ msg });
         const signedUpUser = returnedData?.signedUpUser;
 
         setFetchState((prev) => ({
@@ -180,8 +182,7 @@ export default function Signup() {
           code: returnedData.code,
           loading: false,
         }));
-        if (returnedData.code === 201)
-          router.replace(`/(auth)/signin` as Href);
+        if (returnedData.code === 201) router.replace(`/(auth)/signin` as Href);
       } catch (error: any) {
         console.log({ error });
         setFetchState((prev) => ({
@@ -191,10 +192,58 @@ export default function Signup() {
           loading: false,
         }));
 
-        notify({msg: error?.message || "Error in signing up",})
+        notify({ msg: error?.message || "Error in signing up" });
       }
     },
   });
+
+  const [imgUploadState, setImgUploadState] = useState({
+    msg: '',
+    loading: false,
+    img: null,
+})
+
+  const uploadImgToCloudinary = async ({ folderName, imagePath }: {
+    imagePath: string;
+    folderName: string;
+}) => {
+    setImgUploadState((prev) => ({ ...prev, loading: true }))
+
+    CloudinaryServices.uploadImage({
+        imagePath, folderName, fnToRn: (value) => {
+
+            setImgUploadState((prev) => ({ ...prev, loading: false, img: value as any }))
+        }
+    })
+}
+
+  const uploadPicture = async () => {
+    // Request permission to access the image gallery
+    const { status } = await requestMediaLibraryPermissionsAsync();
+
+    if (status !== "granted") {
+      alert("Permission to access gallery is required!");
+      return;
+    }
+
+    // Launch the image picker and allow user to pick an image
+    const result = await launchImageLibraryAsync({
+      mediaTypes: MediaTypeOptions.Images, // only images
+      allowsEditing: false, // Optional, to allow cropping
+      quality: 1, // Set the quality of the image
+    });
+
+    // Check if the user canceled the image picker or if there was an error
+    if (result.canceled) {
+      console.log("User canceled image selection");
+      return;
+    }
+
+    // Extract the URI of the selected image
+    const uri = result?.assets[0]?.uri;
+
+    uploadImgToCloudinary({folderName:'driversImages', imagePath: uri})
+  };
 
   return (
     <SafeScreen>
@@ -241,10 +290,14 @@ export default function Signup() {
               </Text>
             </View>
 
-            <View style={[flexCol, gap(16), itemsCenter, wFull]}>
+            {/* Picture Uppload */}
+            <TouchableOpacity
+              onPress={uploadPicture}
+              style={[flexCol, gap(16), itemsCenter, wFull]}
+            >
               <Image
                 style={[image.w(65), image.h(65), image.rounded(65)]}
-                source={authImgs.imageUpload}
+                source={imgUploadState.img ? {uri: imgUploadState.img}: authImgs.imageUpload}
               />
               <Text
                 style={
@@ -262,7 +315,8 @@ export default function Signup() {
                 Kindly Upload a potrait picture of yourself showing your full
                 face
               </Text>
-            </View>
+            </TouchableOpacity>
+            {/* Picture Uppload */}
 
             <View style={[form, flexYCenter, { gap: 16 }] as ViewStyle[]}>
               <TextInput
@@ -445,7 +499,11 @@ export default function Signup() {
           </View>
 
           {/* //!Sanckbar */}
-          <Snackbar msg={msg} onDismiss={() => closeSnackbar()} snackbarVisible={snackbarVisible} />
+          <Snackbar
+            msg={msg}
+            onDismiss={() => closeSnackbar()}
+            snackbarVisible={snackbarVisible}
+          />
           {/* //!Sanckbar */}
         </PaddedScreen>
       </ScrollView>

@@ -45,6 +45,9 @@ import * as Yup from "yup";
 import tw from "@/constants/tw";
 import FetchService from "@/services/api/fetch.service";
 import { pages } from "@/constants/pages";
+import { setItemAsync } from "expo-secure-store";
+import { useAppDispatch } from "@/state/hooks/useReduxToolkit";
+import { setUserState } from "@/state/slices/user";
 
 const {
   signInTitle,
@@ -134,6 +137,7 @@ const { height } = Dimensions.get("screen");
 export default function Signin() {
   const { closeSnackbar, snackbarVisible, Snackbar, notify } = useSnackbar();
   const { tokenSession, signIn: signinToken } = userTokenSession();
+  const dispatch = useAppDispatch()
 
   // signinToken('x')
 
@@ -170,8 +174,28 @@ export default function Signin() {
           code: returnedData.code,
           loading: false,
         }));
+       
         if (returnedData.code === 200 || returnedData.code === 201)
-          router.replace(`/(home)` as Href);
+          {
+            const signedinTime = new Date();
+            const user = returnedData?.user;
+            const token = returnedData?.token;
+  
+            try {
+              await setItemAsync('user', JSON.stringify(user));
+              await setItemAsync('token', token);
+              await setItemAsync('signedinTime', JSON.stringify(signedinTime));
+  
+              dispatch(setUserState({key:'user', value: user}));
+              dispatch(setUserState({key:'token', value: token}));
+
+              router.replace('/(home)')
+            } catch (error: any) {
+              throw new Error(error?.message)
+            }
+  
+            router.replace(`/(home)` as Href);
+          }
       } catch (error: any) {
         console.log({ error });
         setFetchState((prev) => ({
