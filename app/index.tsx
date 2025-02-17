@@ -12,9 +12,13 @@ export default function Index() {
     const dispatch = useAppDispatch();
     const { tokenSession, isLoading, } = useSession();
     const { userSession: userString, signOut } = userSession();
+    const [[_, __], setToken] = useStorageState('token'); //testing
     const [[signedinTimeLoading, signedinTimeSession], setSignedinTimeSession] = useStorageState('signedinTime');
     const parsedUser = userString ? JSON.parse(userString as string) : null;
     const parsedSigninTimeSession = signedinTimeSession ? JSON.parse(signedinTimeSession as string) : null;
+
+    // setToken(null); //testing
+    console.log({tokenSession})
 
 
     // Updating the user state in RTK (Redux Toolkit Query)
@@ -61,24 +65,21 @@ export default function Index() {
 
     if (isLoading) {
         return <View style={{ width, height, backgroundColor: '#D7D7D7' }} />;
-        // return <View style={{ width, height, backgroundColor: 'red' }} />;
+    }
+
+    if (parsedUser && tokenSession) {
+        return <Redirect href={`/(home)` as Href} />;
     }
 
     // Accesssing the app for the first time
-    if (!tokenSession) {
-        return <Redirect href={`/introScreen` as Href} />;
-        // return <View style={{ width: '100%', height: '100%', backgroundColor: 'green' }}>
-        //     <Text>Green</Text>
-        // </View>
-    }
-    // Accesssing the app for the first time
-
-    // Accessed the ppa beofre, just revisiting
-    else {
+    if (!parsedUser && tokenSession) {
         return <Redirect href={`/(auth)/signin` as Href} />;
-        // return <View style={{ width: '100%', height: '100%', backgroundColor: 'yellow' }}>
-        //     <Text>Yellow</Text>
-        // </View>
+    }
+    // Accesssing the app for the first time
+
+    // Accessed the app beofre, just revisiting
+    else {
+        return <Redirect href={`/introScreen` as Href} />;
     }
     // Accessed the ppa beofre, just revisiting
 }

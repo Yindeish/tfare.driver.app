@@ -137,7 +137,7 @@ const { height } = Dimensions.get("screen");
 export default function Signin() {
   const { closeSnackbar, snackbarVisible, Snackbar, notify } = useSnackbar();
   const { tokenSession, signIn: signinToken } = userTokenSession();
-  const dispatch = useAppDispatch()
+  const dispatch = useAppDispatch();
 
   // signinToken('x')
 

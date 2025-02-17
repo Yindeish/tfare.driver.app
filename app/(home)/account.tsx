@@ -1,6 +1,6 @@
 import { Image, View, TouchableOpacity, ScrollView, Pressable, Platform, ViewStyle, TextStyle } from 'react-native'
 import { ActivityIndicator, Button, Snackbar, Text } from 'react-native-paper'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import SafeScreen from '@/components/shared/safeScreen'
 import { image, wHFull } from '@/utils/imageStyles'
 import { bg, border, flex, flexCenter, flexCol, gap, h, itemsCenter, justifyBetween, justifyCenter, mb, mr, mt, pb, px, py, relative, rounded, w, wFull } from '@/utils/styles'
@@ -17,14 +17,41 @@ import { homeImgs } from '@/constants/images/home'
 import sharedImg from '@/constants/images/shared'
 import PageNavigator from '@/components/account/pageNavigator'
 import accountImgs from '@/constants/images/account'
-import { useAppSelector } from '@/state/hooks/useReduxToolkit'
+import { useAppDispatch, useAppSelector } from '@/state/hooks/useReduxToolkit'
 import { RootState } from '@/state/store'
 import tw from '@/constants/tw'
+import { setUserState } from '@/state/slices/user'
+import { useStorageState } from '@/hooks/useStorageState'
 
 export default function Account() {
-    const { signIn, loadingState, userSession, msg, code, signOut } = useSession();
-    const { closeSnackbar, snackbarVisible } = useSnackbar()
+    const { signIn, loadingState, userSession } = useSession();
+    const { closeSnackbar, snackbarVisible, Snackbar } = useSnackbar()
     const {user, wallet} = useAppSelector((state: RootState) => state.user)
+    const dispatch = useAppDispatch();
+    const [[_, __], setSession] = useStorageState('user');
+
+    const [fetchState, setFetchState] = useState({
+        loading: false,
+        msg: '',
+        code: null
+    })
+    const {code, loading, msg} = fetchState;
+
+    const signOut = () => {
+        setFetchState((prev) => ({...prev, loading: true}))
+
+        dispatch(setUserState({ key: "user", value: null }));
+        dispatch(setUserState({ key: "token", value: null }));
+        setSession(null);
+    
+    
+        if (!user) {
+          setTimeout(() => {
+            setFetchState((prev) => ({...prev, loading: false}))
+            router.replace("/(auth)/signin" as Href);
+          }, 1500);
+        }
+    }
 
     return (
         <SafeScreen>
@@ -137,7 +164,7 @@ export default function Account() {
 
                             <PageNavigator navigate title='Notification messages' source={accountImgs.notificationImage} page={`/(account)/notificationsMessages`} imageStyle={[image.w(18), image.h(19)]} />
 
-                            {loadingState === 'idle' ?
+                            {!loading ?
                                 (<Button
                                     onPress={() => signOut()}
                                     labelStyle={[neurialGrotesk, fs14, fw500]}
@@ -148,19 +175,7 @@ export default function Account() {
                                 (<ActivityIndicator style={[mb(20)]} color={Colors.light.background} size={'small'} />)
                             }
 
-                            {/* Snackbar */}
-                            {Platform.OS === 'ios' && <Snackbar
-                                style={[]}
-                                visible={snackbarVisible}
-                                onDismiss={() => closeSnackbar()}
-                                action={{
-                                    label: 'close',
-                                    onPress: () => {
-                                    },
-                                }}>
-                                {msg}
-                            </Snackbar>}
-                            {/* Snackbar */}
+                            <Snackbar msg={msg} onDismiss={() => closeSnackbar()} snackbarVisible={snackbarVisible} />
                         </View>
                         {/* //!Wallet Block */}
                     </View>
