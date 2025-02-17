@@ -72,7 +72,7 @@ export default function Index() {
     }
 
     // Accesssing the app for the first time
-    if (!parsedUser && tokenSession) {
+    if (!parsedUser && !tokenSession && parsedSigninTimeSession) {
         return <Redirect href={`/(auth)/signin` as Href} />;
     }
     // Accesssing the app for the first time

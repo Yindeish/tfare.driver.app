@@ -44,7 +44,7 @@ export default function Account() {
         dispatch(setUserState({ key: "user", value: null }));
         dispatch(setUserState({ key: "token", value: null }));
         setSession(null);
-        setToken(null); //testing remove later
+        setToken(null); 
     
     
         if (!user) {
