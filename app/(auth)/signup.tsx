@@ -115,8 +115,7 @@ const {
   invalidEntryText: {
     color: Colors.light.error,
     fontWeight: "500",
-    fontSize: 14,
-    lineHeight: 18.48,
+    fontSize: 10,
   },
   checkbox: {
     marginRight: 12,
@@ -138,6 +137,7 @@ const SignupSchema = yup.object().shape({
   agree: yup
     .boolean()
     .oneOf([true], "You need to accept the terms and conditions"),
+    picture: yup.string().required('Select a picture!')
 });
 
 export default function Signup() {
@@ -162,6 +162,7 @@ export default function Signup() {
       profileName: "",
       phoneNumber: "",
       agree: true,
+      picture: ''
     },
     validationSchema: SignupSchema,
     onSubmit: async (values) => {
@@ -182,7 +183,7 @@ export default function Signup() {
           code: returnedData.code,
           loading: false,
         }));
-        if (returnedData.code === 201) router.replace(`/(auth)/signin` as Href);
+        if (returnedData.code === 201) router.replace(`/(auth)/carInfoUpload` as Href);
       } catch (error: any) {
         console.log({ error });
         setFetchState((prev) => ({
@@ -209,11 +210,17 @@ export default function Signup() {
 }) => {
     setImgUploadState((prev) => ({ ...prev, loading: true }))
 
-    CloudinaryServices.uploadImage({
+    await CloudinaryServices.uploadImage({
         imagePath, folderName, fnToRn: (value) => {
 
             setImgUploadState((prev) => ({ ...prev, loading: false, img: value as any }))
+            formik.setFieldValue('picture', value);
         }
+    }).then((data) => {
+      console.log({data}, 'uploading')
+    })
+    .catch((err) => {
+      console.log({err});
     })
 }
 
@@ -241,6 +248,7 @@ export default function Signup() {
 
     // Extract the URI of the selected image
     const uri = result?.assets[0]?.uri;
+    console.log({uri})
 
     uploadImgToCloudinary({folderName:'driversImages', imagePath: uri})
   };
@@ -471,6 +479,7 @@ export default function Signup() {
                     itemsCenter,
                     justifyCenter,
                     mt(30),
+                    {opacity: formik.errors.picture != '' ? 0.5:1}
                   ] as ViewStyle[]
                 }
                 disabled={loading}
