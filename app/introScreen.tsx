@@ -1,4 +1,4 @@
-import { View, StyleSheet, Pressable, Image } from 'react-native'
+import { View, StyleSheet, Pressable, Image, TextStyle, ViewStyle } from 'react-native'
 import { Text, Button, TouchableRipple, MD2Colors } from 'react-native-paper';
 import React, { useEffect, useState } from 'react'
 import Swiper from 'react-native-swiper'
@@ -13,6 +13,7 @@ import { pages } from '@/constants/pages';
 import { image, objectContain } from '@/utils/imageStyles';
 import CtaBtn from '@/components/shared/ctaBtn';
 import sharedImg from '@/constants/images/shared';
+// import PagerView from 'react-native-pager-view';
 
 const { container, containerWrapper, skipLink, skipText, slide, slideImage, slideText, text, wrapper, activeDotStyle, ctaBtn, ctaText } = StyleSheet.create({
     containerWrapper: {
@@ -75,23 +76,23 @@ export default function IntroScreen() {
 
     return (
         <SafeScreen>
-            <View style={[wHFull, flexCol, itemsCenter, containerWrapper]}>
+            <View style={[wHFull, flexCol, itemsCenter, containerWrapper] as ViewStyle[]}>
 
                 <Link
                     // href={'/(auth)/signin'}
                     href={'/(auth)/carInfoUpload' as Href}//testing
-                    style={skipLink}
+                    style={skipLink as TextStyle}
                 >
-                    <Text style={[skipText, colorWhite, fw400, fs14]}>Skip</Text>
+                    <Text style={[skipText, colorWhite, fw400, fs14] as TextStyle[]}>Skip</Text>
                 </Link>
 
-                <View style={container}>
+                <View style={container as ViewStyle}>
                     <Swiper
-                        style={wrapper}
+                        style={wrapper as ViewStyle}
                         showsButtons={false}
                         dotColor='white'
                         activeDotColor='#5D5FEF'
-                        activeDotStyle={activeDotStyle}
+                        activeDotStyle={activeDotStyle as ViewStyle}
                         scrollEnabled={true}
                         index={0}
                         autoplay
@@ -100,28 +101,33 @@ export default function IntroScreen() {
                         onIndexChanged={(index) => {
                             setCurrentSlideIndex(index);
                         }}
-                    >
-                        <View style={[slide, wHFull, itemsCenter, justifyCenter]}>
+                    > 
+                        {/* <PagerView 
+                         scrollEnabled={true}
+                         tabIndex={0}
+                        style={wrapper as ViewStyle} initialPage={0}> */}
+                        <View style={[slide, wHFull, itemsCenter, justifyCenter] as ViewStyle[]}>
                             <Image style={[slideImage as any, wFull, objectContain]} source={images.introScreenImage1} />
 
-                            <Text style={slideText}>
+                            <Text style={slideText as TextStyle}>
                                 Unlock a new way to travel with loved ones through our Family Ride feature.
                             </Text>
                         </View>
-                        <View style={[slide, wHFull, itemsCenter, justifyCenter]}>
+                        <View style={[slide, wHFull, itemsCenter, justifyCenter] as ViewStyle[]}>
                             <Image style={[slideImage as any, wFull, objectContain]} source={images.introScreenImage2} />
 
-                            <Text style={slideText}>
+                            <Text style={slideText as TextStyle}>
                                 Experience the freedom of safe travels.
                             </Text>
                         </View>
-                        <View style={[slide, wHFull, itemsCenter, justifyCenter]}>
+                        <View style={[slide, wHFull, itemsCenter, justifyCenter] as ViewStyle[]}>
                             <Image style={[slideImage as any, wFull, objectContain]} source={images.introScreenImage3} />
 
-                            <Text style={slideText}>
+                            <Text style={slideText as TextStyle}>
                                 Discover the joy of shared experiences with our Co-Passenger rides.
                             </Text>
                         </View>
+                        {/* </PagerView> */}
                     </Swiper>
                 </View>
 

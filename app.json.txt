@@ -13,8 +13,7 @@
       "backgroundColor": "#EF5DA8"
     },
     "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.yindeish.tfare.driver"
+      "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
@@ -31,26 +30,26 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
-      "expo-font",
-      "expo-build-properties"
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true
     },
-    "owner": "yindeish00",
     "extra": {
-      "router": {
-        "origin": false
-      },
       "eas": {
-        "projectId": "e01f40ed-945e-4424-a0c9-6f46223bdfc1"
+        "projectId": "7438e77f-f972-4e35-b082-ada88e1460cd"
       }
     },
+    "owner": "yindeish",
     "runtimeVersion": {
       "policy": "appVersion"
     },
     "updates": {
-      "url": "https://u.expo.dev/e01f40ed-945e-4424-a0c9-6f46223bdfc1"
+      "url": "https://u.expo.dev/7438e77f-f972-4e35-b082-ada88e1460cd",
+      "enabled": true,
+      "requestHeaders": {
+        "expo-channel-name": "androidUpdate"
+      }
     }
   }
 }

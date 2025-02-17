@@ -74,7 +74,7 @@ function ArrivedPickupSheet() {
 
   return (
     <PaddedScreen>
-      <View style={tw `w-full h-[400px] flex flex-col gap-2`}>
+      <View style={tw `w-full h-full flex flex-col gap-2`}>
         {/* Back Btn CTA */}
         <TouchableOpacity
         style={tw `w-auto flex flex-row items-center`}
