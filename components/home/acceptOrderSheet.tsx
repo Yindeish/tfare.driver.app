@@ -345,10 +345,12 @@ useEffect(() => {
                 ) : (
                   <CtaBtn
                     img={{ src: sharedImg.proceedIcon, w: 20, h: 20 }}
-                    onPress={() => riderOffer?.rideStatus === 'accepted'? {} :acceptOffer(riderOffer?._id)}
+                    // onPress={() => riderOffer?.rideStatus === 'accepted'? {} :acceptOffer(riderOffer?._id)}
+                    onPress={() => acceptOffer(riderOffer?._id)}
                     text={{ name: "Accept", color: colors.white }}
                     bg={{ color: Colors.light.background }}
-                    style={{ baseContainer: { ...w("48%"), opacity: riderOffer?.rideStatus === 'accepted'?0.5:1 } }}
+                    // style={{ baseContainer: { ...w("48%"), opacity: riderOffer?.rideStatus === 'accepted'?0.5:1 } }}
+                    style={{ baseContainer: { ...w("48%")} }}
                   />
                 )}
                 {loading === "declining" ? (

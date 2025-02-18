@@ -61,8 +61,13 @@ import { pages } from "@/constants/pages";
 import { image } from "@/utils/imageStyles";
 import authImgs from "@/constants/images/auth";
 import FetchService from "@/services/api/fetch.service";
-import { launchImageLibraryAsync, MediaTypeOptions, requestMediaLibraryPermissionsAsync } from "expo-image-picker";
+import {
+  launchImageLibraryAsync,
+  MediaTypeOptions,
+  requestMediaLibraryPermissionsAsync,
+} from "expo-image-picker";
 import CloudinaryServices from "@/cloudinary/cloudinary.services";
+import { setItemAsync } from "expo-secure-store";
 
 const {
   textInput,
@@ -137,7 +142,7 @@ const SignupSchema = yup.object().shape({
   agree: yup
     .boolean()
     .oneOf([true], "You need to accept the terms and conditions"),
-    picture: yup.string().required('Select a picture!')
+  picture: yup.string().required("Select a picture!"),
 });
 
 export default function Signup() {
@@ -162,7 +167,7 @@ export default function Signup() {
       profileName: "",
       phoneNumber: "",
       agree: true,
-      picture: ''
+      picture: "",
     },
     validationSchema: SignupSchema,
     onSubmit: async (values) => {
@@ -170,20 +175,51 @@ export default function Signup() {
         setFetchState((prev) => ({ ...prev, loading: true, msg: "" }));
 
         const returnedData = await FetchService.post({
-          data: { ...values, fullName: values.profileName, picture: imgUploadState.img, role: "driver" },
+          data: {
+            ...values,
+            fullName: values.profileName,
+            picture: imgUploadState.img,
+            role: "driver",
+          },
           url: "/auth/signup",
         });
 
-        notify({ msg });
         const signedUpUser = returnedData?.signedUpUser;
+
+        await FetchService.post({
+          url: "/auth/signin",
+          data: {
+            email: signedUpUser?.email,
+            pin: signedUpUser?.accountSecurity?.pin,
+            role: "driver",
+          },
+        })
+          .then(async () => {
+            console.log("signed in");
+
+            const signedinTime = new Date();
+            const token = returnedData?.token;
+
+            await setItemAsync("token", token);
+            await setItemAsync("signedinTime", JSON.stringify(signedinTime));
+          })
+          .catch((err) => {
+            console.log({ err });
+            notify({ msg: "Error in getting signin token" });
+          });
+
+        notify({ msg });
 
         setFetchState((prev) => ({
           ...prev,
           msg: returnedData?.msg,
-          code: returnedData.code,
+          code: returnedData?.code,
           loading: false,
         }));
-        if (returnedData.code === 201) router.replace(`/(auth)/carInfoUpload` as Href);
+        if (returnedData?.code === 201 && signedUpUser)
+          router.replace(
+            `/(auth)/carInfoUpload?email=${signedUpUser?.email}` as Href
+          );
       } catch (error: any) {
         console.log({ error });
         setFetchState((prev) => ({
@@ -199,30 +235,39 @@ export default function Signup() {
   });
 
   const [imgUploadState, setImgUploadState] = useState({
-    msg: '',
+    msg: "",
     loading: false,
     img: null,
-})
+  });
 
-  const uploadImgToCloudinary = async ({ folderName, imagePath }: {
+  const uploadImgToCloudinary = async ({
+    folderName,
+    imagePath,
+  }: {
     imagePath: string;
     folderName: string;
-}) => {
-    setImgUploadState((prev) => ({ ...prev, loading: true }))
+  }) => {
+    setImgUploadState((prev) => ({ ...prev, loading: true }));
 
     await CloudinaryServices.uploadImage({
-        imagePath, folderName, fnToRn: (value) => {
-
-            setImgUploadState((prev) => ({ ...prev, loading: false, img: value as any }))
-            formik.setFieldValue('picture', value);
-        }
-    }).then((data) => {
-      console.log({data}, 'uploading')
+      imagePath,
+      folderName,
+      fnToRn: (value) => {
+        setImgUploadState((prev) => ({
+          ...prev,
+          loading: false,
+          img: value as any,
+        }));
+        formik.setFieldValue("picture", value);
+      },
     })
-    .catch((err) => {
-      console.log({err});
-    })
-}
+      .then((data) => {
+        console.log({ data }, "uploading");
+      })
+      .catch((err) => {
+        console.log({ err });
+      });
+  };
 
   const uploadPicture = async () => {
     // Request permission to access the image gallery
@@ -248,9 +293,9 @@ export default function Signup() {
 
     // Extract the URI of the selected image
     const uri = result?.assets[0]?.uri;
-    console.log({uri})
+    console.log({ uri });
 
-    uploadImgToCloudinary({folderName:'driversImages', imagePath: uri})
+    uploadImgToCloudinary({ folderName: "driversImages", imagePath: uri });
   };
 
   return (
@@ -305,7 +350,11 @@ export default function Signup() {
             >
               <Image
                 style={[image.w(65), image.h(65), image.rounded(65)]}
-                source={imgUploadState.img ? {uri: imgUploadState.img}: authImgs.imageUpload}
+                source={
+                  imgUploadState.img
+                    ? { uri: imgUploadState.img }
+                    : authImgs.imageUpload
+                }
               />
               <Text
                 style={
@@ -479,7 +528,6 @@ export default function Signup() {
                     itemsCenter,
                     justifyCenter,
                     mt(30),
-                    {opacity: formik.errors.picture != '' ? 0.5:1}
                   ] as ViewStyle[]
                 }
                 disabled={loading}

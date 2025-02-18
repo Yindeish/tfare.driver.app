@@ -7,6 +7,8 @@ import SafeScreen from "@/components/shared/safeScreen";
 import Colors, { colors } from "@/constants/Colors";
 import { useSnackbar } from "@/contexts/snackbar.context";
 import FetchService from "@/services/api/fetch.service";
+import { useAppSelector } from "@/state/hooks/useReduxToolkit";
+import { RootState } from "@/state/store";
 import {
   c,
   colorBlack,
@@ -53,7 +55,7 @@ import {
   MediaTypeOptions,
   requestMediaLibraryPermissionsAsync,
 } from "expo-image-picker";
-import { Href, Link, router } from "expo-router";
+import { Href, Link, router, useGlobalSearchParams } from "expo-router";
 import { useFormik } from "formik";
 import { useState } from "react";
 import {
@@ -70,7 +72,9 @@ import { Menu, PaperProvider, Text, TouchableRipple } from "react-native-paper";
 import { ObjectSchema, string } from "yup";
 
 function CarInfoUpload() {
-    const {Snackbar, notify, snackbarVisible, closeSnackbar} = useSnackbar()
+    const {token} = useAppSelector((state: RootState) => state.user);
+    const {Snackbar, notify, snackbarVisible, closeSnackbar} = useSnackbar();
+    const {email} = useGlobalSearchParams();
 
   const [fetchState, setFetchState] = useState({
     msg: "",
@@ -186,11 +190,13 @@ function CarInfoUpload() {
       carType,
       carYear,
     }) => {
+        console.log({errors})
       try {
         console.log({'uploading....':'uploading......'})
         setFetchState((prev) => ({ ...prev, loading: true, msg: "" }));
 
-        const returnedData = await FetchService.post({
+        const returnedData = await FetchService.postWithBearerToken({
+            token: token,
           data: {
             vehicleType: carType,
             vehicleYear: carYear,
@@ -220,17 +226,17 @@ function CarInfoUpload() {
           loading: false,
         }));
         if (returnedData.code === 201)
-            router.replace(`/(auth)/docsUpload` as Href)
+            router.replace(`/(auth)/docsUpload?email=${email}` as Href)
       } catch (error: any) {
         console.log({ error });
         setFetchState((prev) => ({
           ...prev,
-          msg: error?.message || "Error in signing up",
+          msg: error?.message || "Error in uploading Car info!",
           code: 400 as never,
           loading: false,
         }));
 
-        notify({ msg: error?.message || "Error in signing up" });
+        notify({ msg: error?.message || "Error in uploading Car info!" });
       }
     },
   });
@@ -276,14 +282,14 @@ function CarInfoUpload() {
                     setFieldValue("carType", value);
                   },
                 },
-                {
-                  label: values.carYear || "Car Year",
-                  options: ["Camry"],
-                  onSelect: (value: string) => {
-                    console.log({value})
-                    setFieldValue("carYear", value);
-                  },
-                },
+                // {
+                //   label: values.carYear || "Car Year",
+                //   options: ["Camry"],
+                //   onSelect: (value: string) => {
+                //     console.log({value})
+                //     setFieldValue("carYear", value);
+                //   },
+                // },
                 {
                   label: values.carModel || "Car Model",
                   options: ["Camry"],
@@ -324,7 +330,33 @@ function CarInfoUpload() {
                     bg("#F9F7F8"),
                     py("auto"),
                     px(24),
-                    errors?.carSeats != '' ? { borderColor: Colors.light.error } : undefined,
+                    // errors?.carSeats != '' ? { borderColor: Colors.light.error } : undefined,
+                  ] as TextStyle[]
+                }
+                placeholder="Car Year"
+                value={values.carYear}
+                keyboardType="number-pad"
+                cursorColor={Colors.light.darkGrey}
+                onChangeText={handleChange('carYear')}
+                onBlur={handleBlur('carYear')}
+                underlineColorAndroid={colors.transparent}
+                placeholderTextColor={Colors.light.darkGrey}
+              />
+              <TextInput
+                style={
+                  [
+                    wFull,
+                    flex,
+                    itemsCenter,
+                    justifyBetween,
+                    border(0.7, "#D7D7D7"),
+                    rounded(10),
+                    wFull,
+                    h(50),
+                    bg("#F9F7F8"),
+                    py("auto"),
+                    px(24),
+                    // errors?.carSeats != '' ? { borderColor: Colors.light.error } : undefined,
                   ] as TextStyle[]
                 }
                 placeholder="Number of seats"
@@ -454,11 +486,11 @@ function CarInfoUpload() {
                 mt(30),
               ]}
             >
-              {!loading ? (<Text style={[fw700, fs18, colorWhite, neurialGrotesk]}>
-                Continue
-              </Text>): (
+              {(loading && !errors?.carBackView )? (
                   <ActivityIndicator color={colors.white} size="small" />
-                )}
+                ) : (<Text style={[fw700, fs18, colorWhite, neurialGrotesk]}>
+                Continue
+              </Text>)}
             </TouchableRipple>
 
             <View
