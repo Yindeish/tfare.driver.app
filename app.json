@@ -1,0 +1,56 @@
+{
+  "expo": {
+    "name": "tfare",
+    "slug": "tfaredriver",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/splash/splash.png",
+    "scheme": "tfaredriver",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/images/splash/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#EF5DA8"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.yindeish.tfare.driver"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/splash/splash.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.yindeish.tfare.driver"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/splash/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-font",
+      "expo-build-properties"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "owner": "yindeish00",
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "e01f40ed-945e-4424-a0c9-6f46223bdfc1"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/e01f40ed-945e-4424-a0c9-6f46223bdfc1"
+    }
+  }
+}
