@@ -30,7 +30,6 @@ import {
   View,
   ViewStyle,
 } from "react-native";
-import * as DocumentPicker from "expo-document-picker";
 import { launchImageLibraryAsync } from "expo-image-picker";
 import FetchService from "@/services/api/fetch.service";
 

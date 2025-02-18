@@ -50,7 +50,6 @@
       "policy": "appVersion"
     },
     "updates": {
-      "enabled": true,
       "url": "https://u.expo.dev/e01f40ed-945e-4424-a0c9-6f46223bdfc1"
     }
   }
