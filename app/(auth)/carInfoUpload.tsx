@@ -6,6 +6,7 @@ import PageTitle from "@/components/shared/pageTitle";
 import SafeScreen from "@/components/shared/safeScreen";
 import Colors, { colors } from "@/constants/Colors";
 import { useSnackbar } from "@/contexts/snackbar.context";
+import { useStorageState } from "@/hooks/useStorageState";
 import FetchService from "@/services/api/fetch.service";
 import { useAppSelector } from "@/state/hooks/useReduxToolkit";
 import { RootState } from "@/state/store";
@@ -72,9 +73,11 @@ import { Menu, PaperProvider, Text, TouchableRipple } from "react-native-paper";
 import { ObjectSchema, string } from "yup";
 
 function CarInfoUpload() {
-    const {token} = useAppSelector((state: RootState) => state.user);
+    // const {token} = useAppSelector((state: RootState) => state.user);
     const {Snackbar, notify, snackbarVisible, closeSnackbar} = useSnackbar();
     const {email} = useGlobalSearchParams();
+    const [[_, token],___] = useStorageState('token')
+    console.log({token})
 
   const [fetchState, setFetchState] = useState({
     msg: "",
@@ -145,6 +148,7 @@ function CarInfoUpload() {
     uploadImgToCloudinary({ folderName: "driversImages", imagePath: uri, field });
   };
 
+
   const {
     values,
     errors,
@@ -196,7 +200,7 @@ function CarInfoUpload() {
         setFetchState((prev) => ({ ...prev, loading: true, msg: "" }));
 
         const returnedData = await FetchService.postWithBearerToken({
-            token: token,
+            token: token as string,
           data: {
             vehicleType: carType,
             vehicleYear: carYear,

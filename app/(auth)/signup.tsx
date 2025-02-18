@@ -186,19 +186,24 @@ export default function Signup() {
 
         const signedUpUser = returnedData?.signedUpUser;
 
+        console.log({
+          email: signedUpUser?.email,
+          signedUpUser
+        })
+
         await FetchService.post({
-          url: "/auth/signin",
+          url: "/auth/auto-signin",
           data: {
             email: signedUpUser?.email,
-            pin: signedUpUser?.accountSecurity?.pin,
-            role: "driver",
           },
         })
-          .then(async () => {
-            console.log("signed in");
+          .then(async (res: any) => {
+            const data = res?.body ? await res.json() : res;
+            console.log("signed in", {data, res});
 
             const signedinTime = new Date();
-            const token = returnedData?.token;
+            const token = data?.token;
+            console.log({token, signedinTime})
 
             await setItemAsync("token", token);
             await setItemAsync("signedinTime", JSON.stringify(signedinTime));

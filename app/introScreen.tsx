@@ -1,7 +1,8 @@
 import { View, StyleSheet, Pressable, Image, TextStyle, ViewStyle } from 'react-native'
 import { Text, Button, TouchableRipple, MD2Colors } from 'react-native-paper';
 import React, { useEffect, useState } from 'react'
-import Swiper from 'react-native-swiper'
+// import Swiper from 'react-native-swiper';
+import { SwiperFlatList } from 'react-native-swiper-flatlist';
 import { Href, Link, router } from 'expo-router';
 import { images } from '../constants/images/splash';
 import Colors, { colors } from '@/constants/Colors';
@@ -13,7 +14,6 @@ import { pages } from '@/constants/pages';
 import { image, objectContain } from '@/utils/imageStyles';
 import CtaBtn from '@/components/shared/ctaBtn';
 import sharedImg from '@/constants/images/shared';
-// import PagerView from 'react-native-pager-view';
 
 const { container, containerWrapper, skipLink, skipText, slide, slideImage, slideText, text, wrapper, activeDotStyle, ctaBtn, ctaText } = StyleSheet.create({
     containerWrapper: {
@@ -87,20 +87,30 @@ export default function IntroScreen() {
                 </Link>
 
                 <View style={container as ViewStyle}>
-                    <Swiper
+                    {/* <Swiper */}
+                    <SwiperFlatList
                         style={wrapper as ViewStyle}
-                        showsButtons={false}
-                        dotColor='white'
-                        activeDotColor='#5D5FEF'
-                        activeDotStyle={activeDotStyle as ViewStyle}
+                        // showsButtons={false}
+                        // dotColor='white'
+                        // activeDotColor='#5D5FEF'
+                        // activeDotStyle={activeDotStyle as ViewStyle}
+                        paginationDefaultColor={'white'}
+                        paginationActiveColor={'#5D5FEF'}
+                        paginationStyleItem={activeDotStyle as ViewStyle}
+                        disableGesture={false}
                         scrollEnabled={true}
                         index={0}
-                        autoplay
-                        autoplayTimeout={1}
-                        loop={false}
-                        onIndexChanged={(index) => {
-                            setCurrentSlideIndex(index);
-                        }}
+                        autoplay={true}
+                        autoplayDelay={1} 
+                        autoplayLoop={false}
+                        onChangeIndex={({index}) => {
+                                setCurrentSlideIndex(index);
+                            }}
+                        // autoplayTimeout={1}
+                        // loop={false}
+                        // onIndexChanged={(index) => {
+                        //     setCurrentSlideIndex(index);
+                        // }}
                     > 
                         {/* <PagerView 
                          scrollEnabled={true}
@@ -128,7 +138,7 @@ export default function IntroScreen() {
                             </Text>
                         </View>
                         {/* </PagerView> */}
-                    </Swiper>
+                    </SwiperFlatList>
                 </View>
 
                 {currentSlideIndex === 2 ?

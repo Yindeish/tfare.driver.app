@@ -1,6 +1,6 @@
 import CustomizeRouteInputTile from "@/components/home/customizeRouteInputTile";
 import InTripDropoffDeleteTile from "@/components/home/inTripDropoffDeleteTile";
-import InTripDropffTile from "@/components/home/inTripDropoffTile";
+import InTripDropffTile, { EditableInTripDropffTile } from "@/components/home/inTripDropoffTile";
 import CtaBtn from "@/components/shared/ctaBtn";
 import PaddedScreen from "@/components/shared/paddedScreen";
 import PageTitle from "@/components/shared/pageTitle";
@@ -72,8 +72,12 @@ function CustomizeRoute() {
     loading: false,
     msg: "",
     code: null,
+    pickupSearchText: '',
+    dropoffSearchText: '',
+    dropoffs: selectedRoute?.inTripDropoffs?.map((dropoff, index) => ({...dropoff, id: index})) || [],
+    matchDropoffs: selectedRoute?.inTripDropoffs?.map((dropoff,) => dropoff) || [],
   });
-  const { code, msg, loading } = fetchState;
+  const { code, msg, loading, dropoffs, matchDropoffs, dropoffSearchText, pickupSearchText } = fetchState;
 
   const customizeRoute = async () => {
     setFetchState((prev) => ({ ...prev, loading: true }));
@@ -101,6 +105,27 @@ function CustomizeRoute() {
     //     setFetchState((prev) => ({ ...prev, loading: false, msg: '', code: null }));
     // }
   };
+
+  const removeDropoff = (dropoffId: number) => {
+    const arr = dropoffs.filter((dropoff) => dropoff.id != dropoffId);
+    setFetchState((prev) => ({...prev, dropoffs: arr}));
+  }
+
+  const addDropoff = () => {
+    // const dropoff = {};
+
+    // setFetchState((prev) => ({...prev, dropoffs: [...dropoffs, dropoff]}));
+  }
+
+  const searchBustop = (searchText: string) => {
+    const arr = matchDropoffs.filter((dropoff) => dropoff?.name == searchText || dropoff?.name.includes(searchText));
+
+    setFetchState((prev) => ({...prev, matchDropoffs: arr}));
+  }
+
+  const saveRoute = async () => {
+
+  }
 
   return (
     <SafeScreen>
@@ -145,9 +170,23 @@ function CustomizeRoute() {
 
             {/* //!Startoff-Endpoint Inputs Block */}
             <View style={[flexCol, gap(32)]}>
-              <CustomizeRouteInputTile label="Startoff Bus Stop" />
+              <CustomizeRouteInputTile 
+              value={pickupSearchText}
+              onChangeText={(text) => {
+                setFetchState((prev) => ({...prev, pickupSearchText: text}));
+                searchBustop(text);
+              }}
+              onBlur={() => {}}
+              label="Startoff Bus Stop" />
 
-              <CustomizeRouteInputTile label="Endpoint Bus Stop" />
+              <CustomizeRouteInputTile 
+              value={dropoffSearchText}
+              onChangeText={(text) => {
+                setFetchState((prev) => ({...prev, dropoffSearchText: text}));
+                searchBustop(text);
+              }}
+              onBlur={() => {}}
+              label="Endpoint Bus Stop" />
             </View>
             {/* //!Startoff-Endpoint Inputs Block */}
 
@@ -159,15 +198,21 @@ function CustomizeRoute() {
                 </Text>
               </View>
 
-              <View style={[flexCol, gap(16), { overflow: "scroll" }]}>
-                {selectedRoute?.inTripDropoffs.map((dropoff, index) => (
-                  <InTripDropffTile
+              {<View style={[flexCol, gap(16), { overflow: "scroll" }]}>
+                {dropoffs.map((dropoff, index) => (
+                //   <InTripDropffTile
+                //     dropoff={dropoff}
+                //     index={index + 1}
+                //     key={index}
+                //   />
+                  <EditableInTripDropffTile
                     dropoff={dropoff}
                     index={index + 1}
+                    onPress={() => removeDropoff(index)}
                     key={index}
                   />
                 ))}
-              </View>
+              </View>}
             </View>
             {/* //!In Trip Dropoffs */}
           </PaddedScreen>

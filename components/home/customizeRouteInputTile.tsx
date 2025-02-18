@@ -5,11 +5,12 @@ import tripImgs from "@/constants/images/trip";
 import { colordarkGrey, fs12, fw400, fw500, neurialGrotesk } from "@/utils/fontStyles";
 import { image } from "@/utils/imageStyles";
 import { bg, border, borderGrey, flex, flexCol, gap, h, hFull, itemsCenter, px, rounded, wFull } from "@/utils/styles";
-import { Image, TextInput, TextStyle, View, ViewStyle } from "react-native";
+import { Image, NativeSyntheticEvent, TextInput, TextInputFocusEventData, TextStyle, View, ViewStyle } from "react-native";
 import { Text } from "react-native-paper";
 
 
-function CustomizeRouteInputTile({ label }: { label: string }) {
+function CustomizeRouteInputTile({ label, onBlur, onChangeText, value }: { label: string, value: string, onChangeText: ((text: string) => void) | undefined, onBlur: ((e: NativeSyntheticEvent<TextInputFocusEventData>) => void) | undefined
+}) {
 
 
     return (
@@ -26,9 +27,9 @@ function CustomizeRouteInputTile({ label }: { label: string }) {
                     placeholder='Select Bust stop'
                     placeholderTextColor={colors.black}
                     keyboardType='default'
-                    value={''}
-                    onChangeText={() => { }}
-                    onBlur={() => { }}
+                    value={value}
+                    onChangeText={onChangeText}
+                    onBlur={onBlur}
                 />
 
             </View>
