@@ -9,7 +9,7 @@ import { Image, NativeSyntheticEvent, TextInput, TextInputFocusEventData, TextSt
 import { Text } from "react-native-paper";
 
 
-function CustomizeRouteInputTile({ label, onBlur, onChangeText, value }: { label: string, value: string, onChangeText: ((text: string) => void) | undefined, onBlur: ((e: NativeSyntheticEvent<TextInputFocusEventData>) => void) | undefined
+function CustomizeRouteInputTile({ label, onBlur, onChangeText, value, onFocus }: { label: string, value: string, onChangeText: ((text: string) => void) | undefined, onBlur: ((e: NativeSyntheticEvent<TextInputFocusEventData>) => void) | undefined, onFocus?: ((e: NativeSyntheticEvent<TextInputFocusEventData>) => void) | undefined
 }) {
 
 
@@ -29,6 +29,7 @@ function CustomizeRouteInputTile({ label, onBlur, onChangeText, value }: { label
                     keyboardType='default'
                     value={value}
                     onChangeText={onChangeText}
+                    onFocus={onFocus}
                     onBlur={onBlur}
                 />
 

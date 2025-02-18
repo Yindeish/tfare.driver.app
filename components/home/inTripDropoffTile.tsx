@@ -100,8 +100,8 @@ export function EditableInTripDropffTile({
         </View>
       </View>
 
-      <TouchableOpacity onPress={onPress} style={tw `w-[45px] h-[45px] bg-[#F9F7F8] border-[0.7px] border-[#D7D7D7] rounded-full`}>
-      <Ionicons name="close-circle-outline" size={20} color="#747474" />
+      <TouchableOpacity onPress={onPress} style={tw `w-[35px] h-[35px] flex items-center justify-center bg-[#F9F7F8] border-[0.7px] border-[#D7D7D7] rounded-full`}>
+      <Ionicons name="close-circle-outline" size={25} color="#747474" />
       </TouchableOpacity>
     </View>
   );

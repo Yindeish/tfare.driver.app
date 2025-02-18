@@ -16,7 +16,8 @@ const initialState: IRideState = {
     selectedRoute: null,
     currentRequest: null,
     currentRide: null,
-    rides: []
+    rides: [],
+    dropoffsInput: []
 }
 
 const RideSlice = createSlice({
