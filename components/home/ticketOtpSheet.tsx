@@ -44,6 +44,7 @@ import {
   Image,
   TouchableOpacity,
   ViewStyle,
+  ActivityIndicator,
 } from "react-native";
 import { Text } from "react-native-paper";
 import PaddedScreen from "../shared/paddedScreen";
@@ -62,9 +63,12 @@ import { useFormik } from "formik";
 import { number, ObjectSchema, string } from "yup";
 import { Ionicons } from "@expo/vector-icons";
 import { setRideState } from "@/state/slices/ride";
-import { ERideAcceptStage, IRiderRideDetails } from "@/state/types/ride";
+import { EQuery, IRiderRideDetails } from "@/state/types/ride";
 import ArrivedPickupSheet from "./arrivedPickupSheet";
 import FetchService from "@/services/api/fetch.service";
+import { useSnackbar } from "@/contexts/snackbar.context";
+import { useStorageState } from "@/hooks/useStorageState";
+import { RideConstants } from "@/constants/ride";
 
 function TicketOtpSheet() {
   const { hideBottomSheet, showBottomSheet } = useBottomSheet();
@@ -73,6 +77,8 @@ function TicketOtpSheet() {
     (state: RootState) => state.ride
   );
   const { token } = useAppSelector((state: RootState) => state.user);
+  const {Snackbar, notify, closeSnackbar, snackbarVisible} = useSnackbar();
+  const [[_, query], setQuery] = useStorageState(RideConstants.localDB.query);
 
   console.log({currentRide})
 
@@ -105,7 +111,7 @@ function TicketOtpSheet() {
       msg: "",
       code: null,
     }));
-    await FetchService.postWithBearerToken({
+    await FetchService.patchWithBearerToken({
       url: `/user/driver/me/ride/${currentRide?._id}/start-ride`,
       data: {
         riderRideId: currentRequest?._id,
@@ -153,7 +159,7 @@ function TicketOtpSheet() {
     dispatch(setRideState({key:'selectedRoute', value: false}));
     dispatch(setRideState({key:'driverOnline', value: false}));
     dispatch(setRideState({key:'selectedRoute', value: null}));
-    dispatch(setRideState({key:'rideAcceptStage', value: ERideAcceptStage.searching}));
+    dispatch(setRideState({key:'rideAcceptStage', value: EQuery.searching}));
 
     hideBottomSheet();
     router.push("/(home)");
@@ -189,10 +195,10 @@ function TicketOtpSheet() {
             dispatch(
               setRideState({
                 key: "rideAcceptStage",
-                value: ERideAcceptStage.arrived_pickup,
+                value: EQuery.arrived_pickup,
               })
             );
-            showBottomSheet([500], <ArrivedPickupSheet />);
+            showBottomSheet([350, 400], <ArrivedPickupSheet />, true);
           }}
         >
           <Ionicons name="chevron-back" size={24} color="black" />
@@ -313,7 +319,8 @@ function TicketOtpSheet() {
 
         {/* //!Start-Cancel Trip CTAs */}
         <View style={[flexCol, gap(20)]}>
-          <CtaBtn
+          {!loading ? (
+            <CtaBtn
             img={{
               src: tripImgs.arrivedpickupImage,
             }}
@@ -321,6 +328,9 @@ function TicketOtpSheet() {
             text={{ name: "Start Trip" }}
             bg={{ color: Colors.light.background }}
           />
+          ) : (
+            <ActivityIndicator size={'small'} />
+          )}
 
           <CtaBtn
             img={{
@@ -334,7 +344,8 @@ function TicketOtpSheet() {
         </View>
         {/* //!Start-Cancel Trip CTAs */}
 
-        <Text style={tw `text-[10px] font-medium text-red-500`}>{msg}</Text>
+        {/* <Text style={tw `text-[10px] font-medium text-red-500`}>{msg}</Text> */}
+        <Snackbar msg={msg} onDismiss={() => closeSnackbar()} snackbarVisible={snackbarVisible} />
       </View>
     </PaddedScreen>
   );

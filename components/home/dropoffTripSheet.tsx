@@ -56,10 +56,12 @@ import { RootState } from "@/state/store";
 import tw from "@/constants/tw";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { ERideAcceptStage, IRiderRideDetails } from "@/state/types/ride";
+import { EQuery, IRiderRideDetails } from "@/state/types/ride";
 import { setRideState } from "@/state/slices/ride";
 import FetchService from "@/services/api/fetch.service";
 import { useState } from "react";
+import { useStorageState } from "@/hooks/useStorageState";
+import { RideConstants } from "@/constants/ride";
 
 function DropoffSheet() {
   const { showBottomSheet, hideBottomSheet } = useBottomSheet();
@@ -68,6 +70,7 @@ function DropoffSheet() {
   const { selectedRoute, currentRide, currentRequest } = useAppSelector(
     (state: RootState) => state.ride
   );
+  const [[_, query], setQuery] = useStorageState(RideConstants.localDB.query);
 
   const [fetchState, setFetchState] = useState({
     loading: false,
@@ -104,7 +107,7 @@ function DropoffSheet() {
           dispatch(setRideState({ key: "currentRide", value: currentRide }));
           dispatch(setRideState({ key: "currentRequest", value: riderRide }));
 
-          showBottomSheet([300, 550], <OnTripSheet />);
+          showBottomSheet([300, 550], <OnTripSheet />, true);
         }
       })
       .catch((err) => {
@@ -127,10 +130,10 @@ function DropoffSheet() {
             dispatch(
               setRideState({
                 key: "rideAcceptStage",
-                value: ERideAcceptStage.pause_trip,
+                value: EQuery.pause_trip,
               })
             );
-            showBottomSheet([300, 550], <OnTripSheet />);
+            showBottomSheet([300, 550], <OnTripSheet />, true);
           }}
         >
           <Ionicons name="chevron-back" size={24} color="black" />

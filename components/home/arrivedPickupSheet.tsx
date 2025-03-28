@@ -47,16 +47,19 @@ import TicketOtpSheet from "./ticketOtpSheet";
 import { Ionicons } from "@expo/vector-icons";
 import { useAppDispatch, useAppSelector } from "@/state/hooks/useReduxToolkit";
 import { setRideState } from "@/state/slices/ride";
-import { ERideAcceptStage } from "@/state/types/ride";
+import { EQuery } from "@/state/types/ride";
 import AcceptOrderSheet from "./acceptOrderSheet";
 import tw from "@/constants/tw";
 import * as Linking from 'expo-linking';
 import { RootState } from "@/state/store";
+import { useStorageState } from "@/hooks/useStorageState";
+import { RideConstants } from "@/constants/ride";
 
 function ArrivedPickupSheet() {
   const { showBottomSheet } = useBottomSheet();
   const dispatch = useAppDispatch();
-  const {currentRequest} = useAppSelector((state: RootState) => state.ride)
+  const {currentRequest} = useAppSelector((state: RootState) => state.ride);
+  const [[_, query], setQuery] = useStorageState(RideConstants.localDB.query);
 
   const openCallerApp = (phoneNumber: string) => {
     const url = `tel:${phoneNumber}`;
@@ -73,7 +76,7 @@ function ArrivedPickupSheet() {
   };
 
   return (
-    <PaddedScreen>
+    <PaddedScreen styles={tw ``}>
       <View style={tw `w-full h-full flex flex-col gap-2`}>
         {/* Back Btn CTA */}
         <TouchableOpacity
@@ -82,10 +85,10 @@ function ArrivedPickupSheet() {
             dispatch(
               setRideState({
                 key: "rideAcceptStage",
-                value: ERideAcceptStage.accepting,
+                value: EQuery.accepting,
               })
             );
-            showBottomSheet([400], <AcceptOrderSheet />);
+            showBottomSheet([400], <AcceptOrderSheet />, true);
           }}
         >
           <Ionicons name="chevron-back" size={24} color="black" /> 
@@ -185,7 +188,7 @@ function ArrivedPickupSheet() {
           {/* //!Arrived Pickup CTA */}
           <CtaBtn
             img={{ src: tripImgs.arrivedpickupImage, w: 20, h: 20 }}
-            onPress={() => showBottomSheet([500, 600], <TicketOtpSheet />)}
+            onPress={() => showBottomSheet([500, 600], <TicketOtpSheet />, true)}
             text={{ name: "Arrived Pickup", color: colors.white }}
             bg={{ color: Colors.light.background }}
           />

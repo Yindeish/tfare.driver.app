@@ -68,7 +68,7 @@ export default function Account() {
   const { user, wallet } = useAppSelector((state: RootState) => state.user);
   const dispatch = useAppDispatch();
   const [[_, __], setSession] = useStorageState("user");
-  const [[___, ____], setToken] = useStorageState("user");
+  const [[___, ____], setToken] = useStorageState("token");
 
   const [fetchState, setFetchState] = useState({
     loading: false,

@@ -19,7 +19,8 @@ import FetchService from "@/services/api/fetch.service";
 import { useAppDispatch, useAppSelector } from "@/state/hooks/useReduxToolkit";
 import { setRideState } from "@/state/slices/ride";
 import { RootState } from "@/state/store";
-import { ICity, IPlan } from "@/state/types/ride";
+import { IAddress } from "@/state/types/account";
+import { IBusStop, ICity, IPlan } from "@/state/types/ride";
 import {
   c,
   colorBlack,
@@ -69,13 +70,20 @@ import {
 } from "react-native";
 import { Text } from "react-native-paper";
 
+interface IDropoff {
+  name: string;
+  city: ICity;
+  order: number;
+  plan: IPlan;
+}
+
 function CustomizeRoute() {
   const { selectedRoute, dropoffBusstopInput, pickupBusstopInput } =
     useAppSelector((state: RootState) => state.ride);
   const dispatch = useAppDispatch();
   const [[tokenLoading, token], setTokenSession] = useStorageState("token");
   const {Snackbar, snackbarVisible, notify, closeSnackbar} = useSnackbar();
-  const {id} = useGlobalSearchParams()
+  const {id} = useGlobalSearchParams();
 
   const [fetchState, setFetchState] = useState({
     loading: false,
@@ -88,12 +96,7 @@ function CustomizeRoute() {
         ...dropoff,
         id: index,
       })) || [],
-    matchDropoffs: [] as {
-      name: string;
-      city: ICity;
-      order: number;
-      plan: IPlan;
-    }[],
+    matchDropoffs: [] as IDropoff[],
     inputtingPickup: false,
     inputtingDropoff: false,
   });
@@ -146,18 +149,35 @@ function CustomizeRoute() {
     // setFetchState((prev) => ({...prev, dropoffs: [...dropoffs, dropoff]}));
   };
 
-  const searchBustop = (searchText: string) => {
-    const arr = dropoffs.filter(
-      (dropoff) =>
-        dropoff?.name?.toLowerCase() == searchText.toLowerCase() || dropoff?.name.toLowerCase().includes(searchText.toLowerCase())
-    );
+  // const searchBustop = (searchText: string) => {
+  //   const arr = dropoffs.filter(
+  //     (dropoff) =>
+  //       dropoff?.name?.toLowerCase() == searchText.toLowerCase() || dropoff?.name.toLowerCase().includes(searchText.toLowerCase())
+  //   );
 
-    setFetchState((prev) => ({
-      ...prev,
-      matchDropoffs: searchText == '' ? [] : arr,
-    }));
+  //   setFetchState((prev) => ({
+  //     ...prev,
+  //     matchDropoffs: searchText == '' ? [] : arr,
+  //   }));
+  // };
+
+  const searchBusstops = async (query: string) => {
+    setFetchState((prev) => ({ ...prev, loading: true }));
+
+    const returnedData = await FetchService.getWithBearerToken({
+      url: `/ride/busstop/search?searchValue=${query}`,
+      token: token as string,
+    });
+
+    setFetchState((prev) => ({ ...prev, loading: false }));
+
+    const busstops = returnedData?.matchSearchBusStops as IDropoff[];
+    console.log({ busstops });
+    if (busstops) {
+      setFetchState((prev) => ({ ...prev, matchDropoffs: query == '' ? [] : busstops }));
+    }
   };
-
+  
   const saveRoute = async () => {
     dispatch(setRideState({key: 'dropoffsInput', value: matchDropoffs.map((dropoff) => ({name: dropoff?.name, city: dropoff?.city, order: dropoff?.order}))}));
 
@@ -198,10 +218,10 @@ function CustomizeRoute() {
 // Updating search Texts
   useEffect(() => {
     if (inputtingPickup) {
-    searchBustop(pickupSearchText)
+    searchBusstops(pickupSearchText)
     }
     if(inputtingDropoff) {
-    searchBustop(dropoffSearchText)
+    searchBusstops(dropoffSearchText)
     }
   }, [inputtingDropoff, inputtingPickup, pickupSearchText, dropoffSearchText]);
   // Updating search Texts

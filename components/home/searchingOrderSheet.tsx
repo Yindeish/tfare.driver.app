@@ -1,5 +1,5 @@
 import { useBottomSheet } from "@/contexts/useBottomSheetContext";
-import { Href, router } from "expo-router";
+import { Href, router, usePathname } from "expo-router";
 import {
   View,
   Image,
@@ -76,23 +76,25 @@ import { RootState } from "@/state/store";
 import { setRideState } from "@/state/slices/ride";
 import ScaleUpDown from "../shared/scale_animator";
 import AcceptOrderSheet from "./acceptOrderSheet";
-import { ERideAcceptStage } from "@/state/types/ride";
+import { EQuery, IRequest, IRiderRideDetails } from "@/state/types/ride";
 import tw from "@/constants/tw";
 import ErrorMsg from "../shared/error_msg";
+import { supabase } from "@/supabase/supabase.config";
+import { RideConstants } from "@/constants/ride";
 
 const SearchingOrder = () => {
   const { showBottomSheet, hideBottomSheet } = useBottomSheet();
-  const {token} = useAppSelector((state: RootState) => state.user);
+  const { token } = useAppSelector((state: RootState) => state.user);
   const dispatch = useAppDispatch();
-  const { pickupBusstopInput, dropoffBusstopInput, selectedRoute } = useAppSelector(
-    (state: RootState) => state.ride
-  );
+  const {
+    pickupBusstopInput,
+    dropoffBusstopInput,
+    selectedRoute,
+    allRequests,
+  } = useAppSelector((state: RootState) => state.ride);
+  const [[_, query], setQuery] = useStorageState(RideConstants.localDB.query);
 
-
-  // setTimeout(() => {
-  //     // hideBottomSheet();
-  //     // router.push(`/`)
-  // }, 3000)
+  const path = usePathname();
 
   const [fetchState, setFetchState] = useState({
     loading: false,
@@ -109,7 +111,6 @@ const SearchingOrder = () => {
       token: token as string,
     })
       .then(async (res) => {
-
         const data = res?.body ? await res.body : res;
         const code = data?.code;
         const msg = data?.msg;
@@ -117,26 +118,97 @@ const SearchingOrder = () => {
 
         setFetchState((prev) => ({ ...prev, loading: false, msg, code }));
 
-        if ((code && code == 200) && (ridersOffers && Number(ridersOffers?.length) > 0)) {
+        if (
+          code &&
+          code == 200 &&
+          ridersOffers &&
+          Number(ridersOffers?.length) > 0
+        ) {
           dispatch(setRideState({ key: "ridersOffers", value: ridersOffers }));
           setFetchState((prev) => ({
             ...prev,
             ridersOffers,
           }));
-          dispatch(setRideState({key: 'currentRiderOfferIndex', value: 0}));
-          showBottomSheet([400], <AcceptOrderSheet />)
+          dispatch(setRideState({ key: "currentRiderOfferIndex", value: 0 }));
+          setQuery(RideConstants.query.accepting)
+          // showBottomSheet([400], <AcceptOrderSheet />, true);
         }
       })
       .catch((err) => {
         console.log({ err });
 
         setTimeout(() => router.back(), 1000);
-    });
+      });
   };
 
   useEffect(() => {
-    if(ridersOffers.length === 0) getRidersOffers();
-  }, [(new Date()).getSeconds(),ridersOffers.length]);
+    if(allRequests.length > 0) setQuery(RideConstants.query.accepting);
+    else getRidersOffers();
+  }, [router])
+
+  const channel = supabase.channel(RideConstants.channel.ride_requesting);
+  channel
+    .on(
+      "broadcast",
+      { event: RideConstants.event.ride_requested },
+      (payload) => {
+        console.log('====================================');
+        console.log('RideConstants.event.ride_requested', payload?.payload?.ride, path, query);
+        console.log('====================================');
+        // if (path == "/acceptRide" && query == EQuery.searching) {
+        if (path == "/acceptRide" && (query == EQuery.searching || query == EQuery.accepting)) { // testing
+          const ride = payload?.payload?.ride as IRiderRideDetails;
+
+          const requestPresent = allRequests.find(
+            (request) => String(request?._id) == String(ride?._id)
+          );
+          
+          console.log('====================================');
+          console.log({requestPresent}, {allRequests});
+          console.log('====================================');
+
+          if (requestPresent || requestPresent != undefined) {
+            setQuery(RideConstants.query.accepting);
+            showBottomSheet([400], <AcceptOrderSheet />, true)
+            return;
+          }
+
+          const newRequest = {
+            _id: ride?._id,
+            dropoffId: ride?.dropoffBusstop?._id,
+            dropoffName: ride?.dropoffBusstop?.name,
+            pickupId: ride?.pickupBusstop?._id,
+            pickupName: ride?.pickupBusstop?.name,
+            riderCounterOffer: ride?.riderCounterOffer,
+            riderId: ride?.riderId,
+            rideStatus: ride?.rideStatus,
+            riderName: ride?.rider?.fullName,
+            riderPicture: ride?.rider?.picture
+          };
+
+          const requests = [...allRequests, newRequest];
+
+          dispatch(setRideState({ key: "allRequests", value: requests }));
+
+          const newUnAcceptedRequests = requests.map((request) => (request?.rideStatus == 'pending' || request?.rideStatus == 'requesting'));
+
+          dispatch(setRideState({key: 'unAcceptedRequests', value: newUnAcceptedRequests}));
+          
+          setQuery(RideConstants.query.accepting);
+          showBottomSheet([400], <AcceptOrderSheet />, true)
+
+          // getRidersOffers(); // let's try just the real time data for now.
+        }
+      }
+    )
+    .subscribe();
+
+  // useEffect(() => {
+  //   if(ridersOffers.length === 0)
+  //     getRidersOffers();
+
+  //   return;
+  // }, [(new Date()).getSeconds(),ridersOffers.length]);
 
   return (
     <PaddedScreen>
@@ -165,8 +237,8 @@ const SearchingOrder = () => {
           />
         </ScaleUpDown>
 
-        <View style={tw `w-full flex flex-row justify-center`}>
-            {code !== 200 && <ErrorMsg msg={msg} />}
+        <View style={tw`w-full flex flex-row justify-center`}>
+          {code !== 200 && <ErrorMsg msg={msg} />}
         </View>
       </View>
     </PaddedScreen>

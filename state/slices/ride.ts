@@ -9,7 +9,8 @@ const initialState: IRideState = {
     driverOnline: false,
     driverEligible: false,
     ridersOffers:[],
-    currentRiderOfferIndex: null,
+    // currentRiderOfferIndex: null,
+    currentRiderOfferIndex: 0,
     presetRoutes: [],
     rideAcceptStage: "searching",
     ridesAccepted: [],
@@ -17,7 +18,9 @@ const initialState: IRideState = {
     currentRequest: null,
     currentRide: null,
     rides: [],
-    dropoffsInput: []
+    dropoffsInput: [],
+    allRequests: [],
+    unAcceptedRequests: [],
 }
 
 const RideSlice = createSlice({

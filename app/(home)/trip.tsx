@@ -118,7 +118,7 @@ function Trip() {
                         <View style={[w('60%'), h(50), rounded(10), flex, itemsCenter, justifyCenter, gap(10), bg(colors.white), borderGrey(0.7), mb(70), { shadowColor: '#000000', shadowOpacity: 0.05, shadowRadius: 10 }]}>
                             <Image style={[image.w(20), image.h(20),]} source={sharedImg.blackBgPlusIcon} />
 
-                            <Text style={[neurialGrotesk, fw700, fs18, c(colors.black),]}>Create Custom Route</Text>
+                            <Text style={[neurialGrotesk, fw700, fs18, c(colors.black),]}>Create Custom Trip</Text>
                         </View>
                     </TouchableOpacity>
                     {/* //!Create Custom Route CTA */}

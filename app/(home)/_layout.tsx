@@ -1,4 +1,4 @@
-import { Href, Redirect, Stack, Tabs } from 'expo-router';
+import { Href, Redirect, Stack, Tabs, usePathname } from 'expo-router';
 import { Dimensions, View, Image } from 'react-native';
 import { useSession } from '../../contexts/userSignedInContext';
 import { tabs } from '@/constants/tabs';
@@ -6,14 +6,23 @@ import Colors, { colors } from '@/constants/Colors';
 import TabBartTitle from '@/components/home/tabTitle';
 import { pages } from '@/constants/pages';
 import { homeImgs } from '@/constants/images/home';
+import { useEffect } from 'react';
+import { useStorageState } from '@/hooks/useStorageState';
+import { RideConstants } from '@/constants/ride';
 
 
 export default function AppLayout() {
   const { userSession, isLoading, signOut } = useSession();
+  const [[_, query], setQuery] = useStorageState(RideConstants.localDB.query);
+  const path = usePathname();
   // signOut()
-  console.log({ userSession, layout: 'home' })
+  // console.log({ userSession, layout: 'home' })
 
   const { width, height } = Dimensions.get('window');
+
+    useEffect(() => {console.log({path})}, [path])
+
+    useEffect(() => {console.log({query})}, [query])
 
   // if (isLoading) {
   //   return <View style={{ width, height, backgroundColor: '#D8D8D8' }} />;

@@ -12,19 +12,22 @@ import { Href, router } from 'expo-router'
 import { tabs } from '@/constants/tabs'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import { setProfileCta, setUserProfileInfo, setUserProfileInfoFeild } from '@/state/slices/account'
-import { IStateInputProfile } from '@/state/types/account'
+import { IStateInputProfile, IUserAccount } from '@/state/types/account'
 import { useSession } from '@/contexts/userSignedInContext'
 import sharedImg from '@/constants/images/shared'
 import tripImgs from '@/constants/images/trip'
 import AccountTextField from '@/components/account/accountTextFeild'
 import { homeImgs } from '@/constants/images/home'
+import { useStorageState } from '@/hooks/useStorageState'
 // import * as ImagePicker from 'expo-image-picker';
 // import { UploadApiOptions, upload } from 'cloudinary-react-native'
 // import CloudinaryServices from '../../cloudinary/cloudinary.services'
 
 
 export default function profileInfo() {
-    const { user } = useSession()
+    // const { user } = useSession();
+    const [[_, userString], setUser] = useStorageState('user');
+    const user = JSON.parse(userString as string) as IUserAccount;
 
     // const { emailInput, nameInput, phoneNoInput, userNameInput, avatarInput, imageInput } = stateInput.profile;
     // const { emailInput, nameInput, phoneNoInput, userNameInput, } = stateInput.profile;
@@ -91,13 +94,13 @@ export default function profileInfo() {
                     {/* User avatar */}
 
                     <View style={[mt(28), flexCol, gap(16), itemsCenter, wFull, h(134)]}>
-                        {/* {(user?.picture || user?.avatar) ? */}
-                        {(user?.picture) ?
+                        {/* {(user?.picture) ? */}
+                        {(user?.picture || user?.avatar) ?
                             (<Image source={user?.picture as any} style={[image.w(100), image.h(100), image.rounded(100)]} />)
                             :
                             // (<Image source={imageInput !== '' || avatarInput !== '' ? { uri: imageInput || avatarInput } : { uri: images.fallbackAvatar }} style={[image.w(100), image.h(100), image.rounded(100)]} />)
                             // (<Image source={false ? {} : images.fallbackAvatar} style={[image.w(100), image.h(100), image.rounded(100)]} />)
-                            (<Image source={false ? {} : homeImgs.userProfileImg} style={[image.w(100), image.h(100), image.rounded(100)]} />)
+                            (<Image source={(user?.picture || user?.avatar) ? {uri: (user?.picture || user?.avatar)} : homeImgs.userProfileImg} style={[image.w(100), image.h(100), image.rounded(100)]} />)
                         }
 
                         <TouchableOpacity onPress={() => pickImage()}>

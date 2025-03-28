@@ -1,4 +1,4 @@
-import { Image, View, TouchableOpacity, ScrollView, Pressable, Platform, TextInput, Dimensions, FlatList } from 'react-native'
+import { Image, View, TouchableOpacity, ScrollView, Pressable, Platform, TextInput, Dimensions, FlatList, TextStyle } from 'react-native'
 import { FontAwesome6 } from '@expo/vector-icons';
 import { ActivityIndicator, Button, Snackbar, Text, } from 'react-native-paper'
 import React, { useEffect } from 'react'
@@ -38,7 +38,7 @@ function Trips() {
                         <TextInput
                             style={[
                                 wHFull, pl(43), borderGrey(0.7), rounded(1000), bg('#F9F7F8')
-                            ]}
+                            ] as TextStyle[]}
                             placeholder='Search Bus stop'
                             placeholderTextColor={Colors.light.darkGrey}
                             value={''}
@@ -75,7 +75,7 @@ function Trips() {
                     {/* //!Routes */}
                     <View style={[wFull, flexCol, gap(24)]}>
                         {Array.from({ length: 3 }).map((_, index) => (
-                            <PresetRouteSheetTile key={index} />
+                            <PresetRouteSheetTile route={{}} key={index} />
                         ))}
                     </View>
                     {/* //!Routes */}

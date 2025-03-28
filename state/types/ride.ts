@@ -29,7 +29,7 @@ export type TRideAcceptStage =
   | "dropoff";
 export type TAllowedPaymentOptions = "cash" | "online" | "wallet" | "point";
 
-export enum ERideAcceptStage {
+export enum EQuery {
   searching = "searching",
   accepting = "accepting",
   arrived_pickup = "arrived-pickup",
@@ -144,6 +144,21 @@ export interface IRiderRideDetails {
   rider?: IUserAccount;
 }
 
+export interface IRequest {
+  _id: string;
+  number: number;
+  pickupId: string;
+  pickupName: string;
+  dropoffId: string;
+  dropoffName: string;
+  ticketOtp: string[];
+  rideStatus: TRideStatus | 'pending';
+  riderCounterOffer: number;
+  riderId: string;
+  riderName?: string;
+  riderPicture?: string;
+}
+
 export interface IRide {
   _id?: string;
   pickupBusstop: IBusStop;
@@ -177,6 +192,8 @@ export interface IRideState {
   currentRequest: IRiderRideDetails | null;
   currentRide: ICurrentRide | null;
   rides: IRiderRideDetails[];
+  allRequests: IRequest[];
+  unAcceptedRequests: IRequest[];
 }
 // ? Ride
 

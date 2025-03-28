@@ -1,20 +1,23 @@
 import GoOnlineOptionTile from "@/components/home/goOnlineOptionTile";
 import PresetRouteSheet from "@/components/home/presetRouteSheet";
+import SearchingOrder from "@/components/home/searchingOrderSheet";
 import CtaBtn from "@/components/shared/ctaBtn";
 import PaddedScreen from "@/components/shared/paddedScreen";
 import SafeScreen from "@/components/shared/safeScreen";
 import Colors, { colors } from "@/constants/Colors";
 import sharedImg from "@/constants/images/shared";
 import tripImgs from "@/constants/images/trip";
+import { RideConstants } from "@/constants/ride";
 import { useSnackbar } from "@/contexts/snackbar.context";
 import { useBottomSheet } from "@/contexts/useBottomSheetContext";
 import { useSession } from "@/contexts/userSignedInContext";
+import { useStorageState } from "@/hooks/useStorageState";
 import FetchService from "@/services/api/fetch.service";
 import { useAppDispatch, useAppSelector } from "@/state/hooks/useReduxToolkit";
 import { setRideState } from "@/state/slices/ride";
 import { setUserState } from "@/state/slices/user";
 import { RootState } from "@/state/store";
-import { ERideAcceptStage } from "@/state/types/ride";
+import { EQuery } from "@/state/types/ride";
 import { c, colorBlack, colordarkGrey, fs, fs10, fs12, fs14, fs18, fw400, fw500, fw700, neurialGrotesk } from "@/utils/fontStyles";
 import { image, imgAbsolute, mXAuto, wHFull } from "@/utils/imageStyles";
 import { absolute, b, bg, borderB, borderGrey, borderT, bottom0, flex, flexCol, gap, h, hFull, itemsCenter, justifyBetween, justifyCenter, justifyStart, left0, mb, mt, mTAuto, p, pb, pt, px, py, relative, rounded, t, top0, w, wFull, zIndex } from "@/utils/styles";
@@ -31,7 +34,8 @@ const index = () => {
     const { closeSnackbar, snackbarVisible, openSnackbar } = useSnackbar();
     const {selectedRoute, pickupBusstopInput,dropoffBusstopInput, driverOnline,driverEligible, rideAcceptStage} = useAppSelector((state: RootState) => state.ride);
     const dispatch = useAppDispatch();
-    const { token, wallet} = useAppSelector((state:RootState) => state.user)
+    const { token, wallet} = useAppSelector((state:RootState) => state.user);
+    const [[_, query], setQuery] = useStorageState(RideConstants.localDB.query);
 
     const [options, updateOptions] = useState(
         [
@@ -66,28 +70,38 @@ const index = () => {
     }, [])
 
     const goOnline = () => {
-        const eligible = options.every((option) => option.checked === true);
-
-        if (eligible) {
-            dispatch(setRideState({key:'driverOnline', value: true}))
-            router.push('/(acceptRide)/acceptRide' as Href)
+        if (driverEligible && driverOnline) {
+            // dispatch(setRideState({key:'driverOnline', value: true}))
+            router.push('/(acceptRide)/acceptRide' as Href);
+            setQuery(RideConstants.query.searching);
+            showBottomSheet([300], <SearchingOrder />, true)
+            return;
         }
-        if (driverOnline) {
-            router.push('/(acceptRide)/acceptRide' as Href)
-        }
+        // if (driverOnline) {
+        //     router.push('/(acceptRide)/acceptRide' as Href)
+        //     setQuery(RideConstants.query.searching);
+        // }
         else {
-            if (Platform.OS === 'android') ToastAndroid.show("You're not eligible to go online", 2000);
-            if (Platform.OS === 'ios') openSnackbar();
+            setQuery(RideConstants.query.preset_route);
+            // showBottomSheet([650, 750], <PresetRouteSheet />)
+            // if (Platform.OS === 'android') ToastAndroid.show("You're not eligible to go online", 2000);
+            // if (Platform.OS === 'ios') openSnackbar();
             return;
         }
     }
 
     // !Updating eligibility status
     useEffect(() => {
-        const eligible = options.every((option) => option.checked === true);
+        const eligible = options.every((option) => Boolean(option.checked) === true);
 
-        if (eligible) dispatch(setRideState({key:'driverEligible', value: true}))
-        else dispatch(setRideState({key:'driverEligible', value: false}))
+        if (eligible) {
+            dispatch(setRideState({key:'driverEligible', value: true}))
+            dispatch(setRideState({key:'driverOnline', value: true}))
+        }
+        else {
+            dispatch(setRideState({key:'driverEligible', value: false}))
+            dispatch(setRideState({key:'driverOnline', value: false}))
+        }
     }, [options])
     // !Updating eligibility status
 

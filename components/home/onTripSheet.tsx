@@ -81,12 +81,14 @@ import { homeImgs } from "@/constants/images/home";
 import DropoffSheet from "./dropoffTripSheet";
 import { useAppDispatch, useAppSelector } from "@/state/hooks/useReduxToolkit";
 import { setRideState } from "@/state/slices/ride";
-import { ERideAcceptStage, IRiderRideDetails } from "@/state/types/ride";
+import { EQuery, IRiderRideDetails } from "@/state/types/ride";
 import FetchService from "@/services/api/fetch.service";
 import { RootState } from "@/state/store";
 import tw from "@/constants/tw";
 import { Ionicons } from "@expo/vector-icons";
 import TicketOtpSheet from "./ticketOtpSheet";
+import { useStorageState } from "@/hooks/useStorageState";
+import { RideConstants } from "@/constants/ride";
 
 const { height } = Dimensions.get("window");
 
@@ -98,6 +100,7 @@ function OnTripSheet() {
   const { selectedRoute, currentRide } = useAppSelector(
     (state: RootState) => state.ride
   );
+  const [[_, query], setQuery] = useStorageState(RideConstants.localDB.query);
 
   const [fetchState, setFetchState] = useState({
     loading: false,
@@ -138,7 +141,7 @@ function OnTripSheet() {
 
   const selectTrip = (request: IRiderRideDetails) => {
     dispatch(setRideState({ key: "currentRequest", value: request }));
-    showBottomSheet([450], <DropoffSheet />);
+    showBottomSheet([450], <DropoffSheet />, true);
   };
 
   useEffect(() => {
@@ -157,10 +160,10 @@ function OnTripSheet() {
               dispatch(
                 setRideState({
                   key: "rideAcceptStage",
-                  value: ERideAcceptStage.start_trip,
+                  value: EQuery.start_trip,
                 })
               );
-              showBottomSheet([500, 600], <TicketOtpSheet />);
+              showBottomSheet([500, 600], <TicketOtpSheet />, true);
             }}
           >
             <Ionicons name="chevron-back" size={24} color="black" />

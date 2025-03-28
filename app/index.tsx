@@ -67,12 +67,13 @@ export default function Index() {
         return <View style={{ width, height, backgroundColor: '#D7D7D7' }} />;
     }
 
-    if (parsedUser && tokenSession) {
+    if (userString && tokenSession) {
         return <Redirect href={`/(home)` as Href} />;
     }
 
     // Accesssing the app for the first time
-    if (!parsedUser && !tokenSession && parsedSigninTimeSession) {
+    // if (!userString && !tokenSession && parsedSigninTimeSession) {
+    if (!tokenSession && parsedSigninTimeSession) {
         return <Redirect href={`/(auth)/signin` as Href} />;
     }
     // Accesssing the app for the first time
