@@ -157,6 +157,7 @@ export interface IRequest {
   riderId: string;
   riderName?: string;
   riderPicture?: string;
+  riderPhoneNo?: string;
 }
 
 export interface IRide {
@@ -189,7 +190,8 @@ export interface IRideState {
   rideAcceptStage: TRideAcceptStage;
   ridesAccepted: IRiderRideDetails[];
   selectedRoute: IRoute | null;
-  currentRequest: IRiderRideDetails | null;
+  // currentRequest: IRiderRideDetails | null;
+  currentRequest: IRequest | null;
   currentRide: ICurrentRide | null;
   rides: IRiderRideDetails[];
   allRequests: IRequest[];

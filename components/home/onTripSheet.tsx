@@ -81,7 +81,7 @@ import { homeImgs } from "@/constants/images/home";
 import DropoffSheet from "./dropoffTripSheet";
 import { useAppDispatch, useAppSelector } from "@/state/hooks/useReduxToolkit";
 import { setRideState } from "@/state/slices/ride";
-import { EQuery, IRiderRideDetails } from "@/state/types/ride";
+import { EQuery, IRequest, IRiderRideDetails } from "@/state/types/ride";
 import FetchService from "@/services/api/fetch.service";
 import { RootState } from "@/state/store";
 import tw from "@/constants/tw";
@@ -97,7 +97,7 @@ function OnTripSheet() {
   const [passengersShown, setPassengersShown] = useState(false);
   const dispatch = useAppDispatch();
   const { token } = useAppSelector((state: RootState) => state.user);
-  const { selectedRoute, currentRide } = useAppSelector(
+  const { selectedRoute, currentRide, allRequests } = useAppSelector(
     (state: RootState) => state.ride
   );
   const [[_, query], setQuery] = useStorageState(RideConstants.localDB.query);
@@ -139,7 +139,8 @@ function OnTripSheet() {
     
   };
 
-  const selectTrip = (request: IRiderRideDetails) => {
+  // const selectTrip = (request: IRiderRideDetails) => {
+  const selectTrip = (request: IRequest) => {
     dispatch(setRideState({ key: "currentRequest", value: request }));
     showBottomSheet([450], <DropoffSheet />, true);
   };
@@ -237,10 +238,33 @@ function OnTripSheet() {
                 h(passengersShown ? height * 0.4 : 0),
               ]}
             >
-              {currentRide?.ridersRides?.map((request, index) => (
+              {currentRide?.ridersRides
+              ?.filter((riderRide) => 
+                allRequests?.find((request) => String(request?._id) == String(riderRide?._id))
+              &&
+              riderRide?.rideStatus == 'booked'
+            )
+              ?.map((riderRide) => {
+                const equivalentrequest = allRequests?.find((request) => String(request?._id) == String(riderRide?._id));
+                if(equivalentrequest) return equivalentrequest;
+                else return {
+                  _id: riderRide?._id,
+                  dropoffId: riderRide?.dropoffBusstop?._id,
+                  dropoffName: riderRide?.dropoffBusstop?.name,
+                  pickupId: riderRide?.pickupBusstop?._id,
+                  pickupName: riderRide?.pickupBusstop?.name,
+                  riderCounterOffer: riderRide?.riderCounterOffer,
+                  riderId: riderRide?.riderId,
+                  rideStatus: riderRide?.rideStatus,
+                  riderName: riderRide?.rider?.fullName,
+                  riderPhoneNo: riderRide?.rider?.phoneNo,
+                  riderPicture: riderRide?.rider?.picture || riderRide?.rider?.avatar
+                }
+              })
+              ?.map((request, index) => (
                 <TouchableOpacity
                   onPress={() => {
-                    selectTrip(request);
+                    selectTrip(request as IRequest);
                   }}
                   style={[
                     wFull,
@@ -255,11 +279,10 @@ function OnTripSheet() {
                   key={index}
                 >
                   <Image
-                    style={[{ width: 60, height: 60, objectFit: "cover" }]}
+                    style={[{ width: 60, height: 60, objectFit: "cover" }, tw `rounded-[60px]`]}
                     source={{
                       uri:
-                        (request?.rider?.picture as string) ||
-                        (request?.rider?.avatar as string),
+                        (request?.riderPicture as string),
                     }}
                   />
 
@@ -272,7 +295,7 @@ function OnTripSheet() {
                     ]}
                   >
                     <Text style={[c(colors.black), fw700, fs14]}>
-                      {request?.rider?.fullName}
+                      {request?.riderName}
                     </Text>
                     <Text style={[c(Colors.light.darkGrey), fw400, fs12]}>
                       Arrived location

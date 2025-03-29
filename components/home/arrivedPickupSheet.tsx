@@ -116,12 +116,12 @@ function ArrivedPickupSheet() {
               <View>
                 <Image
                   style={[{ width: 60, height: 60, objectFit: "cover" }, tw `rounded-full`]}
-                  source={{uri: currentRequest?.rider?.picture as string || currentRequest?.rider?.avatar as string}}
+                source={{uri: currentRequest?.riderPicture as string}}
                 />
               </View>
 
               <View style={[hFull, flexCol, justifyCenter, gap(12)]}>
-                <Text style={[c(colors.black), fw700, fs14]}>{currentRequest?.rider?.fullName}</Text>
+                <Text style={[c(colors.black), fw700, fs14]}>{currentRequest?.riderName}</Text>
                 <Text style={[c(Colors.light.darkGrey), fw400, fs12]}>
                   {/* {"5 min"} away */}
                   {"few mins"} away
@@ -138,7 +138,7 @@ function ArrivedPickupSheet() {
           {/* //!Call-Chat Rider Block */}
           <View style={[flex, itemsCenter, gap(20), mXAuto] as ViewStyle[]}>
             <TouchableOpacity
-              onPress={() => openWhatsApp(String(currentRequest?.rider?.phoneNo))}
+              onPress={() => openWhatsApp(String(currentRequest?.riderPhoneNo))}
               style={[
                 flex,
                 rounded(100),
@@ -161,7 +161,7 @@ function ArrivedPickupSheet() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              onPress={() => openCallerApp(String(currentRequest?.rider?.phoneNo))}
+              onPress={() => openCallerApp(String(currentRequest?.riderPhoneNo))}
               style={[
                 flex,
                 rounded(100),

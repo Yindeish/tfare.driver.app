@@ -69,6 +69,7 @@ import { supabase } from "@/supabase/supabase.config";
 import { Swiper } from "../shared/swiper";
 import { useTooltip } from "@/contexts/use-tooltip";
 import { useCountdown } from "@/contexts/useCountdown";
+import { IUserAccount } from "@/state/types/account";
 // import { useTooltip } from "@/hooks/useTooltip";
 
 function AcceptOrderSheet() {
@@ -80,7 +81,7 @@ function AcceptOrderSheet() {
   const { Snackbar, snackbarVisible, notify, closeSnackbar } = useSnackbar()
   const [[_, query], setQuery] = useStorageState(RideConstants.localDB.query)
   const { showTooltip, hideTooltip } = useTooltip()
-  const { seconds, restart, reset, start } = useCountdown({})
+  const { seconds, restart, reset, start, completed } = useCountdown({})
 
   const path = usePathname()
 
@@ -98,7 +99,7 @@ function AcceptOrderSheet() {
   const { code, msg, loading } = fetchState
 
 
-  const currentUnacceptedRequest = unAcceptedRequests[Number(currentRiderOfferIndex)]
+  const currentUnacceptedRequest = unAcceptedRequests[Number(currentRiderOfferIndex)];
 
   const acceptOffer = async (requestId: string) => {
     showTooltip()
@@ -124,6 +125,8 @@ function AcceptOrderSheet() {
         console.log({ currentRide })
 
         setFetchState((prev) => ({ ...prev, loading: "idle", msg, code }))
+
+        dispatch(setRideState({key: 'currentRide', value: currentRide}))
 
         if (code && (code == 200 || code == 201) && riderRideAccepted && currentRide) {
           // const rideSaved = ridesAccepted.find(
@@ -175,11 +178,15 @@ function AcceptOrderSheet() {
           })
           dispatch(setRideState({ key: "allRequests", value: requests }))
 
-          if (requests.length == 1) {
+          const requestsNotAccepted = requests.filter((request) => (request?.rideStatus == 'pending') || (request?.rideStatus == 'requesting'));
+
+          dispatch(setRideState({key: 'unAcceptedRequests', value: requestsNotAccepted }))
+
+          if (requestsNotAccepted.length == 1) {
             dispatch(
               setRideState({
                 key: "currentRequest",
-                value: requests[0],
+                value: requestsNotAccepted[0],
               }),
             )
             dispatch(
@@ -253,34 +260,11 @@ function AcceptOrderSheet() {
       })
   }
 
-  const channel = supabase.channel(RideConstants.channel.ride_requesting)
+  const channel = supabase.channel(`${RideConstants.channel.ride_requesting}${selectedRoute?._id}`);
 
   useEffect(() => {
     if (allRequests.length == 0) setQuery(RideConstants.query.searching)
   }, [allRequests.length])
-
-  // useEffect(() => {
-  //   setUnAcceptedRequests(
-  //     allRequests.filter((req) => {
-  //       return req?.rideStatus === "pending" || req?.rideStatus == "requesting"
-  //     }),
-  //   )
-  // }, [allRequests])
-
-  // useEffect(() => {
-  //   if (seconds == 0 && Number(unAcceptedRequests.length) > 1) {
-  //     console.log({ unaccepReq: unAcceptedRequests.length, seconds })
-  //     restart()
-  //     start()
-
-  //     dispatch(
-  //       setRideState({
-  //         key: "currentRiderOfferIndex",
-  //         value: Number(currentRiderOfferIndex) >= unAcceptedRequests.length - 1 ? 0 : Number(currentRiderOfferIndex) + 1,
-  //       }),
-  //     )
-  //   }
-  // }, [seconds, unAcceptedRequests.length])
 
   channel
     .on("broadcast", { event: RideConstants.event.ride_requested }, (payload) => {
@@ -289,7 +273,7 @@ function AcceptOrderSheet() {
       console.log("====================================")
 
       if (path == "/acceptRide" && query == EQuery.accepting) {
-        const ride = payload?.payload?.ride as IRiderRideDetails
+        const ride = payload?.payload?.ride as (IRiderRideDetails & {rider: IUserAccount});
         console.log("ride: ", ride)
 
         if (!allRequests) return // Ensure allRequests is defined
@@ -306,18 +290,19 @@ function AcceptOrderSheet() {
           riderId: ride?.riderId,
           rideStatus: ride?.rideStatus,
           riderName: ride?.rider?.fullName,
-          riderPicture: ride?.rider?.picture,
+          riderPhoneNo: ride?.rider?.phoneNo,
+          riderPicture: ride?.rider?.picture || ride?.rider?.avatar
         }
 
         if (!requestPresent) {
           const requests = [...allRequests, newRequest] // Append ride correctly
           dispatch(setRideState({ key: "allRequests", value: requests }));
 
-          const newUnAcceptedRequests = requests.map((request) => (request?.rideStatus == 'pending' || request?.rideStatus == 'requesting'));
+          const newUnAcceptedRequests = requests.filter((request) => (request?.rideStatus == 'pending' || request?.rideStatus == 'requesting'));
 
           dispatch(setRideState({key: 'unAcceptedRequests', value: newUnAcceptedRequests}));
 
-          if (seconds == 0 && Number(newUnAcceptedRequests.length) > 1) {
+          if ((seconds == 0 && completed) && Number(newUnAcceptedRequests.length) > 1) {
             console.log('seconds == 0 && Number(newUnAcceptedRequests.length) > 1')
             reset()
             restart()
@@ -348,7 +333,7 @@ function AcceptOrderSheet() {
               mt(40),
               mb(20),
               // w(width * 0.9),
-              tw`w-full h-full mr-2`,
+              tw`w-full h-full`,
             ]}
           >
             {/* //!Rider Details Block */}
@@ -387,7 +372,7 @@ function AcceptOrderSheet() {
                   {"some mins"} away
                 </Text> */}
                   <Text style={[c(Colors.light.darkGrey), fw400, fs12]}>
-                    {"some mins"} {currentUnacceptedRequest?._id?.slice(0, 7)} {`index ${currentRiderOfferIndex}`} away
+                    {"some mins"} {`index: ${currentRiderOfferIndex}`} away
                   </Text>
                 </View>
               </View>
@@ -433,9 +418,9 @@ function AcceptOrderSheet() {
 
             {/* //!Accept-Decline Order CTA */}
             <View style={[flex, gap(16), justifyBetween]}>
-              {loading === "accepting" ? (
+              {/* {loading === "accepting" ? (
                 <ActivityIndicator />
-              ) : (
+              ) : ( */}
                 <CtaBtn
                   img={{ src: sharedImg.proceedIcon, w: 20, h: 20 }}
                   // onPress={() => riderOffer?.rideStatus === 'accepted'? {} :acceptOffer(riderOffer?._id)}
@@ -443,20 +428,24 @@ function AcceptOrderSheet() {
                   text={{ name: "Accept", color: colors.white }}
                   bg={{ color: Colors.light.background }}
                   // style={{ baseContainer: { ...w("48%"), opacity: riderOffer?.rideStatus === 'accepted'?0.5:1 } }}
-                  style={{ baseContainer: { ...w("48%") } }}
+                  style={{ baseContainer: { ...w("48%"), ...{opacity: currentUnacceptedRequest?.rideStatus == 'accepted' ? 0.5:1} } }}
+                  loading={loading === 'accepting'}
+                  loaderProps={{color: Colors.light.border, style: [tw `w-[20px] h-[20px]`]}}
                 />
-              )}
-              {loading === "declining" ? (
+              {/* )} */}
+              {/* {loading === "declining" ? (
                 <ActivityIndicator />
-              ) : (
+              ) : ( */}
                 <CtaBtn
                   img={{ src: sharedImg.cancelImage, w: 20, h: 20 }}
                   onPress={() => cancelOffer()}
                   text={{ name: "Decline", color: Colors.light.darkGrey }}
                   bg={{ color: "#F9F7F8", borderColor: Colors.light.border }}
                   style={{ baseContainer: { ...w("48%") } }}
+                  loading={loading === 'declining'}
+                  loaderProps={{color: Colors.light.border, style: [tw `w-[20px] h-[20px]`]}}
                 />
-              )}
+              {/* )} */}
             </View>
             {/* //!Accept-Decline Order CTA */}
           </View>

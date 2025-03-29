@@ -86,7 +86,7 @@ function DropoffSheet() {
       msg: "",
       code: null,
     }));
-    await FetchService.postWithBearerToken({
+    await FetchService.patchWithBearerToken({
       url: `/user/driver/me/ride/${currentRide?._id}/end-ride`,
       data: {
         riderRideId: currentRequest?._id,
@@ -103,7 +103,7 @@ function DropoffSheet() {
 
         setFetchState((prev) => ({ ...prev, loading: false, msg, code }));
 
-        if (code && code == 200) {
+        if (code && (code == 200 || code == 201)) {
           dispatch(setRideState({ key: "currentRide", value: currentRide }));
           dispatch(setRideState({ key: "currentRequest", value: riderRide }));
 
@@ -165,14 +165,13 @@ function DropoffSheet() {
                   ]}
                   source={{
                     uri:
-                      (currentRequest?.rider?.picture as string) ||
-                      (currentRequest?.rider?.avatar as string),
+                      (currentRequest?.riderPicture as string),
                   }}
                 />
               </View>
 
               <View style={[hFull, flexCol, justifyCenter, gap(12)]}>
-                <Text style={[c(colors.black), fw700, fs14]}>King John</Text>
+                <Text style={[c(colors.black), fw700, fs14, tw `capitalize`]}>{currentRequest?.riderName}</Text>
                 <Text style={[c(Colors.light.darkGrey), fw400, fs12]}>
                   {"few mins"} away
                 </Text>
@@ -219,7 +218,7 @@ function DropoffSheet() {
                 source={tripImgs.greenBgLocation}
               />
               <Text style={[fw500, fs14, colorBlack]}>
-                {currentRequest?.pickupBusstop?.name}
+                {currentRequest?.pickupName}
               </Text>
             </View>
             {/* //!Pick up Block */}
@@ -231,7 +230,7 @@ function DropoffSheet() {
                 source={tripImgs.redBgLocation}
               />
               <Text style={[fw500, fs14, colorBlack]}>
-                {currentRequest?.dropoffBusstop?.name}
+                {currentRequest?.dropoffName}
               </Text>
             </View>
             {/* //!Drop off Block */}
@@ -246,6 +245,8 @@ function DropoffSheet() {
               text={{ name: "Drop off", color: colors.white }}
               bg={{ color: Colors.light.background }}
               style={{ baseContainer: {} }}
+              loaderProps={{color: colors.white, style: [tw `w-[20px] h-[20px]`]}}
+              loading={loading}
             />
             <CtaBtn
               img={{ src: sharedImg.cancelImage, w: 20, h: 20 }}

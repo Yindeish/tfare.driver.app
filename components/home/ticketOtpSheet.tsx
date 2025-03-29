@@ -129,7 +129,7 @@ function TicketOtpSheet() {
 
         setFetchState((prev) => ({ ...prev, loading: false, }));
 
-        if (code && code == 200 && riderRide && currentRide) {
+        if (code && (code == 200 || code == 201) && riderRide && currentRide) {
           const rideSaved = ridesAccepted.find(
             (ride) => ride._id == riderRide?._id
           );
@@ -219,15 +219,14 @@ function TicketOtpSheet() {
                 ]}
                 source={{
                   uri:
-                    (currentRequest?.rider?.picture as string) ||
-                    (currentRequest?.rider?.avatar as string),
+                    (currentRequest?.riderPicture as string),
                 }}
               />
             </View>
 
             <View style={[hFull, flexCol, justifyCenter, gap(12)]}>
               <Text style={[c(colors.black), fw700, fs14]}>
-                {currentRequest?.rider?.fullName}
+                {currentRequest?.riderName}
               </Text>
               <Text style={[c(Colors.light.darkGrey), fw400, fs12]}>
                 Arrived location
@@ -246,7 +245,7 @@ function TicketOtpSheet() {
         {/* //!Chat-Call CTAs */}
         <View style={[flex, itemsCenter, gap(20), mXAuto] as ViewStyle[]}>
           <TouchableOpacity
-            onPress={() => openWhatsApp(String(currentRequest?.rider?.phoneNo))}
+            onPress={() => openWhatsApp(String(currentRequest?.riderPhoneNo))}
             style={[
               flex,
               rounded(100),
@@ -268,7 +267,7 @@ function TicketOtpSheet() {
 
           <TouchableOpacity
             onPress={() =>
-              openCallerApp(String(currentRequest?.rider?.phoneNo))
+              openCallerApp(String(currentRequest?.riderPhoneNo))
             }
             style={[
               flex,

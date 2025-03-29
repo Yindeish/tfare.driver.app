@@ -316,7 +316,7 @@ function AcceptRide() {
         {/* //!Header */}
 
         {/* Tooltip */}
-        <Tooltip content="This is the next bus stop" position="top">
+        {/* <Tooltip content="This is the next bus stop" position="top">
           <TouchableOpacity
             style={[
               absolute,
@@ -341,7 +341,7 @@ function AcceptRide() {
               color={colors.black}
             />
           </TouchableOpacity>
-        </Tooltip>
+        </Tooltip> */}
         {/* Tooltip */}
 
         {/* //!Time Down Block */}

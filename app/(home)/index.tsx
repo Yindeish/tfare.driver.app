@@ -8,6 +8,7 @@ import Colors, { colors } from "@/constants/Colors";
 import sharedImg from "@/constants/images/shared";
 import tripImgs from "@/constants/images/trip";
 import { RideConstants } from "@/constants/ride";
+import tw from "@/constants/tw";
 import { useSnackbar } from "@/contexts/snackbar.context";
 import { useBottomSheet } from "@/contexts/useBottomSheetContext";
 import { useSession } from "@/contexts/userSignedInContext";
@@ -130,7 +131,7 @@ const index = () => {
                                     <Image style={[image.w(19), image.h(18)]} source={sharedImg.walletImage} />
                                     <Text style={[neurialGrotesk, fs12, fw400, colordarkGrey]}>Your earnings</Text>
                                 </View>
-                                <Text style={[fs(22), fw700, colorBlack]}>₦ {wallet?.balance || '0000.00'}</Text>
+                                <Text style={[fs(22), fw700, colorBlack]}>₦ {Number(wallet?.balance).toFixed(2) || '0000.00'}</Text>
                             </View>
 
                             <TouchableOpacity 
@@ -138,11 +139,11 @@ const index = () => {
                                 hideBottomSheet();
                                 router.push('/(earnings)')
                             }}
-                            style={[flex, gap(10), itemsCenter, borderGrey(0.7), rounded(1000), py(10), px(16)]}>
+                            style={[flex, gap(10), itemsCenter, borderGrey(0.7), rounded(1000), py(10), px(16), tw `bg-red-700 w-auto`]}>
                                 <View style={[w(24), h(24), flex, itemsCenter, justifyCenter, rounded(1000), borderGrey(0.7)]}>
                                     <Image style={[image.w(22), image.h(8),]} source={sharedImg.minusImage} />
                                 </View>
-                                <Text style={[fw500, fs12, neurialGrotesk, colorBlack]}>Withdraw</Text>
+                                <Text style={[fw500, fs12, neurialGrotesk, colorBlack, tw `w-[70px]`]}>Withdraw</Text>
                             </TouchableOpacity>
                         </View>
                         {/* //!Earnings Block */}

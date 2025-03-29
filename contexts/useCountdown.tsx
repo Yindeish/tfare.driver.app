@@ -51,8 +51,6 @@ export const useCountdown = ({
   }, [duration, ...changeCondition])
 
   useEffect(() => {
-    console.log(` restart();
-    start();`)
     restart();
     start();
   }, changeCondition)

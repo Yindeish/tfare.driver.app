@@ -81,6 +81,7 @@ import tw from "@/constants/tw";
 import ErrorMsg from "../shared/error_msg";
 import { supabase } from "@/supabase/supabase.config";
 import { RideConstants } from "@/constants/ride";
+import { IUserAccount } from "@/state/types/account";
 
 const SearchingOrder = () => {
   const { showBottomSheet, hideBottomSheet } = useBottomSheet();
@@ -146,7 +147,7 @@ const SearchingOrder = () => {
     else getRidersOffers();
   }, [router])
 
-  const channel = supabase.channel(RideConstants.channel.ride_requesting);
+  const channel = supabase.channel(`${RideConstants.channel.ride_requesting}${selectedRoute?._id}`);
   channel
     .on(
       "broadcast",
@@ -157,7 +158,7 @@ const SearchingOrder = () => {
         console.log('====================================');
         // if (path == "/acceptRide" && query == EQuery.searching) {
         if (path == "/acceptRide" && (query == EQuery.searching || query == EQuery.accepting)) { // testing
-          const ride = payload?.payload?.ride as IRiderRideDetails;
+          const ride = payload?.payload?.ride as (IRiderRideDetails & {rider: IUserAccount});
 
           const requestPresent = allRequests.find(
             (request) => String(request?._id) == String(ride?._id)
@@ -183,17 +184,18 @@ const SearchingOrder = () => {
             riderId: ride?.riderId,
             rideStatus: ride?.rideStatus,
             riderName: ride?.rider?.fullName,
-            riderPicture: ride?.rider?.picture
+            riderPhoneNo: ride?.rider?.phoneNo,
+            riderPicture: ride?.rider?.picture || ride?.rider?.avatar
           };
 
           const requests = [...allRequests, newRequest];
 
           dispatch(setRideState({ key: "allRequests", value: requests }));
 
-          const newUnAcceptedRequests = requests.map((request) => (request?.rideStatus == 'pending' || request?.rideStatus == 'requesting'));
+          const newUnAcceptedRequests = requests.filter((request) => (request?.rideStatus == 'pending' || request?.rideStatus == 'requesting'));
 
           dispatch(setRideState({key: 'unAcceptedRequests', value: newUnAcceptedRequests}));
-          
+
           setQuery(RideConstants.query.accepting);
           showBottomSheet([400], <AcceptOrderSheet />, true)
 
