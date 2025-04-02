@@ -172,11 +172,13 @@ export default function Account() {
                 </View>
 
                 <Text style={[colorBlack, fw700, { fontSize: 22 }]}>
-                   ₦{wallet?.balance || "0000.00"}
+                   ₦{Number(wallet?.balance).toFixed(2) || "0000.00"}
                 </Text>
               </View>
 
-              <TouchableOpacity>
+              <TouchableOpacity onPress={() => {
+                router.push('/(earnings)');
+              }}>
                 <View
                   style={[
                     flex,

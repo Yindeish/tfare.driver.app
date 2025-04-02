@@ -65,7 +65,7 @@ export const Countdown = forwardRef<CountdownRef, CountdownProps>(
       interval = 1000,
 
       // Styling
-      containerStyle,
+      containerStyle = {},
       digitStyle,
 
       // Controls
@@ -168,8 +168,8 @@ export const Countdown = forwardRef<CountdownRef, CountdownProps>(
     // If children is provided as ReactNode, render it alongside the countdown
     if (children) {
       return (
-        <View style={styles.wrapper}>
-          {renderCountdown()}
+        <View style={[styles.wrapper, containerStyle]}>
+          {/* {renderCountdown()} */}
           {children}
           {renderControls()}
         </View>

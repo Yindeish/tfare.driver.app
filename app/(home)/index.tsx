@@ -33,10 +33,10 @@ const index = () => {
     const { } = useSession()
     const { showBottomSheet, hideBottomSheet } = useBottomSheet()
     const { closeSnackbar, snackbarVisible, openSnackbar } = useSnackbar();
-    const {selectedRoute, pickupBusstopInput,dropoffBusstopInput, driverOnline,driverEligible, rideAcceptStage} = useAppSelector((state: RootState) => state.ride);
+    const {selectedRoute, pickupBusstopInput,dropoffBusstopInput, driverOnline,driverEligible, query} = useAppSelector((state: RootState) => state.ride);
     const dispatch = useAppDispatch();
     const { token, wallet} = useAppSelector((state:RootState) => state.user);
-    const [[_, query], setQuery] = useStorageState(RideConstants.localDB.query);
+    // const [[_, query], setQuery] = useStorageState(RideConstants.localDB.query);
 
     const [options, updateOptions] = useState(
         [
@@ -74,7 +74,8 @@ const index = () => {
         if (driverEligible && driverOnline) {
             // dispatch(setRideState({key:'driverOnline', value: true}))
             router.push('/(acceptRide)/acceptRide' as Href);
-            setQuery(RideConstants.query.searching);
+            // setQuery(RideConstants.query.searching);
+            dispatch(setRideState({key: 'query', value: RideConstants.query.searching}))
             showBottomSheet([300], <SearchingOrder />, true)
             return;
         }
@@ -83,7 +84,8 @@ const index = () => {
         //     setQuery(RideConstants.query.searching);
         // }
         else {
-            setQuery(RideConstants.query.preset_route);
+            // setQuery(RideConstants.query.preset_route);
+            dispatch(setRideState({key: 'query', value: RideConstants.query.preset_route}))
             // showBottomSheet([650, 750], <PresetRouteSheet />)
             // if (Platform.OS === 'android') ToastAndroid.show("You're not eligible to go online", 2000);
             // if (Platform.OS === 'ios') openSnackbar();
@@ -139,11 +141,11 @@ const index = () => {
                                 hideBottomSheet();
                                 router.push('/(earnings)')
                             }}
-                            style={[flex, gap(10), itemsCenter, borderGrey(0.7), rounded(1000), py(10), px(16), tw `bg-red-700 w-auto`]}>
+                            style={[flex, gap(10), itemsCenter, borderGrey(0.7), rounded(1000), py(10), px(16), tw ``]}>
                                 <View style={[w(24), h(24), flex, itemsCenter, justifyCenter, rounded(1000), borderGrey(0.7)]}>
                                     <Image style={[image.w(22), image.h(8),]} source={sharedImg.minusImage} />
                                 </View>
-                                <Text style={[fw500, fs12, neurialGrotesk, colorBlack, tw `w-[70px]`]}>Withdraw</Text>
+                                <Text style={[fw500, fs12, neurialGrotesk, colorBlack, tw `w-[65px]`]}>Withdraw</Text>
                             </TouchableOpacity>
                         </View>
                         {/* //!Earnings Block */}

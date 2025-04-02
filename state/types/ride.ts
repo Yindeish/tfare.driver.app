@@ -20,7 +20,7 @@ export type TRideStatus =
   | "started"
   | "booked"
   | "ended";
-export type TRideAcceptStage =
+export type TQuery =
   | "searching"
   | "accepting"
   | "arrived-pickup"
@@ -158,6 +158,8 @@ export interface IRequest {
   riderName?: string;
   riderPicture?: string;
   riderPhoneNo?: string;
+  shown?: boolean,
+  zIndex?: number
 }
 
 export interface IRide {
@@ -185,9 +187,9 @@ export interface IRideState {
   driverOnline: boolean;
   driverEligible: boolean;
   ridersOffers: IRiderRideDetails[];
-  currentRiderOfferIndex: number | null;
+  currentRiderOfferIndex: number;
   presetRoutes: IRoute[];
-  rideAcceptStage: TRideAcceptStage;
+  query: TQuery;
   ridesAccepted: IRiderRideDetails[];
   selectedRoute: IRoute | null;
   // currentRequest: IRiderRideDetails | null;

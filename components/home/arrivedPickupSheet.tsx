@@ -59,7 +59,7 @@ function ArrivedPickupSheet() {
   const { showBottomSheet } = useBottomSheet();
   const dispatch = useAppDispatch();
   const {currentRequest} = useAppSelector((state: RootState) => state.ride);
-  const [[_, query], setQuery] = useStorageState(RideConstants.localDB.query);
+  // const [[_, query], setQuery] = useStorageState(RideConstants.localDB.query);
 
   const openCallerApp = (phoneNumber: string) => {
     const url = `tel:${phoneNumber}`;
@@ -84,8 +84,8 @@ function ArrivedPickupSheet() {
           onPress={() => {
             dispatch(
               setRideState({
-                key: "rideAcceptStage",
-                value: EQuery.accepting,
+                key: "query",
+                value: RideConstants.query.accepting
               })
             );
             showBottomSheet([400], <AcceptOrderSheet />, true);
@@ -188,7 +188,10 @@ function ArrivedPickupSheet() {
           {/* //!Arrived Pickup CTA */}
           <CtaBtn
             img={{ src: tripImgs.arrivedpickupImage, w: 20, h: 20 }}
-            onPress={() => showBottomSheet([500, 600], <TicketOtpSheet />, true)}
+            onPress={() => {
+              dispatch(setRideState({key: 'query', value: RideConstants.query.start_trip}))
+              showBottomSheet([500, 600], <TicketOtpSheet />, true)
+            }}
             text={{ name: "Arrived Pickup", color: colors.white }}
             bg={{ color: Colors.light.background }}
           />

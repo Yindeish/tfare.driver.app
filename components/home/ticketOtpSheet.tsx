@@ -78,7 +78,7 @@ function TicketOtpSheet() {
   );
   const { token } = useAppSelector((state: RootState) => state.user);
   const {Snackbar, notify, closeSnackbar, snackbarVisible} = useSnackbar();
-  const [[_, query], setQuery] = useStorageState(RideConstants.localDB.query);
+  // const [[_, query], setQuery] = useStorageState(RideConstants.localDB.query);
 
   console.log({currentRide})
 
@@ -144,6 +144,7 @@ function TicketOtpSheet() {
             dispatch(setRideState({ key: "currentRide", value: currentRide }));
             dispatch(setRideState({key:'currentRequest', value: riderRide}));
 
+            dispatch(setRideState({key: 'query', value: RideConstants.query.pause_trip}))
             showBottomSheet([300, 550], <OnTripSheet />);
           }
         }
@@ -159,7 +160,7 @@ function TicketOtpSheet() {
     dispatch(setRideState({key:'selectedRoute', value: false}));
     dispatch(setRideState({key:'driverOnline', value: false}));
     dispatch(setRideState({key:'selectedRoute', value: null}));
-    dispatch(setRideState({key:'rideAcceptStage', value: EQuery.searching}));
+    dispatch(setRideState({key:'query', value: RideConstants.query.searching}));
 
     hideBottomSheet();
     router.push("/(home)");
@@ -194,8 +195,8 @@ function TicketOtpSheet() {
           onPress={() => {
             dispatch(
               setRideState({
-                key: "rideAcceptStage",
-                value: EQuery.arrived_pickup,
+                key: "query",
+                value: RideConstants.query.arrived_pickup,
               })
             );
             showBottomSheet([350, 400], <ArrivedPickupSheet />, true);

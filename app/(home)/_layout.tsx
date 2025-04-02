@@ -9,20 +9,20 @@ import { homeImgs } from '@/constants/images/home';
 import { useEffect } from 'react';
 import { useStorageState } from '@/hooks/useStorageState';
 import { RideConstants } from '@/constants/ride';
+import { useAppSelector } from '@/state/hooks/useReduxToolkit';
+import { RootState } from '@/state/store';
 
 
 export default function AppLayout() {
   const { userSession, isLoading, signOut } = useSession();
-  const [[_, query], setQuery] = useStorageState(RideConstants.localDB.query);
+  const {query}= useAppSelector((state: RootState) => state.ride);
+
+  // const [[_, query], setQuery] = useStorageState(RideConstants.localDB.query);
   const path = usePathname();
   // signOut()
   // console.log({ userSession, layout: 'home' })
 
   const { width, height } = Dimensions.get('window');
-
-    useEffect(() => {console.log({path})}, [path])
-
-    useEffect(() => {console.log({query})}, [query])
 
   // if (isLoading) {
   //   return <View style={{ width, height, backgroundColor: '#D8D8D8' }} />;

@@ -70,7 +70,7 @@ function DropoffSheet() {
   const { selectedRoute, currentRide, currentRequest } = useAppSelector(
     (state: RootState) => state.ride
   );
-  const [[_, query], setQuery] = useStorageState(RideConstants.localDB.query);
+  // const [[_, query], setQuery] = useStorageState(RideConstants.localDB.query);
 
   const [fetchState, setFetchState] = useState({
     loading: false,
@@ -129,8 +129,8 @@ function DropoffSheet() {
           onPress={() => {
             dispatch(
               setRideState({
-                key: "rideAcceptStage",
-                value: EQuery.pause_trip,
+                key: "query",
+                value: RideConstants.query.pause_trip,
               })
             );
             showBottomSheet([300, 550], <OnTripSheet />, true);

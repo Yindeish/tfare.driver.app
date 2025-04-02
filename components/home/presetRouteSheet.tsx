@@ -99,7 +99,6 @@ function PresetRouteSheet() {
         const code = data?.code;
         const msg = data?.msg;
         const presetRoutes = data?.allRoutes;
-        console.log({ presetRoutes });
 
         setFetchState((prev) => ({ ...prev, loading: false, msg, code }));
 
@@ -118,10 +117,10 @@ function PresetRouteSheet() {
   };
 
   useEffect(() => {
-    // if(allPresetRoutes.length === 0) {
+    if(allPresetRoutes.length === 0) {
     getPresetRoutes();
-    // }
-  }, [new Date().getSeconds(), allPresetRoutes.length]);
+    }
+  }, [allPresetRoutes.length]);
 
   return (
     <BottomSheetScrollView>

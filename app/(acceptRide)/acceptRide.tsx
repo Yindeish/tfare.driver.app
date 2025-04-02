@@ -28,7 +28,13 @@ import {
   neurialGrotesk,
   textCenter,
 } from "@/utils/fontStyles";
-import { image, imgAbsolute, mXAuto, wHFull } from "@/utils/imageStyles";
+import {
+  image,
+  imgAbsolute,
+  mXAuto,
+  mYAuto,
+  wHFull,
+} from "@/utils/imageStyles";
 import {
   absolute,
   b,
@@ -38,6 +44,7 @@ import {
   borderT,
   bottom0,
   flex,
+  flexCenter,
   flexCol,
   gap,
   h,
@@ -75,6 +82,7 @@ import {
   ToastAndroid,
   TouchableOpacity,
   View,
+  ViewProps,
   ViewStyle,
 } from "react-native";
 import { Snackbar, Text } from "react-native-paper";
@@ -82,7 +90,7 @@ import { CountdownCircleTimer } from "react-native-countdown-circle-timer";
 import AcceptOrderSheet from "@/components/home/acceptOrderSheet";
 import { useAppDispatch, useAppSelector } from "@/state/hooks/useReduxToolkit";
 import { RootState } from "@/state/store";
-import { EQuery, IRequest } from "@/state/types/ride";
+import { EQuery, IRequest, IRiderRideDetails } from "@/state/types/ride";
 import { setRideState } from "@/state/slices/ride";
 import ArrivedPickupSheet from "@/components/home/arrivedPickupSheet";
 import TicketOtpSheet from "@/components/home/ticketOtpSheet";
@@ -94,57 +102,291 @@ import { Countdown } from "@/components/shared/countdown";
 import { useCountdown } from "@/contexts/useCountdown";
 import tw from "@/constants/tw";
 import { Tooltip } from "@/components/shared/new-tootip";
+import { supabase } from "@/supabase/supabase.config";
+import { IUserAccount } from "@/state/types/account";
+import FetchService from "@/services/api/fetch.service";
+import { setUserAccountSecurityFeild } from "@/state/slices/account";
+import NewRequestTile from "@/components/ride/new-request-tile";
 
 function AcceptRide() {
   const { showBottomSheet } = useBottomSheet();
   const dispatch = useAppDispatch();
   const {
     driverOnline,
-    rideAcceptStage,
+    query,
     currentRiderOfferIndex,
     allRequests,
     unAcceptedRequests,
+    selectedRoute,
   } = useAppSelector((state: RootState) => state.ride);
-  const [[_, query], setQuery] = useStorageState(RideConstants.localDB.query);
+  // const [[_, query], setQuery] = useStorageState(RideConstants.localDB.query);
   const { hideBottomSheet } = useBottomSheet();
+  const path = usePathname();
 
-  // const [showOnline, setShowOnline] = useState(true);//testing
-  // const [showDropoff, setShowDropoff] = useState(false);//testing
-  // const [duration, setDuration] = useState(60);
-  // const [countdownShown, setCountdownShown] = useState(true)
-  const [showNextBusstop, setShowNextBusstop] = useState(false); //testing
-  const [riderArrived, setRiderArrived] = useState(false);
+  const [state, setState] = useState({
+    // Counter state
+    counterDuration: 30,
+    // UI visibility states
+    dropoffShown: false,
+    nextBusstopShown: false,
+    countdownShown: false,
+    newRequestsShown: false,
+    // New requests state
+    newRequests: [] as IRequest[],
 
-  const [counterState, setCounterState] = useState({
-    shown: false,
-    duration: 30,
+    topRequestId: null
   });
-  const { duration, shown } = counterState;
 
+  const {
+    counterDuration,
+    dropoffShown,
+    countdownShown,
+    newRequestsShown,
+    nextBusstopShown,
+    newRequests,
+    topRequestId
+  } = state;
+
+  // Countdown hook
   const { start, seconds, reset, restart, completed } = useCountdown({
-    duration,
+    duration: counterDuration,
     changeCondition: [allRequests, unAcceptedRequests],
   });
 
+  const handleRequestRearranged = (requestId: string) => {
+    // Find the next request to show at the top
+    const remainingRequests = unAcceptedRequests.filter((req) => String(req._id) !== requestId)
+
+    if (remainingRequests.length > 0) {
+      // Sort by zIndex to find the next highest
+      const sortedRequests = [...remainingRequests].sort((a, b) => (Number(b.zIndex) || 0) - (Number(a.zIndex) || 0))
+
+      // Update the top request
+      setState((prev) => ({...prev, topRequestId: sortedRequests[0]?._id as any || null}));
+
+      // Rearrange the requests with updated zIndex values
+      const rearrangedRequests = unAcceptedRequests.map((req) => {
+        if (String(req._id) === String(sortedRequests[0]?._id)) {
+          // New top request
+          return { ...req, zIndex: 10000, shown: true }
+        } else if (String(req._id) === requestId) {
+          // Request that just timed out
+          return { ...req, zIndex: 1000, shown: false }
+        }
+        return req
+      })
+
+      dispatch(
+        setRideState({
+          key: "unAcceptedRequests",
+          value: rearrangedRequests,
+        }),
+      )
+    }
+  }
+
   useEffect(() => {
-    if (
-      (query === EQuery.accepting || query === EQuery.searching) &&
-      (Number(unAcceptedRequests?.length) > 0)
-    ) {
-      setCounterState((prev) => ({ ...prev, shown: true }));
-    } else setCounterState((prev) => ({ ...prev, shown: false }));
+    console.log({allRequestsLen: allRequests.length})
+  }, [allRequests.length])
+
+  useEffect(() => {console.log({query}, {path})}, [query, path])
+
+  // Consolidated useEffect for UI states
+  useEffect(() => {
+    setState((prev) => ({
+      ...prev,
+      // Show countdown when accepting/searching and there are unaccepted requests
+      countdownShown:
+        (query === RideConstants.query.accepting ||
+          query === RideConstants.query.searching) &&
+        unAcceptedRequests.length > 0,
+
+      // Show dropoff UI when trip has started
+      dropoffShown: query === RideConstants.query.start_trip,
+
+      // Show new requests when not in accepting/searching mode
+      newRequestsShown:
+        query !== RideConstants.query.accepting &&
+        query !== RideConstants.query.searching,
+    }));
   }, [query, unAcceptedRequests.length]);
 
-  // Remounting the counter component for the new request
+  // Handle countdown reset for new requests
   useEffect(() => {
-    if (unAcceptedRequests.length > 1 && (seconds == 0 || completed)) {
-      setCounterState((prev) => ({ ...prev, duration: 20, shown: false }));
+    if (
+      unAcceptedRequests.length > 1 &&
+      (seconds === 0 || completed) &&
+      query === RideConstants.query.accepting
+    ) {
+      // Reset counter with a brief delay to ensure remounting
+      setState((prev) => ({ ...prev, countdownShown: false }));
+
       setTimeout(() => {
-        setCounterState((prev) => ({ ...prev, duration: 20, shown: true }));
+        setState((prev) => ({
+          ...prev,
+          counterDuration: 20,
+          countdownShown: true,
+        }));
       }, 300);
     }
-  }, [unAcceptedRequests.length, completed, seconds]);
-  // Remounting the counter component for the new request
+  }, [unAcceptedRequests.length, completed, seconds, query]);
+
+  const setupRideRequestChannel = () => {
+    const channel = supabase.channel(
+      `${RideConstants.channel.ride_requesting}${selectedRoute?._id}`
+    );
+  
+    channel
+      .on(
+        "broadcast",
+        { event: RideConstants.event.ride_requested },
+        handleRideRequestEvent
+      )
+      .subscribe();
+  
+    return channel;
+  };
+  
+  const handleRideRequestEvent = (payload: any) => {
+    const ride = payload?.payload?.ride as (IRiderRideDetails & {rider: IUserAccount});
+    console.log("Ride requested event:", ride?._id);
+  
+    // Handle searching state
+    if (path === "/acceptRide" && query === RideConstants.query.searching) {
+      handleSearchingState(ride);
+    } 
+    // Handle accepting state
+    else if (path === "/acceptRide" && query === RideConstants.query.accepting) {
+      handleAcceptingState(ride);
+    } 
+    // Handle other states
+    else if (path === "/acceptRide") {
+      handleOtherStates(ride);
+    }
+  };
+  
+  const createRideRequest = (ride: (IRiderRideDetails & {rider: IUserAccount})) => {
+    return {
+      _id: ride?._id,
+      number: (Number(allRequests[allRequests.length - 1]?.number) || 0) + 1,
+      dropoffId: ride?.dropoffBusstop?._id,
+      dropoffName: ride?.dropoffBusstop?.name,
+      pickupId: ride?.pickupBusstop?._id,
+      pickupName: ride?.pickupBusstop?.name,
+      riderCounterOffer: ride?.riderCounterOffer,
+      riderId: ride?.riderId,
+      rideStatus: ride?.rideStatus,
+      riderName: ride?.rider?.fullName,
+      riderPhoneNo: ride?.rider?.phoneNo,
+      riderPicture: ride?.rider?.picture || ride?.rider?.avatar,
+      shown: false,
+      zIndex: (Number(allRequests[allRequests.length - 1]?.zIndex) || 10000) + 1,
+    };
+  };
+  
+  const handleSearchingState = (ride: (IRiderRideDetails & {rider: IUserAccount})) => {
+    const requestPresent = allRequests.find(
+      (request) => String(request?._id) === String(ride?._id)
+    );
+    
+    if (requestPresent) {
+      dispatch(setRideState({key: 'query', value: RideConstants.query.accepting}));
+      showBottomSheet([400], <AcceptOrderSheet />, true);
+      return;
+    }
+  
+    const newRequest = createRideRequest(ride);
+    const requests = [...allRequests, newRequest];
+  
+    dispatch(setRideState({ key: "allRequests", value: requests }));
+    
+    const newUnAcceptedRequests = requests.filter(
+      (request) => (request?.rideStatus === 'pending' || request?.rideStatus === 'requesting')
+    );
+  
+    dispatch(setRideState({key: 'unAcceptedRequests', value: newUnAcceptedRequests}));
+    dispatch(setRideState({key: 'query', value: RideConstants.query.accepting}));
+    showBottomSheet([400], <AcceptOrderSheet />, true);
+  };
+  
+  const handleAcceptingState = (ride: (IRiderRideDetails & {rider: IUserAccount})) => {
+    if (!allRequests) return;
+  
+    const requestPresent = allRequests.find(
+      (request) => String(request?._id) === String(ride?._id)
+    );
+  
+    if (requestPresent) return;
+  
+    const newRequest = createRideRequest(ride);
+    const requests = [...allRequests, newRequest];
+    
+    dispatch(setRideState({ key: "allRequests", value: requests }));
+  
+    const newUnAcceptedRequests = requests.filter(
+      (request) => request?.rideStatus === "pending" || request?.rideStatus === "requesting"
+    );
+  
+    dispatch(setRideState({key: "unAcceptedRequests", value: newUnAcceptedRequests}));
+  
+    // Reset timer if needed
+    if (seconds === 0 && completed && newUnAcceptedRequests.length > 1) {
+      reset();
+      restart();
+      start();
+    }
+  
+    // Update current rider index
+    dispatch(setRideState({
+      key: "currentRiderOfferIndex",
+      value: Number(currentRiderOfferIndex) >= unAcceptedRequests.length
+        ? 1
+        : Number(currentRiderOfferIndex) + 1,
+    }));
+  };
+  
+  const handleOtherStates = (ride: (IRiderRideDetails & {rider: IUserAccount})) => {
+    if (!allRequests) return;
+  
+    const requestPresent = allRequests.find(
+      (request) => String(request?._id) === String(ride?._id)
+    );
+  
+    if (requestPresent) return;
+  
+    const newRequest = createRideRequest(ride);
+    const requests = [...allRequests, newRequest];
+    
+    dispatch(setRideState({ key: "allRequests", value: requests }));
+  
+    const newUnAcceptedRequests = requests.filter(
+      (request) => request?.rideStatus === "pending" || request?.rideStatus === "requesting"
+    );
+  
+    dispatch(setRideState({key: "unAcceptedRequests", value: newUnAcceptedRequests}));
+  
+    // Update new requests state
+    const newRequestPresent = newRequests.find(
+      (request) => String(request?._id) === String(ride?._id)
+    );
+  
+    if (!newRequestPresent) {
+      setState((prev) => ({
+        ...prev,
+        newRequests: newUnAcceptedRequests as IRequest[],
+      }));
+    }
+  };
+  
+  // Initialize the channel
+  const rideChannel = setupRideRequestChannel();
+  
+  // Clean up on component unmount
+  useEffect(() => {
+    return () => {
+      rideChannel.unsubscribe();
+    };
+  }, []);
 
   return (
     <SafeScreen>
@@ -167,226 +409,101 @@ function AcceptRide() {
           {/* //!Page Title */}
           <PageTitle
             onPress={() => {
-              setQuery(RideConstants.query.searching); //testing for now
+              // setQuery(RideConstants.query.searching); //testing for now
+              dispatch(
+                setRideState({
+                  key: "query",
+                  value: RideConstants.query.searching,
+                })
+              ); //testing for now
               hideBottomSheet();
             }}
             title=""
           />
           {/* //!Page Title */}
 
-          <View style={[zIndex(3), tw`top-[-15px]`]}>
+          {/* Statuses */}
+          <View style={[zIndex(3), tw`top-[-15px] h-[230px]`]}>
             {/* //!Online Status Block */}
-            {driverOnline && (
-              <TouchableOpacity
+            {driverOnline && <DriverOnlineTile />}
+            {/* //!Online Status Block */}
+
+            {/* //!Drop off Block */}
+            {dropoffShown && <DropoffTile />}
+            {/* //!Drop off Block */}
+
+            {/* //!Next Bus Stop Block */}
+            {nextBusstopShown && <NextBusstop />}
+            {/* //!Next Bus Stop Block */}
+
+            {/* //!Time Down Block */}
+            {countdownShown && (
+              <View
                 style={[
-                  w(110),
-                  h(40),
-                  bg("#27AE65"),
-                  rounded(50),
+                  wFull,
+                  h(120),
                   flex,
                   itemsCenter,
-                  relative,
+                  justifyCenter,
+                  bg(colors.transparent),
                 ]}
               >
-                <Text
-                  style={[
-                    fw700,
-                    fs14,
-                    colorWhite,
-                    neurialGrotesk,
-                    textCenter,
-                    { flexBasis: "55%" },
-                  ]}
-                >
-                  ONLINE
-                </Text>
-                <View
-                  style={[
-                    w(30),
-                    h(30),
-                    rounded(30),
-                    bg(colors.white),
-                    absolute,
-                    t(5),
-                    r(7),
-                    { shadowColor: colors.black, shadowRadius: 10 },
-                  ]}
-                />
-              </TouchableOpacity>
-            )}
-            {/* //!Online Status Block */}
+                <Countdown
+                  duration={20 * 1000}
+                  interval={100}
+                  changeCondition={[allRequests, unAcceptedRequests, seconds]}
+                  onComplete={({ restart: rs }) => {
+                    if (Number(unAcceptedRequests?.length) > 1) {
+                      dispatch(
+                        setRideState({
+                          key: "currentRiderOfferIndex",
+                          value:
+                            Number(currentRiderOfferIndex) >=
+                            unAcceptedRequests.length - 1
+                              ? 1
+                              : Number(currentRiderOfferIndex) + 1,
+                        })
+                      );
 
-            {/* //!Drop off Block */}
-            {rideAcceptStage === EQuery.start_trip && (
-              <View
-                style={[
-                  wFull,
-                  h(112),
-                  flexCol,
-                  pt(16),
-                  px(32),
-                  borderGrey(0.7),
-                  bg(colors.white),
-                  rounded(10),
-                  gap(10),
-                ]}
-              >
-                {/* //!Dropoff lable Block */}
-                <View
-                  style={[
-                    wFull,
-                    flex,
-                    gap(16),
-                    itemsCenter,
-                    justifyStart,
-                    borderB(0.7, Colors.light.border),
-                    pb(16),
-                  ]}
-                >
-                  <Image
-                    style={[image.w(14), image.h(20)]}
-                    source={tripImgs.redBgLocation}
-                  />
-                  <Text style={[fw700, fs14, colorBlack, neurialGrotesk]}>
-                    Dropoff Bus Stop
-                  </Text>
-                </View>
-                {/* //!Dropoff lable Block */}
-
-                {/* //!Drop off Input Block */}
-                <View style={[wFull, flex, gap(16), itemsCenter, justifyStart]}>
-                  <Text style={[fw500, fs14, colorBlack]}>
-                    {"Ojodu Berger Bus Stop"}
-                  </Text>
-                </View>
-                {/* //!Drop off Input Block */}
+                      rs();
+                      start();
+                    }
+                  }}
+                ></Countdown>
+                {/* </View> */}
               </View>
             )}
-            {/* //!Drop off Block */}
+            {/* //!Time Down Block */}
 
-            {/* //!Next Bus Stop Block */}
-            {showNextBusstop && (
-              <View
-                style={[
-                  wFull,
-                  h(112),
-                  flexCol,
-                  pt(16),
-                  px(32),
-                  borderGrey(0.7),
-                  bg(colors.white),
-                  rounded(10),
-                  gap(10),
-                ]}
-              >
-                {/* //!Next Bus Stop Lable Block */}
-                <View
-                  style={[
-                    wFull,
-                    flex,
-                    gap(16),
-                    itemsCenter,
-                    justifyStart,
-                    borderB(0.7, Colors.light.border),
-                    pb(16),
-                  ]}
-                >
-                  <Image
-                    style={[image.w(14), image.h(20)]}
-                    source={tripImgs.locationImage}
-                  />
-                  <Text style={[fw700, fs14, colorBlack, neurialGrotesk]}>
-                    Next Stop
-                  </Text>
-                </View>
-                {/* //!Next Bus Stop Lable Block */}
+            {/* New Requests */}
+            {unAcceptedRequests.some((req) => req.shown == false) &&
+              newRequestsShown && (
+                // <View style={[tw`w-full h-[40px] relative mt-[50px]`, {zIndex: 999}]}>
+                <View style={[tw`w-full h-[40px] relative mt-[20px]`, {zIndex: 999}]}>
+                  {[...unAcceptedRequests]
+                  .sort((a, b) => (b?.zIndex || 0) - (a?.zIndex || 0))
+                  .map((req, index) => {
+                    const topPosition = (unAcceptedRequests.length - 1 - index) * 5;
 
-                {/* //!Next Bus Stop Value Block */}
-                <View style={[wFull, flex, gap(16), itemsCenter, justifyStart]}>
-                  <Text style={[fw500, fs14, colorBlack]}>
-                    {"Ojodu Berger Bus Stop"}
-                  </Text>
+                    return (
+                      <NewRequestTile
+                        props={{ 
+                          style: [tw``, { top: topPosition }] 
+                        }}
+                        request={req}
+                        isTopRequest={String(req._id) === String(topRequestId)}
+                        onRequestRearranged={handleRequestRearranged}
+                        key={index}
+                      />
+                    )
+                  })}
                 </View>
-                {/* //!Next Bus Stop Value Block */}
-              </View>
-            )}
-            {/* //!Next Bus Stop Block */}
+              )}
+            {/* New Requests */}
           </View>
+          {/* Statuses */}
         </PaddedScreen>
         {/* //!Header */}
-
-        {/* Tooltip */}
-        {/* <Tooltip content="This is the next bus stop" position="top">
-          <TouchableOpacity
-            style={[
-              absolute,
-              top0,
-              right0,
-              w(40),
-              h(40),
-              bg(colors.white),
-              rounded(50),
-              flex,
-              itemsCenter,
-              justifyCenter,
-              { shadowColor: colors.black, shadowRadius: 10 },
-            ]}
-            onPress={() => {
-              setShowNextBusstop((prev) => !prev);
-            }}
-          >
-            <Ionicons
-              name="information-circle"
-              size={20}
-              color={colors.black}
-            />
-          </TouchableOpacity>
-        </Tooltip> */}
-        {/* Tooltip */}
-
-        {/* //!Time Down Block */}
-        {(query === EQuery.accepting || query === EQuery.searching) && (
-          <View
-            style={[
-              absolute,
-              // t("45%"),
-              t("20%"),
-              wFull,
-              h(144),
-              flex,
-              itemsCenter,
-              justifyCenter,
-              bg(colors.transparent),
-            ]}
-          >
-            {shown && (
-              <Countdown
-                duration={20 * 1000}
-                interval={100}
-                changeCondition={[allRequests, unAcceptedRequests, seconds]}
-                onComplete={({ restart: rs }) => {
-                  if (Number(unAcceptedRequests?.length) > 1) {
-                    dispatch(
-                      setRideState({
-                        key: "currentRiderOfferIndex",
-                        value:
-                          Number(currentRiderOfferIndex) >=
-                          unAcceptedRequests.length - 1
-                            ? 0
-                            : Number(currentRiderOfferIndex) + 1,
-                      })
-                    );
-
-                    rs();
-                    start();
-                  }
-                }}
-              ></Countdown>
-            )}
-            {/* </View> */}
-          </View>
-        )}
-        {/* //!Time Down Block */}
       </View>
     </SafeScreen>
   );
@@ -394,22 +511,154 @@ function AcceptRide() {
 
 export default AcceptRide;
 
-// useEffect(() => {
-//     rideAcceptStage === EQuery.searching && showBottomSheet([300], <SearchingOrder />, true)
+const DriverOnlineTile = () => {
+  return (
+    <TouchableOpacity
+      style={[
+        w(110),
+        h(40),
+        bg("#27AE65"),
+        rounded(50),
+        flex,
+        itemsCenter,
+        relative,
+      ]}
+    >
+      <Text
+        style={[
+          fw700,
+          fs14,
+          colorWhite,
+          neurialGrotesk,
+          textCenter,
+          { flexBasis: "55%" },
+        ]}
+      >
+        ONLINE
+      </Text>
+      <View
+        style={[
+          w(30),
+          h(30),
+          rounded(30),
+          bg(colors.white),
+          absolute,
+          t(5),
+          r(7),
+          { shadowColor: colors.black, shadowRadius: 10 },
+        ]}
+      />
+    </TouchableOpacity>
+  );
+};
 
-//     if(rideAcceptStage === EQuery.accepting) {
+const DropoffTile = () => {
+  return (
+    <View
+      style={[
+        wFull,
+        h(112),
+        flexCol,
+        pt(16),
+        px(32),
+        borderGrey(0.7),
+        bg(colors.white),
+        rounded(10),
+        gap(10),
+      ]}
+    >
+      {/* //!Dropoff lable Block */}
+      <View
+        style={[
+          wFull,
+          flex,
+          gap(16),
+          itemsCenter,
+          justifyStart,
+          borderB(0.7, Colors.light.border),
+          pb(16),
+        ]}
+      >
+        <Image
+          style={[image.w(14), image.h(20)]}
+          source={tripImgs.redBgLocation}
+        />
+        <Text style={[fw700, fs14, colorBlack, neurialGrotesk]}>
+          Dropoff Bus Stop
+        </Text>
+      </View>
+      {/* //!Dropoff lable Block */}
+
+      {/* //!Drop off Input Block */}
+      <View style={[wFull, flex, gap(16), itemsCenter, justifyStart]}>
+        <Text style={[fw500, fs14, colorBlack]}>{"Ojodu Berger Bus Stop"}</Text>
+      </View>
+      {/* //!Drop off Input Block */}
+    </View>
+  );
+};
+
+const NextBusstop = () => {
+  return (
+    <View
+      style={[
+        wFull,
+        h(100),
+        flexCol,
+        mt(10),
+        pt(10),
+        px(32),
+        borderGrey(0.7),
+        bg(colors.white),
+        rounded(10),
+        gap(10),
+      ]}
+    >
+      {/* //!Next Bus Stop Lable Block */}
+      <View
+        style={[
+          wFull,
+          flex,
+          gap(16),
+          itemsCenter,
+          justifyStart,
+          borderB(0.7, Colors.light.border),
+          pb(16),
+        ]}
+      >
+        <Image
+          style={[image.w(14), image.h(20)]}
+          source={tripImgs.locationImage}
+        />
+        <Text style={[fw700, fs14, colorBlack, neurialGrotesk]}>Next Stop</Text>
+      </View>
+      {/* //!Next Bus Stop Lable Block */}
+
+      {/* //!Next Bus Stop Value Block */}
+      <View style={[wFull, flex, gap(16), itemsCenter, justifyStart]}>
+        <Text style={[fw500, fs14, colorBlack]}>{"Ojodu Berger Bus Stop"}</Text>
+      </View>
+      {/* //!Next Bus Stop Value Block */}
+    </View>
+  );
+};
+
+// useEffect(() => {
+//     rideAcceptStage === RideConstants.query.searching && showBottomSheet([300], <SearchingOrder />, true)
+
+//     if(rideAcceptStage === RideConstants.query.accepting) {
 //         showBottomSheet([400], <AcceptOrderSheet />, true)
 //     }
-//     if(rideAcceptStage === EQuery.arrived_pickup) {
+//     if(rideAcceptStage === RideConstants.query.arrived_pickup) {
 //         showBottomSheet([350, 400], <ArrivedPickupSheet />, true);
 //     }
-//     if(rideAcceptStage === EQuery.start_trip) {
+//     if(rideAcceptStage === RideConstants.query.start_trip) {
 //         showBottomSheet([500, 600], <TicketOtpSheet />, true)
 //     }
-//     if(rideAcceptStage === EQuery.pause_trip) {
+//     if(rideAcceptStage === RideConstants.query.pause_trip) {
 //         showBottomSheet([300, 550], <OnTripSheet />, true);
 //     }
-//     if(rideAcceptStage === EQuery.dropoff) {
+//     if(rideAcceptStage === RideConstants.query.dropoff) {
 //         showBottomSheet([450], <DropoffSheet />, true);
 //     }
 //     // setTimeout(() => {

@@ -92,8 +92,9 @@ const SearchingOrder = () => {
     dropoffBusstopInput,
     selectedRoute,
     allRequests,
+    query
   } = useAppSelector((state: RootState) => state.ride);
-  const [[_, query], setQuery] = useStorageState(RideConstants.localDB.query);
+  // const [[_, query], setQuery] = useStorageState(RideConstants.localDB.query);
 
   const path = usePathname();
 
@@ -130,8 +131,9 @@ const SearchingOrder = () => {
             ...prev,
             ridersOffers,
           }));
-          dispatch(setRideState({ key: "currentRiderOfferIndex", value: 0 }));
-          setQuery(RideConstants.query.accepting)
+          dispatch(setRideState({ key: "currentRiderOfferIndex", value: 1 }));
+          // setQuery(RideConstants.query.accepting)
+          dispatch(setRideState({key: 'query', value: RideConstants.query.accepting}))
           // showBottomSheet([400], <AcceptOrderSheet />, true);
         }
       })
@@ -143,74 +145,81 @@ const SearchingOrder = () => {
   };
 
   useEffect(() => {
-    if(allRequests.length > 0) setQuery(RideConstants.query.accepting);
-    else getRidersOffers();
+    if(allRequests.length > 0) {
+      // setQuery(RideConstants.query.accepting);
+      dispatch(setRideState({key: 'query', value: RideConstants.query.accepting}));
+      showBottomSheet([400], <AcceptOrderSheet />, true)
+  }
+    // else getRidersOffers();
   }, [router])
 
-  const channel = supabase.channel(`${RideConstants.channel.ride_requesting}${selectedRoute?._id}`);
-  channel
-    .on(
-      "broadcast",
-      { event: RideConstants.event.ride_requested },
-      (payload) => {
-        console.log('====================================');
-        console.log('RideConstants.event.ride_requested', payload?.payload?.ride, path, query);
-        console.log('====================================');
-        // if (path == "/acceptRide" && query == EQuery.searching) {
-        if (path == "/acceptRide" && (query == EQuery.searching || query == EQuery.accepting)) { // testing
-          const ride = payload?.payload?.ride as (IRiderRideDetails & {rider: IUserAccount});
+  // const channel = supabase.channel(`${RideConstants.channel.ride_requesting}${selectedRoute?._id}`);
+  // channel
+  //   .on(
+  //     "broadcast",
+  //     { event: RideConstants.event.ride_requested },
+  //     (payload) => {
+  //       console.log('====================================');
+  //       console.log('RideConstants.event.ride_requested', '{ride: payload?.payload?.ride}', {path}, {query});
+  //       console.log('====================================');
+  //       // if (path == "/acceptRide" && query == RideConstants.query.searching) {
+  //       if (path === "/acceptRide" && query === RideConstants.query.searching) { // testing
+  //         console.log("I'm here")
+  //         const ride = payload?.payload?.ride as (IRiderRideDetails & {rider: IUserAccount});
 
-          const requestPresent = allRequests.find(
-            (request) => String(request?._id) == String(ride?._id)
-          );
+  //         const requestPresent = allRequests.find(
+  //           (request) => String(request?._id) == String(ride?._id)
+  //         );
           
-          console.log('====================================');
-          console.log({requestPresent}, {allRequests});
-          console.log('====================================');
+  //         console.log('====================================');
+  //         console.log({requestPresent}, {allRequests});
+  //         console.log('====================================');
 
-          if (requestPresent || requestPresent != undefined) {
-            setQuery(RideConstants.query.accepting);
-            showBottomSheet([400], <AcceptOrderSheet />, true)
-            return;
-          }
+  //         if (requestPresent) {
+  //           // setQuery(RideConstants.query.accepting);
+  //           dispatch(setRideState({key: 'query', value: RideConstants.query.accepting}))
+  //           showBottomSheet([400], <AcceptOrderSheet />, true)
+  //           return;
+  //         }
 
-          const newRequest = {
-            _id: ride?._id,
-            dropoffId: ride?.dropoffBusstop?._id,
-            dropoffName: ride?.dropoffBusstop?.name,
-            pickupId: ride?.pickupBusstop?._id,
-            pickupName: ride?.pickupBusstop?.name,
-            riderCounterOffer: ride?.riderCounterOffer,
-            riderId: ride?.riderId,
-            rideStatus: ride?.rideStatus,
-            riderName: ride?.rider?.fullName,
-            riderPhoneNo: ride?.rider?.phoneNo,
-            riderPicture: ride?.rider?.picture || ride?.rider?.avatar
-          };
+  //         const newRequest = {
+  //           _id: ride?._id,
+  //           number:  (Number(allRequests[allRequests.length - 1]?.number) || 0) +1,
+  //           dropoffId: ride?.dropoffBusstop?._id,
+  //           dropoffName: ride?.dropoffBusstop?.name,
+  //           pickupId: ride?.pickupBusstop?._id,
+  //           pickupName: ride?.pickupBusstop?.name,
+  //           riderCounterOffer: ride?.riderCounterOffer,
+  //           riderId: ride?.riderId,
+  //           rideStatus: ride?.rideStatus,
+  //           riderName: ride?.rider?.fullName,
+  //           riderPhoneNo: ride?.rider?.phoneNo,
+  //           riderPicture: ride?.rider?.picture || ride?.rider?.avatar,
+  //           shown: false,
+  //           zIndex:
+  //             (Number(allRequests[allRequests.length - 1]?.zIndex) || 10000) +
+  //             1,
+  //         };
 
-          const requests = [...allRequests, newRequest];
+  //         const requests = [...allRequests, newRequest];
 
-          dispatch(setRideState({ key: "allRequests", value: requests }));
+  //         dispatch(setRideState({ key: "allRequests", value: requests }));
 
-          const newUnAcceptedRequests = requests.filter((request) => (request?.rideStatus == 'pending' || request?.rideStatus == 'requesting'));
+  //         const newUnAcceptedRequests = requests.filter((request) => (request?.rideStatus == 'pending' || request?.rideStatus == 'requesting'));
 
-          dispatch(setRideState({key: 'unAcceptedRequests', value: newUnAcceptedRequests}));
+  //         dispatch(setRideState({key: 'unAcceptedRequests', value: newUnAcceptedRequests}));
+  //         console.log('surving here!')
 
-          setQuery(RideConstants.query.accepting);
-          showBottomSheet([400], <AcceptOrderSheet />, true)
+  //         // setQuery(RideConstants.query.accepting);
+  //         dispatch(setRideState({key: 'query', value: RideConstants.query.accepting}))
+  //         showBottomSheet([400], <AcceptOrderSheet />, true)
+  //         console.log('surving here too!')
 
-          // getRidersOffers(); // let's try just the real time data for now.
-        }
-      }
-    )
-    .subscribe();
-
-  // useEffect(() => {
-  //   if(ridersOffers.length === 0)
-  //     getRidersOffers();
-
-  //   return;
-  // }, [(new Date()).getSeconds(),ridersOffers.length]);
+  //         // getRidersOffers(); // let's try just the real time data for now.
+  //       }
+  //     }
+  //   )
+  //   .subscribe();
 
   return (
     <PaddedScreen>

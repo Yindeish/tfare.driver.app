@@ -100,7 +100,7 @@ function OnTripSheet() {
   const { selectedRoute, currentRide, allRequests } = useAppSelector(
     (state: RootState) => state.ride
   );
-  const [[_, query], setQuery] = useStorageState(RideConstants.localDB.query);
+  // const [[_, query], setQuery] = useStorageState(RideConstants.localDB.query);
 
   const [fetchState, setFetchState] = useState({
     loading: false,
@@ -160,8 +160,8 @@ function OnTripSheet() {
             onPress={() => {
               dispatch(
                 setRideState({
-                  key: "rideAcceptStage",
-                  value: EQuery.start_trip,
+                  key: "query",
+                  value: RideConstants.query.start_trip,
                 })
               );
               showBottomSheet([500, 600], <TicketOtpSheet />, true);

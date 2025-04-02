@@ -17,7 +17,8 @@ export default function PageTitle({ onPress, style, title, children }: { onPress
                     router.back();
                     onPress && onPress();
                 }}>
-                    <Ionicons name="chevron-back" size={20} color={Colors.light.darkGrey} />
+                    {/* <Ionicons name="chevron-back" size={20} color={Colors.light.darkGrey} /> */}
+                    <Ionicons name="chevron-back" size={20} color={colors.white} />
                 </TouchableOpacity>
 
                 <Text style={[colorBlack, fs16, fw700, neurialGrotesk,]}>{title}</Text>

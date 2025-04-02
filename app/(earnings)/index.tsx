@@ -121,17 +121,23 @@ function Index() {
     }
 }
 
-const formatDate = (date: Date) => {
+const formatDate = (inputDate?: Date | null) => {
+  // Ensure we have a valid date
+  const date = inputDate instanceof Date && !isNaN(inputDate.getTime()) 
+    ? inputDate 
+    : new Date();
+  
   const options: Intl.DateTimeFormatOptions = {
     weekday: 'long', // Full weekday (e.g., "Tuesday")
     day: 'numeric', // Numeric day
     month: 'long', // Full month (e.g., "December")
   };
+  
   const formattedDate = new Intl.DateTimeFormat('en-GB', options).format(date);
 
   // Add suffix to the day (st, nd, rd, th)
   const day = date.getDate();
-  const suffix = (day: any) => {
+  const suffix = (day: number) => {
     if (day > 3 && day < 21) return 'th'; // 11th, 12th, 13th...
     switch (day % 10) {
       case 1: return 'st';
@@ -144,7 +150,7 @@ const formatDate = (date: Date) => {
   return `${formattedDate.replace(/\d+/, day + suffix(day))}`;
 };
 
-const formatTime = (date: Date) => {
+const formatTime = (date: Date = new Date()) => {
   const options: Intl.DateTimeFormatOptions = {
     hour: '2-digit',
     minute: '2-digit',
@@ -209,7 +215,7 @@ const formatTime = (date: Date) => {
                 </View>
 
                 <Text style={[colorBlack, fw700, { fontSize: 22 }]}>
-                   ₦{wallet?.balance || "0000.00"}
+                   ₦{Number(wallet?.balance).toFixed(2) || "0000.00"}
                 </Text>
               </View>
 
@@ -305,15 +311,15 @@ const formatTime = (date: Date) => {
                     </View>
 
                     <View style={[flex, itemsCenter, justifyBetween]}>
-                      <Text style={[fw400, fs12, colordarkGrey]}>
+                      {/* <Text style={[fw400, fs12, colordarkGrey]}> */}
                       {/* {(new Date()).getUTCDate()} */}
                         {/* 25mins drive | Tuesday, 5th December */}
-                        {formatDate(transaction?.data?.created_at)}
-                      </Text>
-                      <Text style={[fw700, fs12, colordarkGrey]}>
+                        {/* {formatDate(transaction?.data?.created_at)} */}
+                      {/* </Text> */}
+                      {/* <Text style={[fw700, fs12, colordarkGrey]}> */}
                         {/*  {"09:53"} AM */}
-                        {formatTime(transaction?.data?.created_at)}
-                      </Text>
+                        {/* {formatTime(transaction?.data?.created_at)} */}
+                      {/* </Text> */}
                     </View>
                   </View>
                 ))}
