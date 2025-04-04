@@ -28,6 +28,7 @@ export type TQuery =
   | "pause-trip"
   | "dropoff";
 export type TAllowedPaymentOptions = "cash" | "online" | "wallet" | "point";
+export type TCountdownStatus = 'idle' | 'started' | 'running' | 'completed'
 
 export enum EQuery {
   searching = "searching",
@@ -159,7 +160,8 @@ export interface IRequest {
   riderPicture?: string;
   riderPhoneNo?: string;
   shown?: boolean,
-  zIndex?: number
+  zIndex?: number,
+  countdownStatus: TCountdownStatus
 }
 
 export interface IRide {
@@ -198,6 +200,7 @@ export interface IRideState {
   rides: IRiderRideDetails[];
   allRequests: IRequest[];
   unAcceptedRequests: IRequest[];
+  countdownStatus: TCountdownStatus;
 }
 // ? Ride
 

@@ -4,6 +4,7 @@ import SearchingOrder from "@/components/home/searchingOrderSheet";
 import CtaBtn from "@/components/shared/ctaBtn";
 import PaddedScreen from "@/components/shared/paddedScreen";
 import SafeScreen from "@/components/shared/safeScreen";
+import { useTooltip } from "@/components/shared/tooltip";
 import Colors, { colors } from "@/constants/Colors";
 import sharedImg from "@/constants/images/shared";
 import tripImgs from "@/constants/images/trip";
@@ -36,6 +37,7 @@ const index = () => {
     const {selectedRoute, pickupBusstopInput,dropoffBusstopInput, driverOnline,driverEligible, query} = useAppSelector((state: RootState) => state.ride);
     const dispatch = useAppDispatch();
     const { token, wallet} = useAppSelector((state:RootState) => state.user);
+    const {setTooltipState} = useTooltip();
     // const [[_, query], setQuery] = useStorageState(RideConstants.localDB.query);
 
     const [options, updateOptions] = useState(
@@ -58,17 +60,12 @@ const index = () => {
         const wallet = returnedData?.wallet;
         setFetchState({ loading: false });
         if (wallet) {
-            console.log({wallet})
             
             dispatch(setUserState({
                 key: 'wallet', value: wallet
             }))
         }
     }
-
-    useEffect(() => {
-        !wallet && getUserWallet()
-    }, [])
 
     const goOnline = () => {
         if (driverEligible && driverOnline) {
@@ -92,6 +89,10 @@ const index = () => {
             return;
         }
     }
+
+    useEffect(() => {
+        !wallet && getUserWallet()
+    }, [])
 
     // !Updating eligibility status
     useEffect(() => {

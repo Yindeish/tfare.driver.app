@@ -90,7 +90,7 @@ import { CountdownCircleTimer } from "react-native-countdown-circle-timer";
 import AcceptOrderSheet from "@/components/home/acceptOrderSheet";
 import { useAppDispatch, useAppSelector } from "@/state/hooks/useReduxToolkit";
 import { RootState } from "@/state/store";
-import { EQuery, IRequest, IRiderRideDetails } from "@/state/types/ride";
+import { EQuery, IRequest, IRiderRideDetails, TCountdownStatus } from "@/state/types/ride";
 import { setRideState } from "@/state/slices/ride";
 import ArrivedPickupSheet from "@/components/home/arrivedPickupSheet";
 import TicketOtpSheet from "@/components/home/ticketOtpSheet";
@@ -118,6 +118,8 @@ function AcceptRide() {
     allRequests,
     unAcceptedRequests,
     selectedRoute,
+    countdownStatus,
+    currentRequest,
   } = useAppSelector((state: RootState) => state.ride);
   // const [[_, query], setQuery] = useStorageState(RideConstants.localDB.query);
   const { hideBottomSheet } = useBottomSheet();
@@ -134,7 +136,7 @@ function AcceptRide() {
     // New requests state
     newRequests: [] as IRequest[],
 
-    topRequestId: null
+    topRequestId: null,
   });
 
   const {
@@ -144,52 +146,88 @@ function AcceptRide() {
     newRequestsShown,
     nextBusstopShown,
     newRequests,
-    topRequestId
+    topRequestId,
   } = state;
-
-  // Countdown hook
-  const { start, seconds, reset, restart, completed } = useCountdown({
-    duration: counterDuration,
-    changeCondition: [allRequests, unAcceptedRequests],
-  });
 
   const handleRequestRearranged = (requestId: string) => {
     // Find the next request to show at the top
-    const remainingRequests = unAcceptedRequests.filter((req) => String(req._id) !== requestId)
+    const remainingRequests = unAcceptedRequests.filter(
+      (req) => String(req._id) !== requestId
+    );
 
     if (remainingRequests.length > 0) {
       // Sort by zIndex to find the next highest
-      const sortedRequests = [...remainingRequests].sort((a, b) => (Number(b.zIndex) || 0) - (Number(a.zIndex) || 0))
+      const sortedRequests = [...remainingRequests].sort(
+        (a, b) => (Number(b.zIndex) || 0) - (Number(a.zIndex) || 0)
+      );
 
       // Update the top request
-      setState((prev) => ({...prev, topRequestId: sortedRequests[0]?._id as any || null}));
+      setState((prev) => ({
+        ...prev,
+        topRequestId: (sortedRequests[0]?._id as any) || null,
+      }));
 
       // Rearrange the requests with updated zIndex values
       const rearrangedRequests = unAcceptedRequests.map((req) => {
         if (String(req._id) === String(sortedRequests[0]?._id)) {
           // New top request
-          return { ...req, zIndex: 10000, shown: true }
+          return { ...req, zIndex: 10000, shown: true };
         } else if (String(req._id) === requestId) {
           // Request that just timed out
-          return { ...req, zIndex: 1000, shown: false }
+          return { ...req, zIndex: 1000, shown: false };
         }
-        return req
-      })
+        return req;
+      });
 
       dispatch(
         setRideState({
           key: "unAcceptedRequests",
           value: rearrangedRequests,
-        }),
-      )
+        })
+      );
     }
-  }
+  };
+
+  // Testing
+  useEffect(() => {
+    console.log(
+      { allRequestsLen: allRequests.length },
+      { unAcceptedRequestsLen: unAcceptedRequests.length }
+    );
+  }, [allRequests.length, unAcceptedRequests.length]);
 
   useEffect(() => {
-    console.log({allRequestsLen: allRequests.length})
-  }, [allRequests.length])
+    console.log({ currentRequest });
+  }, [currentRequest]);
+  // Testing
 
-  useEffect(() => {console.log({query}, {path})}, [query, path])
+  // Getting a request (coutdown) with currentIndex and updating it's visibility
+  useEffect(() => {
+    const requests = unAcceptedRequests.map((requestItem) => {
+      if (Number(requestItem?.number) === currentRiderOfferIndex) {
+        return { ...requestItem, shown: true, countdownStatus: 'running' as TCountdownStatus };
+      } else return { ...requestItem, shown: false, countdownStatus: 'idle' as TCountdownStatus };
+    });
+
+    // console.log({unAcceptedRequests})
+    console.log({ currentRiderOfferIndex }, "currentRiderOfferIndex changed");
+    // console.log({currentRequest}, 'currentRequest changed from ', currentRequest?.number)
+    dispatch(setRideState({ key: "unAcceptedRequests", value: requests }));
+    
+    const request = requests.find(
+      (requestItem) => Number(requestItem?.number || 1) === currentRiderOfferIndex
+    );
+     
+    dispatch(
+      setRideState({
+        key: "currentRequest",
+        value: {...request, shown: true, countdownStatus: 'running' as TCountdownStatus},
+      })
+    );
+    dispatch(setRideState({key: 'countdownStatus', value: 'running' as TCountdownStatus}))
+    // console.log({currentRequest}, 'currentRequest changed to ', currentRequest?.number)
+  }, [currentRiderOfferIndex]);
+  // Getting a request (coutdown) with currentIndex and updating it's visibility
 
   // Consolidated useEffect for UI states
   useEffect(() => {
@@ -211,31 +249,15 @@ function AcceptRide() {
     }));
   }, [query, unAcceptedRequests.length]);
 
-  // Handle countdown reset for new requests
-  useEffect(() => {
-    if (
-      unAcceptedRequests.length > 1 &&
-      (seconds === 0 || completed) &&
-      query === RideConstants.query.accepting
-    ) {
-      // Reset counter with a brief delay to ensure remounting
-      setState((prev) => ({ ...prev, countdownShown: false }));
-
-      setTimeout(() => {
-        setState((prev) => ({
-          ...prev,
-          counterDuration: 20,
-          countdownShown: true,
-        }));
-      }, 300);
-    }
-  }, [unAcceptedRequests.length, completed, seconds, query]);
+  const currentUnacceptedRequest = unAcceptedRequests.find(
+    (reqItem) => reqItem?.shown == true
+  );
 
   const setupRideRequestChannel = () => {
     const channel = supabase.channel(
       `${RideConstants.channel.ride_requesting}${selectedRoute?._id}`
     );
-  
+
     channel
       .on(
         "broadcast",
@@ -243,32 +265,41 @@ function AcceptRide() {
         handleRideRequestEvent
       )
       .subscribe();
-  
+
     return channel;
   };
-  
+
   const handleRideRequestEvent = (payload: any) => {
-    const ride = payload?.payload?.ride as (IRiderRideDetails & {rider: IUserAccount});
+    const ride = payload?.payload?.ride as IRiderRideDetails & {
+      rider: IUserAccount;
+    };
     console.log("Ride requested event:", ride?._id);
-  
+
     // Handle searching state
     if (path === "/acceptRide" && query === RideConstants.query.searching) {
       handleSearchingState(ride);
-    } 
+    }
     // Handle accepting state
-    else if (path === "/acceptRide" && query === RideConstants.query.accepting) {
+    else if (
+      path === "/acceptRide" &&
+      query === RideConstants.query.accepting
+    ) {
       handleAcceptingState(ride);
-    } 
+    }
     // Handle other states
     else if (path === "/acceptRide") {
       handleOtherStates(ride);
     }
   };
-  
-  const createRideRequest = (ride: (IRiderRideDetails & {rider: IUserAccount})) => {
+
+  const createRideRequest = (
+    ride: IRiderRideDetails & { rider: IUserAccount },
+    shown?: boolean
+  ) => {
     return {
       _id: ride?._id,
-      number: (Number(allRequests[allRequests.length - 1]?.number) || 0) + 1,
+      // number: (Number(allRequests[allRequests.length]?.number) || 0) + 1,
+      number: Number(currentRequest?.number || 0) + 1,
       dropoffId: ride?.dropoffBusstop?._id,
       dropoffName: ride?.dropoffBusstop?.name,
       pickupId: ride?.pickupBusstop?._id,
@@ -279,97 +310,124 @@ function AcceptRide() {
       riderName: ride?.rider?.fullName,
       riderPhoneNo: ride?.rider?.phoneNo,
       riderPicture: ride?.rider?.picture || ride?.rider?.avatar,
-      shown: false,
-      zIndex: (Number(allRequests[allRequests.length - 1]?.zIndex) || 10000) + 1,
+      shown: shown ? true : false,
+      // zIndex: (Number(allRequests[allRequests.length]?.zIndex) || 10000) + 1,
+      zIndex: Number(currentRequest?.zIndex || 10000) + 1,
+      countdownStatus: 'idle' as TCountdownStatus 
     };
   };
-  
-  const handleSearchingState = (ride: (IRiderRideDetails & {rider: IUserAccount})) => {
+
+  const handleSearchingState = (
+    ride: IRiderRideDetails & { rider: IUserAccount }
+  ) => {
     const requestPresent = allRequests.find(
       (request) => String(request?._id) === String(ride?._id)
     );
-    
+
     if (requestPresent) {
-      dispatch(setRideState({key: 'query', value: RideConstants.query.accepting}));
+      dispatch(
+        setRideState({ key: "query", value: RideConstants.query.accepting })
+      );
       showBottomSheet([400], <AcceptOrderSheet />, true);
       return;
     }
-  
-    const newRequest = createRideRequest(ride);
+
+    const newRequest = createRideRequest(ride, true);
     const requests = [...allRequests, newRequest];
-  
+
     dispatch(setRideState({ key: "allRequests", value: requests }));
-    
+
     const newUnAcceptedRequests = requests.filter(
-      (request) => (request?.rideStatus === 'pending' || request?.rideStatus === 'requesting')
+      (request) =>
+        request?.rideStatus === "pending" ||
+        request?.rideStatus === "requesting"
     );
-  
-    dispatch(setRideState({key: 'unAcceptedRequests', value: newUnAcceptedRequests}));
-    dispatch(setRideState({key: 'query', value: RideConstants.query.accepting}));
+
+    dispatch(setRideState({ key: "currentRequest", value: {...newRequest, countdownStatus: 'running' as TCountdownStatus} }));
+    dispatch(setRideState({key: 'countdownStatus', value: 'running' as TCountdownStatus}))
+    dispatch(
+      setRideState({ key: "unAcceptedRequests", value: newUnAcceptedRequests })
+    );
+    dispatch(
+      setRideState({ key: "query", value: RideConstants.query.accepting })
+    );
     showBottomSheet([400], <AcceptOrderSheet />, true);
   };
-  
-  const handleAcceptingState = (ride: (IRiderRideDetails & {rider: IUserAccount})) => {
+
+  const handleAcceptingState = (
+    ride: IRiderRideDetails & { rider: IUserAccount }
+  ) => {
     if (!allRequests) return;
-  
+
     const requestPresent = allRequests.find(
       (request) => String(request?._id) === String(ride?._id)
     );
-  
-    if (requestPresent) return;
-  
-    const newRequest = createRideRequest(ride);
+
+    if (requestPresent) return; 
+
+    const newRequest = createRideRequest(ride, true);
+    console.log({newRequest}, 'N E W R E Q U E S T');
+
     const requests = [...allRequests, newRequest];
-    
+
     dispatch(setRideState({ key: "allRequests", value: requests }));
-  
+
     const newUnAcceptedRequests = requests.filter(
-      (request) => request?.rideStatus === "pending" || request?.rideStatus === "requesting"
+      (request) =>
+        request?.rideStatus === "pending" ||
+        request?.rideStatus === "requesting"
     );
-  
-    dispatch(setRideState({key: "unAcceptedRequests", value: newUnAcceptedRequests}));
-  
-    // Reset timer if needed
-    if (seconds === 0 && completed && newUnAcceptedRequests.length > 1) {
-      reset();
-      restart();
-      start();
+
+    dispatch(
+      setRideState({ key: "unAcceptedRequests", value: newUnAcceptedRequests })
+    );
+
+    if (countdownStatus == 
+      'completed'
+    ) {
+      // console.log({ countdownStatus }, "from handleAccept");
+      dispatch(
+        setRideState({
+          key: "currentRiderOfferIndex",
+          value: Number(newRequest?.number || currentRequest?.number),
+        })
+      );
+      dispatch(setRideState({ key: "currentRequest", value: {...newRequest, countdownStatus: 'running' as TCountdownStatus} }));
+      dispatch(setRideState({key: 'countdownStatus', value: 'running' as TCountdownStatus}))
     }
-  
-    // Update current rider index
-    dispatch(setRideState({
-      key: "currentRiderOfferIndex",
-      value: Number(currentRiderOfferIndex) >= unAcceptedRequests.length
-        ? 1
-        : Number(currentRiderOfferIndex) + 1,
-    }));
   };
-  
-  const handleOtherStates = (ride: (IRiderRideDetails & {rider: IUserAccount})) => {
+
+  const handleOtherStates = (
+    ride: IRiderRideDetails & { rider: IUserAccount }
+  ) => {
     if (!allRequests) return;
-  
+
     const requestPresent = allRequests.find(
       (request) => String(request?._id) === String(ride?._id)
     );
-  
+
     if (requestPresent) return;
-  
+
     const newRequest = createRideRequest(ride);
     const requests = [...allRequests, newRequest];
-    
+
     dispatch(setRideState({ key: "allRequests", value: requests }));
-  
+
     const newUnAcceptedRequests = requests.filter(
-      (request) => request?.rideStatus === "pending" || request?.rideStatus === "requesting"
+      (request) =>
+        request?.rideStatus === "pending" ||
+        request?.rideStatus === "requesting"
     );
-  
-    dispatch(setRideState({key: "unAcceptedRequests", value: newUnAcceptedRequests}));
-  
+
+    dispatch(
+      setRideState({ key: "unAcceptedRequests", value: newUnAcceptedRequests })
+    );
+
     // Update new requests state
     const newRequestPresent = newRequests.find(
       (request) => String(request?._id) === String(ride?._id)
     );
-  
+
     if (!newRequestPresent) {
       setState((prev) => ({
         ...prev,
@@ -377,10 +435,10 @@ function AcceptRide() {
       }));
     }
   };
-  
+
   // Initialize the channel
   const rideChannel = setupRideRequestChannel();
-  
+
   // Clean up on component unmount
   useEffect(() => {
     return () => {
@@ -437,41 +495,14 @@ function AcceptRide() {
             {/* //!Next Bus Stop Block */}
 
             {/* //!Time Down Block */}
-            {countdownShown && (
-              <View
-                style={[
-                  wFull,
-                  h(120),
-                  flex,
-                  itemsCenter,
-                  justifyCenter,
-                  bg(colors.transparent),
-                ]}
-              >
-                <Countdown
-                  duration={20 * 1000}
-                  interval={100}
-                  changeCondition={[allRequests, unAcceptedRequests, seconds]}
-                  onComplete={({ restart: rs }) => {
-                    if (Number(unAcceptedRequests?.length) > 1) {
-                      dispatch(
-                        setRideState({
-                          key: "currentRiderOfferIndex",
-                          value:
-                            Number(currentRiderOfferIndex) >=
-                            unAcceptedRequests.length - 1
-                              ? 1
-                              : Number(currentRiderOfferIndex) + 1,
-                        })
-                      );
-
-                      rs();
-                      start();
-                    }
-                  }}
-                ></Countdown>
-                {/* </View> */}
-              </View>
+            {/* {countdownShown && ( */}
+            {countdownShown && currentRequest?.shown && (
+              <RequestCountdown
+                request={
+                  (currentUnacceptedRequest as IRequest) ||
+                  unAcceptedRequests[0]
+                }
+              />
             )}
             {/* //!Time Down Block */}
 
@@ -479,24 +510,32 @@ function AcceptRide() {
             {unAcceptedRequests.some((req) => req.shown == false) &&
               newRequestsShown && (
                 // <View style={[tw`w-full h-[40px] relative mt-[50px]`, {zIndex: 999}]}>
-                <View style={[tw`w-full h-[40px] relative mt-[20px]`, {zIndex: 999}]}>
+                <View
+                  style={[
+                    tw`w-full h-[40px] relative mt-[20px]`,
+                    { zIndex: 999 },
+                  ]}
+                >
                   {[...unAcceptedRequests]
-                  .sort((a, b) => (b?.zIndex || 0) - (a?.zIndex || 0))
-                  .map((req, index) => {
-                    const topPosition = (unAcceptedRequests.length - 1 - index) * 5;
+                    .sort((a, b) => (b?.zIndex || 0) - (a?.zIndex || 0))
+                    .map((req, index) => {
+                      const topPosition =
+                        (unAcceptedRequests.length - 1 - index) * 5;
 
-                    return (
-                      <NewRequestTile
-                        props={{ 
-                          style: [tw``, { top: topPosition }] 
-                        }}
-                        request={req}
-                        isTopRequest={String(req._id) === String(topRequestId)}
-                        onRequestRearranged={handleRequestRearranged}
-                        key={index}
-                      />
-                    )
-                  })}
+                      return (
+                        <NewRequestTile
+                          props={{
+                            style: [tw``, { top: topPosition }],
+                          }}
+                          request={req}
+                          isTopRequest={
+                            String(req._id) === String(topRequestId)
+                          }
+                          onRequestRearranged={handleRequestRearranged}
+                          key={index}
+                        />
+                      );
+                    })}
                 </View>
               )}
             {/* New Requests */}
@@ -510,6 +549,136 @@ function AcceptRide() {
 }
 
 export default AcceptRide;
+
+const RequestCountdown = ({ request }: { request: IRequest }) => {
+  const { showBottomSheet } = useBottomSheet();
+  const dispatch = useAppDispatch();
+  const {
+    driverOnline,
+    query,
+    currentRiderOfferIndex,
+    allRequests,
+    unAcceptedRequests,
+    selectedRoute,
+    countdownStatus,
+    currentRequest,
+  } = useAppSelector((state: RootState) => state.ride);
+  // const [[_, query], setQuery] = useStorageState(RideConstants.localDB.query);
+  const { hideBottomSheet } = useBottomSheet();
+  const path = usePathname();
+
+  const [state, setState] = useState({
+    // Counter state
+    counterDuration: 30,
+    // UI visibility states
+    dropoffShown: false,
+    nextBusstopShown: false,
+    countdownShown: false,
+    newRequestsShown: false,
+    // New requests state
+    newRequests: [] as IRequest[],
+
+    topRequestId: null,
+  });
+
+  const {
+    counterDuration,
+    dropoffShown,
+    countdownShown,
+    newRequestsShown,
+    nextBusstopShown,
+    newRequests,
+    topRequestId,
+  } = state;
+
+  console.log({request}, {currentRequest})
+
+  // Countdown hook
+  const { start, seconds, reset, restart, completed } = useCountdown({
+    duration: counterDuration,
+    changeCondition: [allRequests, unAcceptedRequests],
+  });
+
+  useEffect(() => {
+    // console.log({countdownStatus}, {unAcceptedRequests}, {completed}, {currentRequest})
+    if (
+      unAcceptedRequests.length > 1 &&
+      // (countdownStatus == 'completed' && completed) &&
+      (countdownStatus == 'completed' && request?.countdownStatus == 'completed') &&
+      Number(request?.number) === Number(currentRequest?.number)
+    ) {
+     
+      console.log("Just completed", 
+        ` unAcceptedRequests.length > 1 &&
+      // (countdownStatus == 'completed' && completed) &&
+      (countdownStatus == 'completed' && request?.countdownStatus == 'completed') &&
+      Number(request?.number) === Number(currentRequest?.number)
+        `
+      );
+
+      dispatch(
+        setRideState({
+          key: "currentRiderOfferIndex",
+          value:
+            currentRiderOfferIndex == unAcceptedRequests.length + 1
+              ? 1
+              : Math.min(
+                  Number(currentRiderOfferIndex) + 1,
+                  unAcceptedRequests.length + 1
+                ),
+        })
+      );
+      restart();
+      start();
+    }
+  }, [countdownStatus, unAcceptedRequests, completed, currentRequest]);
+
+  // T E S T I N G
+  useEffect(() => {
+    console.log({ countdownStatus });
+  }, [countdownStatus]);
+  // T E S T I N G
+
+  return (
+    <View
+      style={[
+        wFull,
+        h(120),
+        flex,
+        itemsCenter,
+        justifyCenter,
+        bg(colors.transparent),
+      ]}
+    >
+      <Countdown
+        duration={20 * 1000}
+        interval={100}
+        // changeCondition={[allRequests, unAcceptedRequests, seconds]}
+        changeCondition={[countdownStatus, unAcceptedRequests.length, currentRequest, completed]}
+        onTick={({ completed, seconds }) => {
+          if (
+            !completed &&
+            seconds != 0 &&
+            (currentRequest?.number || 1) == request?.number
+          ) {
+            dispatch(setRideState({ key: "countdownStatus", value: 'running' as TCountdownStatus }));
+          }
+        }}
+        onComplete={({ restart: rs }) => {
+          dispatch(setRideState({ key: "countdownStatus", value: 'completed' as TCountdownStatus }));
+
+          const requests = unAcceptedRequests.map((requestItem) => {
+            if (Number(requestItem?.number) === Number(currentRequest?.number)) {
+              return { ...requestItem, shown: true, countdownStatus: 'completed' as TCountdownStatus };
+            } else return { ...requestItem, shown: false, countdownStatus: 'idle' as TCountdownStatus };
+          });
+          
+          dispatch(setRideState({key: 'unAcceptedRequests', value: requests}))
+        }}
+      ></Countdown>
+    </View>
+  );
+};
 
 const DriverOnlineTile = () => {
   return (

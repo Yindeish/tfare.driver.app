@@ -83,6 +83,7 @@ function AcceptOrderSheet() {
     ridesAccepted,
     unAcceptedRequests,
     query,
+    currentRequest
   } = useAppSelector((state: RootState) => state.ride);
   const { selectedRoute, allRequests } = useAppSelector(
     (state: RootState) => state.ride
@@ -90,7 +91,6 @@ function AcceptOrderSheet() {
   const { Snackbar, snackbarVisible, notify, closeSnackbar } = useSnackbar();
   // const [[_, query], setQuery] = useStorageState(RideConstants.localDB.query)
   const { showTooltip, hideTooltip } = useTooltip();
-  const { seconds, restart, reset, start, completed } = useCountdown({});
 
   const path = usePathname();
 
@@ -107,8 +107,8 @@ function AcceptOrderSheet() {
   });
   const { code, msg, loading } = fetchState;
 
-  const currentUnacceptedRequest =
-    unAcceptedRequests.find((reqItem) => Number(reqItem?.number) === currentRiderOfferIndex);
+  // const currentUnacceptedRequest =
+  //   unAcceptedRequests.find((reqItem) => Number(reqItem?.number || 1) === currentRiderOfferIndex);
 
   const acceptOffer = async (requestId: string) => {
     showTooltip();
@@ -193,11 +193,11 @@ function AcceptOrderSheet() {
             setRideState({
               key: "currentRiderOfferIndex",
               value:
-                currentRiderOfferIndex == allRequests.length - 1
+                currentRiderOfferIndex == unAcceptedRequests.length+1
                   ? 1
                   : Math.min(
                       Number(currentRiderOfferIndex) + 1,
-                      allRequests.length - 1
+                      unAcceptedRequests.length+1
                     ),
             })
           );
@@ -259,110 +259,6 @@ function AcceptOrderSheet() {
       });
   };
 
-  // useEffect(() => {
-  //   if (allRequests.length == 0)
-  //     dispatch(
-  //       setRideState({ key: "query", value: RideConstants.query.searching })
-  //     );
-  //   showBottomSheet([300], <SearchingOrder />, true);
-  //   // setQuery(RideConstants.query.searching)
-  // }, [allRequests.length]);
-
-  // const channel = supabase.channel(
-  //   `${RideConstants.channel.ride_requesting}${selectedRoute?._id}`
-  // );
-
-  // channel
-  //   .on(
-  //     "broadcast",
-  //     { event: RideConstants.event.ride_requested },
-  //     (payload) => {
-  //       console.log("====================================");
-  //       console.log(
-  //         "RideConstants.event.ride_accepted",
-  //         // {ride: payload?.payload?.ride},
-  //         // path,
-  //         // query
-  //       );
-  //       console.log("====================================");
-
-  //       if (path == "/acceptRide" && query == RideConstants.query.accepting) {
-  //         const ride = payload?.payload?.ride as IRiderRideDetails & {
-  //           rider: IUserAccount;
-  //         };
-  //         console.log("ride: ", ride);
-
-  //         if (!allRequests) return; // Ensure allRequests is defined
-
-  //         const requestPresent = allRequests.find(
-  //           (request) => String(request?._id) === String(ride?._id)
-  //         );
-
-  //         const newRequest = {
-  //           _id: ride?._id,
-  //           number:
-  //             (Number(allRequests[allRequests.length - 1]?.number) || 0) + 1,
-  //           dropoffId: ride?.dropoffBusstop?._id,
-  //           dropoffName: ride?.dropoffBusstop?.name,
-  //           pickupId: ride?.pickupBusstop?._id,
-  //           pickupName: ride?.pickupBusstop?.name,
-  //           riderCounterOffer: ride?.riderCounterOffer,
-  //           riderId: ride?.riderId,
-  //           rideStatus: ride?.rideStatus,
-  //           riderName: ride?.rider?.fullName,
-  //           riderPhoneNo: ride?.rider?.phoneNo,
-  //           riderPicture: ride?.rider?.picture || ride?.rider?.avatar,
-  //           shown: false,
-  //           zIndex:
-  //             (Number(allRequests[allRequests.length - 1]?.zIndex) || 10000) +
-  //             1,
-  //         };
-
-  //         if (!requestPresent) {
-  //           const requests = [...allRequests, newRequest]; // Append ride correctly
-  //           dispatch(setRideState({ key: "allRequests", value: requests }));
-
-  //           const newUnAcceptedRequests = requests.filter(
-  //             (request) =>
-  //               request?.rideStatus == "pending" ||
-  //               request?.rideStatus == "requesting"
-  //           );
-
-  //           dispatch(
-  //             setRideState({
-  //               key: "unAcceptedRequests",
-  //               value: newUnAcceptedRequests,
-  //             })
-  //           );
-
-  //           if (
-  //             seconds == 0 &&
-  //             completed &&
-  //             Number(newUnAcceptedRequests.length) > 1
-  //           ) {
-  //             console.log(
-  //               "seconds == 0 && Number(newUnAcceptedRequests.length) > 1"
-  //             );
-  //             reset();
-  //             restart();
-  //             start();
-  //           }
-
-  //           dispatch(
-  //             setRideState({
-  //               key: "currentRiderOfferIndex",
-  //               value:
-  //                 Number(currentRiderOfferIndex) >= unAcceptedRequests.length
-  //                   ? 0
-  //                   : Number(currentRiderOfferIndex) + 1,
-  //             })
-  //           );
-  //         }
-  //       }
-  //     }
-  //   )
-  //   .subscribe();
-
   return (
     <PaddedScreen>
       <View style={tw`w-full h-full`}>
@@ -385,7 +281,7 @@ function AcceptOrderSheet() {
                 dispatch(
                   setRideState({
                     key: "currentRequest",
-                    value: currentUnacceptedRequest,
+                    value: currentRequest,
                   })
                 );
                 dispatch(
@@ -407,28 +303,28 @@ function AcceptOrderSheet() {
                       tw`rounded-full`,
                     ]}
                     source={{
-                      uri: currentUnacceptedRequest?.riderPicture as string,
+                      uri: currentRequest?.riderPicture as string,
                     }}
                   />
                 </View>
 
                 <View style={[hFull, flexCol, justifyCenter, gap(12)]}>
                   <Text style={[c(colors.black), fw700, fs14]}>
-                    {currentUnacceptedRequest?.riderName}
+                    {currentRequest?.riderName}
                   </Text>
                   {/* <Text style={[c(Colors.light.darkGrey), fw400, fs12]}>{'5 min'} away</Text> */}
                   {/* <Text style={[c(Colors.light.darkGrey), fw400, fs12]}>
                   {"some mins"} away
                 </Text> */}
                   <Text style={[c(Colors.light.darkGrey), fw400, fs12]}>
-                    {"some mins"} away
+                    {"some mins"} {'index:'} {currentRiderOfferIndex} away
                   </Text>
                 </View>
               </View>
 
               <TouchableOpacity>
                 <Text style={[fw500, fs14, colorBlack]}>
-                  ₦ {currentUnacceptedRequest?.riderCounterOffer}
+                  ₦ {currentRequest?.riderCounterOffer}
                 </Text>
               </TouchableOpacity>
             </TouchableOpacity>
@@ -466,7 +362,7 @@ function AcceptOrderSheet() {
                   source={tripImgs.greenBgLocation}
                 />
                 <Text style={[fw500, fs14, colorBlack]}>
-                  {currentUnacceptedRequest?.pickupName}
+                  {currentRequest?.pickupName}
                 </Text>
               </View>
               {/* //!Pick up Block */}
@@ -478,7 +374,7 @@ function AcceptOrderSheet() {
                   source={tripImgs.redBgLocation}
                 />
                 <Text style={[fw500, fs14, colorBlack]}>
-                  {currentUnacceptedRequest?.dropoffName}
+                  {currentRequest?.dropoffName}
                 </Text>
               </View>
               {/* //!Drop off Block */}
@@ -493,7 +389,7 @@ function AcceptOrderSheet() {
               <CtaBtn
                 img={{ src: sharedImg.proceedIcon, w: 20, h: 20 }}
                 // onPress={() => riderOffer?.rideStatus === 'accepted'? {} :acceptOffer(riderOffer?._id)}
-                onPress={() => acceptOffer(currentUnacceptedRequest?._id as string)}
+                onPress={() => acceptOffer(currentRequest?._id as string)}
                 text={{ name: "Accept", color: colors.white }}
                 bg={{ color: Colors.light.background }}
                 // style={{ baseContainer: { ...w("48%"), opacity: riderOffer?.rideStatus === 'accepted'?0.5:1 } }}
@@ -502,7 +398,7 @@ function AcceptOrderSheet() {
                     ...w("48%"),
                     ...{
                       opacity:
-                        currentUnacceptedRequest?.rideStatus == "accepted"
+                        currentRequest?.rideStatus == "accepted"
                           ? 0.5
                           : 1,
                     },

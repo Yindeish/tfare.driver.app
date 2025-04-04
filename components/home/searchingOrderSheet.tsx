@@ -184,7 +184,7 @@ const SearchingOrder = () => {
 
   //         const newRequest = {
   //           _id: ride?._id,
-  //           number:  (Number(allRequests[allRequests.length - 1]?.number) || 0) +1,
+  //           number:  (Number(allRequests[allRequests.length]?.number) || 0) +1,
   //           dropoffId: ride?.dropoffBusstop?._id,
   //           dropoffName: ride?.dropoffBusstop?.name,
   //           pickupId: ride?.pickupBusstop?._id,
@@ -197,7 +197,7 @@ const SearchingOrder = () => {
   //           riderPicture: ride?.rider?.picture || ride?.rider?.avatar,
   //           shown: false,
   //           zIndex:
-  //             (Number(allRequests[allRequests.length - 1]?.zIndex) || 10000) +
+  //             (Number(allRequests[allRequests.length]?.zIndex) || 10000) +
   //             1,
   //         };
 

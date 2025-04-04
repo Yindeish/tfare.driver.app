@@ -14,7 +14,8 @@ import { Dimensions, View } from "react-native";
 import { Provider } from "react-redux";
 import { store } from "@/state/store";
 import * as Updates from "expo-updates";
-import { TooltipProvider } from "@/contexts/tolltip-provider";
+import TooltipProvider from "@/components/shared/tooltip";
+// import { TooltipProvider } from "@/contexts/tolltip-provider";
 
 export default function Root() {
   async function onFetchUpdateAsync() {

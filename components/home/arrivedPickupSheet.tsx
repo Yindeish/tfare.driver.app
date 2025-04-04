@@ -58,7 +58,7 @@ import { RideConstants } from "@/constants/ride";
 function ArrivedPickupSheet() {
   const { showBottomSheet } = useBottomSheet();
   const dispatch = useAppDispatch();
-  const {currentRequest} = useAppSelector((state: RootState) => state.ride);
+  const {currentRequest, currentRiderOfferIndex} = useAppSelector((state: RootState) => state.ride);
   // const [[_, query], setQuery] = useStorageState(RideConstants.localDB.query);
 
   const openCallerApp = (phoneNumber: string) => {
@@ -124,7 +124,7 @@ function ArrivedPickupSheet() {
                 <Text style={[c(colors.black), fw700, fs14]}>{currentRequest?.riderName}</Text>
                 <Text style={[c(Colors.light.darkGrey), fw400, fs12]}>
                   {/* {"5 min"} away */}
-                  {"few mins"} away
+                  {"few mins"} {'index:'} {currentRiderOfferIndex} away
                 </Text>
               </View>
             </View>

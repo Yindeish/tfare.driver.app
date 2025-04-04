@@ -2,8 +2,9 @@
 
 import type React from "react"
 import { createContext, useContext, type ReactNode } from "react"
-import type { ViewStyle, TextStyle } from "react-native"
+import { type ViewStyle, type TextStyle, Text, View } from "react-native"
 import { TooltipPosition } from "./use-tooltip"
+import tw from "@/constants/tw"
 
 export interface TooltipContextProps {
   defaultPosition?: TooltipPosition
@@ -48,6 +49,9 @@ export const TooltipProvider: React.FC<TooltipProviderProps> = ({
         defaultArrowStyle,
       }}
     >
+      <View style={[tw `fixed bg-red-700 px-[20px] top-0 left-0`]}>
+        <Text>{}</Text>
+      </View>
       {children}
     </TooltipContext.Provider>
   )
