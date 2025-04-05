@@ -108,6 +108,22 @@ import { IUserAccount } from "@/state/types/account";
 import FetchService from "@/services/api/fetch.service";
 import { setUserAccountSecurityFeild } from "@/state/slices/account";
 
+export function getHighest(num1: number, num2: number) {
+  return num1 > num2 ? num1 : num2;
+}
+
+export function getLowest(num1: number, num2: number) {
+  return num1 < num2 ? num1 : num2;
+}
+
+export function getHighestInArray(arr: number[]) {
+  return Math.max(...arr);
+}
+
+export function getLowestInArray(arr: number[]) {
+  return Math.min(...arr);
+}
+
 const NewRequestTile = ({
   props: { style, ...others },
   request,
@@ -126,26 +142,96 @@ const NewRequestTile = ({
     selectedRoute,
     allRequests,
     currentRiderOfferIndex,
+    currentRequest,
   } = useAppSelector((state: RootState) => state.ride);
   const { showBottomSheet, hideBottomSheet } = useBottomSheet();
 
+  const [counterDuration] = useState(20);
+
   // Individual countdown for this tile
-  const [countdownActive, setCountdownActive] = useState(false);
+  const [countdownActive, setCountdownActive] = useState(true);
+  const [done, setDone] = useState(false);
 
   // Countdown hook
   const { start, seconds, reset, restart, completed } = useCountdown({
-    duration: 20 * 1000,
+    duration: counterDuration * 1000,
     // changeCondition: [allRequests, unAcceptedRequests],
   });
   // Countdown hook
 
-  // Start countdown when this becomes the top request
-  useEffect(() => {
-    if (isTopRequest && !countdownActive) {
-      setCountdownActive(true);
-    }
-  }, [isTopRequest]);
+  // Reset active and done state when request changes
+  // useEffect(() => {
+  //   // setCountdownActive(true);
+  //   setDone(false);
+  // }, [request._id]);
+  
+  // Reset active and done state when request changes
 
+  //  Updating done
+  useEffect(() => {
+    if (done) {
+
+      dispatch(setRideState({key: 'currentRequest', value: {...currentRequest, countdownStatus: 'completed'}}))
+
+      setTimeout(() => {
+        // setCountdownActive(true);
+        dispatch(setRideState({key: 'currentRequest', value: {...currentRequest, countdownStatus: 'completed'}}))
+      }, 300);
+
+      if (
+        Number(request?.number) == Number(currentRequest?.number) &&
+        unAcceptedRequests.length > 1
+      ) {
+        console.log(` Number(request?.number) == Number(currentRequest?.number) &&
+        unAcceptedRequests.length > 1 `);
+
+        dispatch(
+          setRideState({
+            key: "currentRiderOfferIndex",
+            value:
+              currentRiderOfferIndex <
+              Number(unAcceptedRequests[unAcceptedRequests.length - 1]?.number)
+                ? Number(currentRequest?.number) + 1
+                : 1,
+          })
+        );
+      }
+
+      // setCountdownActive(false);
+      
+      console.log({ unAcceptedRequests }, "from topIndex and lowindex");
+    }
+  }, [done]);
+  //  Updating done
+
+  useEffect(() => {
+    if (completed) {
+      if (
+        Number(request?.number) == Number(currentRequest?.number) &&
+        unAcceptedRequests.length > 1
+      ) {
+        console.log(` Number(request?.number) == Number(currentRequest?.number) &&
+        unAcceptedRequests.length > 1 `);
+
+        dispatch(
+          setRideState({
+            key: "currentRiderOfferIndex",
+            value:
+              currentRiderOfferIndex <
+              Number(unAcceptedRequests[unAcceptedRequests.length - 1]?.number)
+                ? Number(request?.number) + 1
+                : 1,
+          })
+        );
+      }
+
+      // setCountdownActive(false);
+      
+      console.log({ unAcceptedRequests }, "from topIndex and lowindex");
+      restart();
+    start()
+    }
+  }, [completed])
 
   return (
     <View
@@ -166,80 +252,78 @@ const NewRequestTile = ({
       {...others}
     >
       {/* Count down */}
-      <Countdown
-        duration={20 * 1000}
-        interval={100}
-        containerStyle={{
-          borderWidth: 1,
-          borderColor: Colors.light.background,
-          height: 35,
-          width: 35,
-          marginTop: "auto",
-          marginBottom: "auto",
-          borderRadius: 20,
-          ...flexCenter,
-        }}
-        onComplete={({ restart: rs }) => {
-          const highestZIndex = Math.max(
-            ...unAcceptedRequests.map((item) => item.zIndex || 0),
-            10000
-          );
-
-          const rearrangedRequests = unAcceptedRequests.map((reqItem) => {
-            if (String(reqItem?._id) === String(request?._id)) {
-              return { ...reqItem, zIndex: 1000 };
-            } else {
-              const currentZ = reqItem.zIndex || highestZIndex;
-              return { ...reqItem, zIndex: currentZ + 1 };
-            }
-          });
-
-         setTimeout(() => {
-          dispatch(
-            setRideState({
-              key: "unAcceptedRequests",
-              value: rearrangedRequests,
-            })
-          );
-          rs();
-          start();
-         }, 300)
-        }}
-      >
-        <Text style={[fs14, colorBlack]}>{seconds}</Text>
-      </Countdown>
+        <Countdown
+          duration={counterDuration * 1000}
+          interval={100}
+          containerStyle={{
+            borderWidth: 1,
+            borderColor: Colors.light.background,
+            height: 35,
+            width: 35,
+            marginTop: "auto",
+            marginBottom: "auto",
+            borderRadius: 20,
+            ...flexCenter,
+          }}
+          changeCondition={[request._id, done]}
+          onComplete={({ restart: rs }) => {
+            if (!done) setDone(true);
+          }}
+        >
+          <Text style={[fs14, colorBlack]}>{seconds}</Text>
+        </Countdown>
       {/* Count down */}
 
       {/* Rider Info Block */}
       <View style={[w("auto"), { flex: 1 }, flexCol, gap(5), justifyCenter]}>
         <Text style={[fw500, fs14, colorBlack]}>{request?.riderName}</Text>
         <Text style={[fw500, fs14, colorBlack]}>
-          ₦ {request?.riderCounterOffer}
+          ₦ {request?.riderCounterOffer} {"index: "} {currentRiderOfferIndex}{" "}
+          {"req: "} {request?.number}
         </Text>
       </View>
       {/* Rider Info Block */}
 
       {/* View CTA */}
-      <View style={[flex, gap(8), w("auto"), h(38), bg(colors.transparent), mYAuto as ViewStyle]}>
-      <TouchableOpacity
-        onPress={() => {
-          dispatch(setRideState({key: 'query', value: RideConstants.query.accepting}));
-          showBottomSheet([400], <AcceptOrderSheet />, true);
-          dispatch(setRideState({key: 'currentRiderOfferIndex', value: request?.number || 1}))
-        }}
+      <View
         style={[
           flex,
-          hFull,
+          gap(8),
           w("auto"),
-          rounded(20),
-          px(15),
-          itemsCenter,
-          bg("#F9F7F8"),
-          { borderColor: Colors.light.border, borderWidth: 0.7 },
+          h(38),
+          bg(colors.transparent),
+          mYAuto as ViewStyle,
         ]}
       >
-        <Text style={[tw`text-black`]}>View</Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => {
+            dispatch(
+              setRideState({
+                key: "query",
+                value: RideConstants.query.accepting,
+              })
+            );
+            showBottomSheet([400], <AcceptOrderSheet />, true);
+            dispatch(
+              setRideState({
+                key: "currentRiderOfferIndex",
+                value: request?.number || 1,
+              })
+            );
+          }}
+          style={[
+            flex,
+            hFull,
+            w("auto"),
+            rounded(20),
+            px(15),
+            itemsCenter,
+            bg("#F9F7F8"),
+            { borderColor: Colors.light.border, borderWidth: 0.7 },
+          ]}
+        >
+          <Text style={[tw`text-black`]}>View</Text>
+        </TouchableOpacity>
       </View>
       {/* View CTA */}
     </View>
@@ -247,3 +331,58 @@ const NewRequestTile = ({
 };
 
 export default NewRequestTile;
+
+[
+  {
+    _id: "67f0948c5c6c30144d79ee23",
+    countdownStatus: "idle",
+    dropoffId: "67a1783659fc4f22135d9729",
+    dropoffName: "ikate",
+    number: 1,
+    pickupId: "67a17d571cd4d43ae0528a3f",
+    pickupName: "oshodi",
+    rideStatus: "requesting",
+    riderCounterOffer: 650,
+    riderId: "67a1f29b46f6cc3c9d7bd22e",
+    riderName: "Joe Adeshina",
+    riderPhoneNo: undefined,
+    riderPicture:
+      "https://res.cloudinary.com/dg46gpi4v/image/upload/v1739105883/ridersImages/tlr6xxazxntelgdjvaen.jpg",
+    shown: false,
+    zIndex: 10003,
+  },
+  {
+    _id: "67f094915c6c30144d79ee43",
+    countdownStatus: "idle",
+    dropoffId: "67a1783659fc4f22135d9729",
+    dropoffName: "ikate",
+    number: 2,
+    pickupId: "67a17d571cd4d43ae0528a3f",
+    pickupName: "oshodi",
+    rideStatus: "requesting",
+    riderCounterOffer: 650,
+    riderId: "67a1f30546f6cc3c9d7bd236",
+    riderName: "Biden trump",
+    riderPhoneNo: undefined,
+    riderPicture: undefined,
+    shown: false,
+    zIndex: 10002,
+  },
+  {
+    _id: "67f094965c6c30144d79ee63",
+    countdownStatus: "started",
+    dropoffId: "67a1783659fc4f22135d9729",
+    dropoffName: "ikate",
+    number: 3,
+    pickupId: "67a17d571cd4d43ae0528a3f",
+    pickupName: "oshodi",
+    rideStatus: "requesting",
+    riderCounterOffer: 650,
+    riderId: "67a1f34746f6cc3c9d7bd23d",
+    riderName: "Brad Traversy",
+    riderPhoneNo: undefined,
+    riderPicture: undefined,
+    shown: true,
+    zIndex: 10003,
+  },
+];

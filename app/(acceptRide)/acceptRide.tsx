@@ -111,7 +111,7 @@ import { supabase } from "@/supabase/supabase.config";
 import { IUserAccount } from "@/state/types/account";
 import FetchService from "@/services/api/fetch.service";
 import { setUserAccountSecurityFeild } from "@/state/slices/account";
-import NewRequestTile from "@/components/ride/new-request-tile";
+import NewRequestTile, { getHighestInArray } from "@/components/ride/new-request-tile";
 
 function AcceptRide() {
   const { showBottomSheet } = useBottomSheet();
@@ -198,14 +198,15 @@ function AcceptRide() {
     if (unAcceptedRequests.length === 0) return
 
     const requests = unAcceptedRequests.map((requestItem, index) => {
+      const topIndex = getHighestInArray(unAcceptedRequests.map((req) => Number(req?.zIndex)));
         return {
           ...requestItem,
           shown: Number(requestItem?.number) === currentRiderOfferIndex,
           countdownStatus: Number(requestItem?.number) === currentRiderOfferIndex ? "started" as TCountdownStatus : "idle" as TCountdownStatus,
+          zIndex: Number(requestItem?.number) === currentRiderOfferIndex ? topIndex : topIndex - ((Number(requestItem?.number) - 1))
       }
     })
 
-    console.log({ currentRiderOfferIndex }, "currentRiderOfferIndex changed")
     dispatch(setRideState({ key: "unAcceptedRequests", value: requests }))
 
     const request = requests.find((requestItem) => Number(requestItem?.number || 1) === currentRiderOfferIndex)
@@ -541,7 +542,8 @@ function AcceptRide() {
             {/* //!Time Down Block */}
 
             {/* New Requests */}
-            {unAcceptedRequests.some((req) => req.shown == false) &&
+            {
+            // unAcceptedRequests.some((req) => req.shown == false) &&
               newRequestsShown && (
                 // <View style={[tw`w-full h-[40px] relative mt-[50px]`, {zIndex: 999}]}>
                 <View
@@ -551,15 +553,14 @@ function AcceptRide() {
                   ]}
                 >
                   {[...unAcceptedRequests]
-                    .sort((a, b) => (b?.zIndex || 0) - (a?.zIndex || 0))
                     .map((req, index) => {
                       const topPosition =
-                        (unAcceptedRequests.length - 1 - index) * 5;
+                      (unAcceptedRequests.length - 1 - index) * 5;
 
                       return (
-                        <NewRequestTile
+                       <NewRequestTile
                           props={{
-                            style: [tw``, { top: topPosition }],
+                            style: [tw``, { top: topPosition, zIndex: Number(req?.zIndex) }],
                           }}
                           request={req}
                           isTopRequest={

@@ -317,7 +317,7 @@ function AcceptOrderSheet() {
                   {"some mins"} away
                 </Text> */}
                   <Text style={[c(Colors.light.darkGrey), fw400, fs12]}>
-                    {"some mins"} {'index:'} {currentRiderOfferIndex} away
+                    {"some mins"} away
                   </Text>
                 </View>
               </View>
