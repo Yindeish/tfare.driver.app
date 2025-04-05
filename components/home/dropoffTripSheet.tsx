@@ -62,15 +62,17 @@ import FetchService from "@/services/api/fetch.service";
 import { useState } from "react";
 import { useStorageState } from "@/hooks/useStorageState";
 import { RideConstants } from "@/constants/ride";
+import { useTooltip } from "../shared/tooltip";
 
 function DropoffSheet() {
   const { showBottomSheet, hideBottomSheet } = useBottomSheet();
   const dispatch = useAppDispatch();
   const { token } = useAppSelector((state: RootState) => state.user);
-  const { selectedRoute, currentRide, currentRequest } = useAppSelector(
+  const { selectedRoute, currentRide, rideRequestInView } = useAppSelector(
     (state: RootState) => state.ride
   );
   // const [[_, query], setQuery] = useStorageState(RideConstants.localDB.query);
+  const {setTooltipState} = useTooltip()
 
   const [fetchState, setFetchState] = useState({
     loading: false,
@@ -89,7 +91,7 @@ function DropoffSheet() {
     await FetchService.patchWithBearerToken({
       url: `/user/driver/me/ride/${currentRide?._id}/end-ride`,
       data: {
-        riderRideId: currentRequest?._id,
+        riderRideId: rideRequestInView?._id,
       },
       token: token as string,
     })
@@ -97,6 +99,9 @@ function DropoffSheet() {
         const data = res?.body ? await res.body : res;
         const code = data?.code;
         const msg = data?.msg;
+
+        setTooltipState({key: 'message', value: msg})
+        setTooltipState({key: 'visible', value: true})
         const riderRide: IRiderRideDetails | null = data?.riderRide;
         const currentRide = data?.currentRide;
         console.log({ currentRide, riderRide });
@@ -105,9 +110,9 @@ function DropoffSheet() {
 
         if (code && (code == 200 || code == 201)) {
           dispatch(setRideState({ key: "currentRide", value: currentRide }));
-          dispatch(setRideState({ key: "currentRequest", value: riderRide }));
+          dispatch(setRideState({ key: "rideRequestInView", value: riderRide }));
 
-          showBottomSheet([300, 550], <OnTripSheet />, true);
+          showBottomSheet([300, 550], <OnTripSheet />, true); //later check if all the rides has been completed so we can navigate to the home page
         }
       })
       .catch((err) => {
@@ -165,13 +170,13 @@ function DropoffSheet() {
                   ]}
                   source={{
                     uri:
-                      (currentRequest?.riderPicture as string),
+                      (rideRequestInView?.riderPicture as string),
                   }}
                 />
               </View>
 
               <View style={[hFull, flexCol, justifyCenter, gap(12)]}>
-                <Text style={[c(colors.black), fw700, fs14, tw `capitalize`]}>{currentRequest?.riderName}</Text>
+                <Text style={[c(colors.black), fw700, fs14, tw `capitalize`]}>{rideRequestInView?.riderName}</Text>
                 <Text style={[c(Colors.light.darkGrey), fw400, fs12]}>
                   {"few mins"} away
                 </Text>
@@ -180,7 +185,7 @@ function DropoffSheet() {
 
             <TouchableOpacity>
               <Text style={[fw500, fs14, colorBlack]}>
-                ₦ {currentRequest?.riderCounterOffer}
+                ₦ {rideRequestInView?.riderCounterOffer}
               </Text>
             </TouchableOpacity>
           </View>
@@ -218,7 +223,7 @@ function DropoffSheet() {
                 source={tripImgs.greenBgLocation}
               />
               <Text style={[fw500, fs14, colorBlack]}>
-                {currentRequest?.pickupName}
+                {rideRequestInView?.pickupName}
               </Text>
             </View>
             {/* //!Pick up Block */}
@@ -230,7 +235,7 @@ function DropoffSheet() {
                 source={tripImgs.redBgLocation}
               />
               <Text style={[fw500, fs14, colorBlack]}>
-                {currentRequest?.dropoffName}
+                {rideRequestInView?.dropoffName}
               </Text>
             </View>
             {/* //!Drop off Block */}

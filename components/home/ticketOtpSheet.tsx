@@ -69,16 +69,18 @@ import FetchService from "@/services/api/fetch.service";
 import { useSnackbar } from "@/contexts/snackbar.context";
 import { useStorageState } from "@/hooks/useStorageState";
 import { RideConstants } from "@/constants/ride";
+import { useTooltip } from "../shared/tooltip";
 
 function TicketOtpSheet() {
   const { hideBottomSheet, showBottomSheet } = useBottomSheet();
   const dispatch = useAppDispatch();
-  const { currentRequest, currentRide, ridesAccepted } = useAppSelector(
+  const { rideRequestInView, currentRide, ridesAccepted } = useAppSelector(
     (state: RootState) => state.ride
   );
   const { token } = useAppSelector((state: RootState) => state.user);
   const {Snackbar, notify, closeSnackbar, snackbarVisible} = useSnackbar();
   // const [[_, query], setQuery] = useStorageState(RideConstants.localDB.query);
+  const {setTooltipState} = useTooltip()
 
   console.log({currentRide})
 
@@ -114,7 +116,7 @@ function TicketOtpSheet() {
     await FetchService.patchWithBearerToken({
       url: `/user/driver/me/ride/${currentRide?._id}/start-ride`,
       data: {
-        riderRideId: currentRequest?._id,
+        riderRideId: rideRequestInView?._id,
         ticketOtp: otp,
       },
       token: token as string,
@@ -123,6 +125,9 @@ function TicketOtpSheet() {
         const data = res?.body ? await res.body : res;
         const code = data?.code;
         const msg = data?.msg;
+
+        setTooltipState({key: 'message', value: msg})
+        setTooltipState({key: 'visible', value: true})
         const riderRide: IRiderRideDetails | null = data?.riderRide;
         const currentRide = data?.currentRide;
         console.log({ currentRide, riderRide });
@@ -142,7 +147,7 @@ function TicketOtpSheet() {
             );
 
             dispatch(setRideState({ key: "currentRide", value: currentRide }));
-            dispatch(setRideState({key:'currentRequest', value: riderRide}));
+            dispatch(setRideState({key:'rideRequestInView', value: riderRide}));
 
             dispatch(setRideState({key: 'query', value: RideConstants.query.pause_trip}))
             showBottomSheet([300, 550], <OnTripSheet />);
@@ -163,6 +168,9 @@ function TicketOtpSheet() {
     dispatch(setRideState({key:'query', value: RideConstants.query.searching}));
 
     hideBottomSheet();
+
+    setTooltipState({key: 'message', value: 'Trip cancelled!'})
+        setTooltipState({key: 'visible', value: true})
     router.push("/(home)");
   };
 
@@ -220,14 +228,14 @@ function TicketOtpSheet() {
                 ]}
                 source={{
                   uri:
-                    (currentRequest?.riderPicture as string),
+                    (rideRequestInView?.riderPicture as string),
                 }}
               />
             </View>
 
             <View style={[hFull, flexCol, justifyCenter, gap(12)]}>
               <Text style={[c(colors.black), fw700, fs14]}>
-                {currentRequest?.riderName}
+                {rideRequestInView?.riderName}
               </Text>
               <Text style={[c(Colors.light.darkGrey), fw400, fs12]}>
                 Arrived location
@@ -237,7 +245,7 @@ function TicketOtpSheet() {
 
           <View>
             <Text style={[fw500, fs14, colorBlack]}>
-              ₦ {currentRequest?.riderCounterOffer}
+              ₦ {rideRequestInView?.riderCounterOffer}
             </Text>
           </View>
         </View>
@@ -246,7 +254,7 @@ function TicketOtpSheet() {
         {/* //!Chat-Call CTAs */}
         <View style={[flex, itemsCenter, gap(20), mXAuto] as ViewStyle[]}>
           <TouchableOpacity
-            onPress={() => openWhatsApp(String(currentRequest?.riderPhoneNo))}
+            onPress={() => openWhatsApp(String(rideRequestInView?.riderPhoneNo))}
             style={[
               flex,
               rounded(100),
@@ -268,7 +276,7 @@ function TicketOtpSheet() {
 
           <TouchableOpacity
             onPress={() =>
-              openCallerApp(String(currentRequest?.riderPhoneNo))
+              openCallerApp(String(rideRequestInView?.riderPhoneNo))
             }
             style={[
               flex,

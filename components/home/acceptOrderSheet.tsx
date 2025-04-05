@@ -67,10 +67,11 @@ import { useSnackbar } from "@/contexts/snackbar.context";
 import { RideConstants } from "@/constants/ride";
 import { supabase } from "@/supabase/supabase.config";
 import { Swiper } from "../shared/swiper";
-import { useTooltip } from "@/contexts/use-tooltip";
+// import { useTooltip } from "@/contexts/use-tooltip";
 import { useCountdown } from "@/contexts/useCountdown";
 import { IUserAccount } from "@/state/types/account";
 import SearchingOrder from "./searchingOrderSheet";
+import { useTooltip } from "../shared/tooltip";
 // import { useTooltip } from "@/hooks/useTooltip";
 
 function AcceptOrderSheet() {
@@ -90,7 +91,8 @@ function AcceptOrderSheet() {
   );
   const { Snackbar, snackbarVisible, notify, closeSnackbar } = useSnackbar();
   // const [[_, query], setQuery] = useStorageState(RideConstants.localDB.query)
-  const { showTooltip, hideTooltip } = useTooltip();
+  // const { showTooltip, hideTooltip } = useTooltip();
+  const {setTooltipState} = useTooltip()
 
   const path = usePathname();
 
@@ -109,7 +111,6 @@ function AcceptOrderSheet() {
 
 
   const acceptOffer = async (requestId: string) => {
-    showTooltip();
     setFetchState((prev) => ({
       ...prev,
       loading: "accepting",
@@ -127,6 +128,9 @@ function AcceptOrderSheet() {
         const data = res?.body ? await res.body : res;
         const code = data?.code;
         const msg = data?.msg;
+
+        setTooltipState({key: 'message', value: msg})
+        setTooltipState({key: 'visible', value: true})
         const riderRideAccepted: IRiderRideDetails | null =
           data?.riderRideAccepted || data?.rideAlreadyAccepted;
         const currentRide =
@@ -173,6 +177,12 @@ function AcceptOrderSheet() {
           if (requestsNotAccepted.length == 1) {
             dispatch(
               setRideState({
+                key: "rideRequestInView",
+                value: requestsNotAccepted[0],
+              })
+            );
+            dispatch(
+              setRideState({
                 key: "currentRequest",
                 value: requestsNotAccepted[0],
               })
@@ -216,6 +226,9 @@ function AcceptOrderSheet() {
     dispatch(setRideState({ key: "dropoffBusstopInput", value: null }));
     dispatch(setRideState({ key: "pickupBusstopInput", value: null }));
     dispatch(setRideState({ key: "ridersOffers", value: [] }));
+
+    setTooltipState({key: 'message', value: 'Ride request cancelled'})
+    setTooltipState({key: 'visible', value: true})
     router.push(`/(home)`);
   };
 
@@ -276,12 +289,13 @@ function AcceptOrderSheet() {
             {/* //!Rider Details Block */}
             <TouchableOpacity
               onPress={() => {
-                dispatch(
-                  setRideState({
-                    key: "currentRequest",
-                    value: currentRequest,
-                  })
-                );
+                // dispatch(
+                //   setRideState({
+                //     key: "currentRequest",
+                //     value: currentRequest,
+                //   })
+                // );
+                dispatch(setRideState({key: 'rideRequestInView', value: currentRequest}))
                 dispatch(
                   setRideState({
                     key: "query",

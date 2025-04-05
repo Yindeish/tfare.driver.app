@@ -58,7 +58,7 @@ import { RideConstants } from "@/constants/ride";
 function ArrivedPickupSheet() {
   const { showBottomSheet } = useBottomSheet();
   const dispatch = useAppDispatch();
-  const {currentRequest, currentRiderOfferIndex} = useAppSelector((state: RootState) => state.ride);
+  const {rideRequestInView, currentRiderOfferIndex} = useAppSelector((state: RootState) => state.ride);
   // const [[_, query], setQuery] = useStorageState(RideConstants.localDB.query);
 
   const openCallerApp = (phoneNumber: string) => {
@@ -116,12 +116,12 @@ function ArrivedPickupSheet() {
               <View>
                 <Image
                   style={[{ width: 60, height: 60, objectFit: "cover" }, tw `rounded-full`]}
-                source={{uri: currentRequest?.riderPicture as string}}
+                source={{uri: rideRequestInView?.riderPicture as string}}
                 />
               </View>
 
               <View style={[hFull, flexCol, justifyCenter, gap(12)]}>
-                <Text style={[c(colors.black), fw700, fs14]}>{currentRequest?.riderName}</Text>
+                <Text style={[c(colors.black), fw700, fs14]}>{rideRequestInView?.riderName}</Text>
                 <Text style={[c(Colors.light.darkGrey), fw400, fs12]}>
                   {/* {"5 min"} away */}
                   {"few mins"} {'index:'} {currentRiderOfferIndex} away
@@ -130,7 +130,7 @@ function ArrivedPickupSheet() {
             </View>
 
             <TouchableOpacity>
-              <Text style={[fw500, fs14, colorBlack]}>₦ {currentRequest?.riderCounterOffer}</Text>
+              <Text style={[fw500, fs14, colorBlack]}>₦ {rideRequestInView?.riderCounterOffer}</Text>
             </TouchableOpacity>
           </View>
           {/* //!Rider Details Block */}
@@ -138,7 +138,7 @@ function ArrivedPickupSheet() {
           {/* //!Call-Chat Rider Block */}
           <View style={[flex, itemsCenter, gap(20), mXAuto] as ViewStyle[]}>
             <TouchableOpacity
-              onPress={() => openWhatsApp(String(currentRequest?.riderPhoneNo))}
+              onPress={() => openWhatsApp(String(rideRequestInView?.riderPhoneNo))}
               style={[
                 flex,
                 rounded(100),
@@ -161,7 +161,7 @@ function ArrivedPickupSheet() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              onPress={() => openCallerApp(String(currentRequest?.riderPhoneNo))}
+              onPress={() => openCallerApp(String(rideRequestInView?.riderPhoneNo))}
               style={[
                 flex,
                 rounded(100),
@@ -189,8 +189,8 @@ function ArrivedPickupSheet() {
           <CtaBtn
             img={{ src: tripImgs.arrivedpickupImage, w: 20, h: 20 }}
             onPress={() => {
-              dispatch(setRideState({key: 'query', value: RideConstants.query.start_trip}))
-              showBottomSheet([500, 600], <TicketOtpSheet />, true)
+              dispatch(setRideState({key: 'query', value: RideConstants.query.start_trip}));
+              showBottomSheet([300, 500, 600], <TicketOtpSheet />, true)
             }}
             text={{ name: "Arrived Pickup", color: colors.white }}
             bg={{ color: Colors.light.background }}

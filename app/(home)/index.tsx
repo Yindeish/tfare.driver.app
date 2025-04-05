@@ -134,7 +134,7 @@ const index = () => {
                                     <Image style={[image.w(19), image.h(18)]} source={sharedImg.walletImage} />
                                     <Text style={[neurialGrotesk, fs12, fw400, colordarkGrey]}>Your earnings</Text>
                                 </View>
-                                <Text style={[fs(22), fw700, colorBlack]}>₦ {Number(wallet?.balance).toFixed(2) || '0000.00'}</Text>
+                                <Text style={[fs(22), fw700, colorBlack]}>₦ {wallet?.balance ? Number(wallet?.balance || 0).toFixed(2) : '0000.00'}</Text>
                             </View>
 
                             <TouchableOpacity 

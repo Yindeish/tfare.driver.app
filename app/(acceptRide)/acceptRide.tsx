@@ -612,7 +612,7 @@ const RequestCountdown = ({ request }: { request: IRequest }) => {
         if (Number(req.number) === Number(currentRequest?.number)) {
           return {
             ...req,
-            shown: false,
+            shown: unAcceptedRequests.length == 1 ? true : false,
             countdownStatus: "completed" as TCountdownStatus,
           }
         }

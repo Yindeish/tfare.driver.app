@@ -89,6 +89,7 @@ import { Ionicons } from "@expo/vector-icons";
 import TicketOtpSheet from "./ticketOtpSheet";
 import { useStorageState } from "@/hooks/useStorageState";
 import { RideConstants } from "@/constants/ride";
+import { useTooltip } from "../shared/tooltip";
 
 const { height } = Dimensions.get("window");
 
@@ -101,6 +102,7 @@ function OnTripSheet() {
     (state: RootState) => state.ride
   );
   // const [[_, query], setQuery] = useStorageState(RideConstants.localDB.query);
+  const {setTooltipState} = useTooltip()
 
   const [fetchState, setFetchState] = useState({
     loading: false,
@@ -116,6 +118,9 @@ function OnTripSheet() {
         const data = res?.body ? await res.body : res;
         const code = data?.code;
         const msg = data?.msg;
+
+        setTooltipState({key: 'message', value: msg})
+        setTooltipState({key: 'visible', value: true})
         const rides = data?.rides;
 
         if (code && code == 200 && rides) {

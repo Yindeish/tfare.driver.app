@@ -21,7 +21,8 @@ const initialState: IRideState = {
     dropoffsInput: [],
     allRequests: [],
     unAcceptedRequests: [],
-    countdownStatus: 'idle'
+    countdownStatus: 'idle',
+    rideRequestInView: null
 }
 
 const RideSlice = createSlice({

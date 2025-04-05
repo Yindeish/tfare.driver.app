@@ -201,6 +201,7 @@ export interface IRideState {
   allRequests: IRequest[];
   unAcceptedRequests: IRequest[];
   countdownStatus: TCountdownStatus;
+  rideRequestInView: IRequest | null; // for Arrived pickup, Ticket Otp, Dropoff, Pause trip
 }
 // ? Ride
 
