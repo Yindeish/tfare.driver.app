@@ -19,6 +19,9 @@ import { colors } from "@/constants/Colors";
 import { Ionicons } from "@expo/vector-icons";
 import { colorBlack, colordarkGrey, fs, fw400, neurialGrotesk } from "@/utils/fontStyles";
 import tw from "@/constants/tw";
+import { useAppSelector } from "@/state/hooks/useReduxToolkit";
+import { RootState } from "@/state/store";
+import { IRequest } from "@/state/types/ride";
 
 export interface CountdownProps extends UseCountdownProps {
   // Styling
@@ -43,6 +46,8 @@ export interface CountdownProps extends UseCountdownProps {
           restart: () => void;
         }
       ) => ReactNode);
+
+      request?: IRequest //testing
 }
 
 // Create a ref type for external control
@@ -79,6 +84,8 @@ export const Countdown = forwardRef<CountdownRef, CountdownProps>(
 
       // Children
       children,
+
+      request //testing
     },
     ref
   ) => {
@@ -104,6 +111,7 @@ export const Countdown = forwardRef<CountdownRef, CountdownProps>(
 
     // Render the countdown timer
     const renderCountdown = () => {
+      const {currentRiderOfferIndex} = useAppSelector((state: RootState) => state.ride);
       return (
         <View
           style={[
@@ -118,7 +126,10 @@ export const Countdown = forwardRef<CountdownRef, CountdownProps>(
             tw `p-[10px]`
           ]}
         >
-          <Ionicons name="timer-outline" size={22} color="#27AE65" />
+          {/* <Ionicons name="timer-outline" size={22} color="#27AE65" /> */}
+          {/* Testing */}
+          <Text>{'req no '}{request?.number }</Text> 
+          {/* Testing */}
 
           <Text style={[fs(30), fw400, colorBlack]}>{seconds}</Text>
 

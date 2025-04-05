@@ -28,7 +28,7 @@ export type TQuery =
   | "pause-trip"
   | "dropoff";
 export type TAllowedPaymentOptions = "cash" | "online" | "wallet" | "point";
-export type TCountdownStatus = 'idle' | 'started' | 'running' | 'completed'
+export type TCountdownStatus = 'idle' | 'started' | 'completed'
 
 export enum EQuery {
   searching = "searching",

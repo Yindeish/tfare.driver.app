@@ -90,7 +90,12 @@ import { CountdownCircleTimer } from "react-native-countdown-circle-timer";
 import AcceptOrderSheet from "@/components/home/acceptOrderSheet";
 import { useAppDispatch, useAppSelector } from "@/state/hooks/useReduxToolkit";
 import { RootState } from "@/state/store";
-import { EQuery, IRequest, IRiderRideDetails, TCountdownStatus } from "@/state/types/ride";
+import {
+  EQuery,
+  IRequest,
+  IRiderRideDetails,
+  TCountdownStatus,
+} from "@/state/types/ride";
 import { setRideState } from "@/state/slices/ride";
 import ArrivedPickupSheet from "@/components/home/arrivedPickupSheet";
 import TicketOtpSheet from "@/components/home/ticketOtpSheet";
@@ -189,44 +194,54 @@ function AcceptRide() {
   };
 
   // Testing
-  useEffect(() => {
-    console.log(
-      { allRequestsLen: allRequests.length },
-      { unAcceptedRequestsLen: unAcceptedRequests.length }
-    );
-  }, [allRequests.length, unAcceptedRequests.length]);
+  // useEffect(() => {
+  //   console.log(
+  //     { allRequestsLen: allRequests.length },
+  //     { unAcceptedRequestsLen: unAcceptedRequests.length }
+  //   );
+  // }, [allRequests.length, unAcceptedRequests.length]);
 
   useEffect(() => {
-    console.log({ currentRequest });
+    console.log({ currentRequest }, {totalUnaccepted:unAcceptedRequests}, {unAcceptedRequests});
   }, [currentRequest]);
   // Testing
 
   // Getting a request (coutdown) with currentIndex and updating it's visibility
   useEffect(() => {
-    const requests = unAcceptedRequests.map((requestItem) => {
-      if (Number(requestItem?.number) === currentRiderOfferIndex) {
-        return { ...requestItem, shown: true, countdownStatus: 'running' as TCountdownStatus };
-      } else return { ...requestItem, shown: false, countdownStatus: 'idle' as TCountdownStatus };
-    });
+    if (unAcceptedRequests.length === 0) return
 
-    // console.log({unAcceptedRequests})
-    console.log({ currentRiderOfferIndex }, "currentRiderOfferIndex changed");
-    // console.log({currentRequest}, 'currentRequest changed from ', currentRequest?.number)
-    dispatch(setRideState({ key: "unAcceptedRequests", value: requests }));
-    
-    const request = requests.find(
-      (requestItem) => Number(requestItem?.number || 1) === currentRiderOfferIndex
-    );
-     
-    dispatch(
-      setRideState({
-        key: "currentRequest",
-        value: {...request, shown: true, countdownStatus: 'running' as TCountdownStatus},
-      })
-    );
-    dispatch(setRideState({key: 'countdownStatus', value: 'running' as TCountdownStatus}))
-    // console.log({currentRequest}, 'currentRequest changed to ', currentRequest?.number)
-  }, [currentRiderOfferIndex]);
+    const requests = unAcceptedRequests.map((requestItem, index) => {
+        return {
+          ...requestItem,
+          shown: Number(requestItem?.number) === currentRiderOfferIndex,
+          countdownStatus: Number(requestItem?.number) === currentRiderOfferIndex ? "started" as TCountdownStatus : "idle" as TCountdownStatus,
+      }
+    })
+
+    console.log({ currentRiderOfferIndex }, "currentRiderOfferIndex changed")
+    dispatch(setRideState({ key: "unAcceptedRequests", value: requests }))
+
+    const request = requests.find((requestItem) => Number(requestItem?.number || 1) === currentRiderOfferIndex)
+
+    if (request) {
+      dispatch(
+        setRideState({
+          key: "currentRequest",
+          value: {
+            ...request,
+            shown: true,
+            countdownStatus: "started" as TCountdownStatus,
+          },
+        }),
+      )
+      dispatch(
+        setRideState({
+          key: "countdownStatus",
+          value: "started" as TCountdownStatus,
+        }),
+      )
+    }
+  }, [currentRiderOfferIndex, unAcceptedRequests.length])
   // Getting a request (coutdown) with currentIndex and updating it's visibility
 
   // Consolidated useEffect for UI states
@@ -292,14 +307,15 @@ function AcceptRide() {
     }
   };
 
-  const createRideRequest = (
-    ride: IRiderRideDetails & { rider: IUserAccount },
-    shown?: boolean
+  const createRideRequest = ({ride, number, shown}:
+    {ride: IRiderRideDetails & { rider: IUserAccount },
+    shown?: boolean,
+    number?: number,}
   ) => {
     return {
       _id: ride?._id,
       // number: (Number(allRequests[allRequests.length]?.number) || 0) + 1,
-      number: Number(currentRequest?.number || 0) + 1,
+      number: number || Number(allRequests[allRequests.length-1]?.number) + 1,
       dropoffId: ride?.dropoffBusstop?._id,
       dropoffName: ride?.dropoffBusstop?.name,
       pickupId: ride?.pickupBusstop?._id,
@@ -312,8 +328,8 @@ function AcceptRide() {
       riderPicture: ride?.rider?.picture || ride?.rider?.avatar,
       shown: shown ? true : false,
       // zIndex: (Number(allRequests[allRequests.length]?.zIndex) || 10000) + 1,
-      zIndex: Number(currentRequest?.zIndex || 10000) + 1,
-      countdownStatus: 'idle' as TCountdownStatus 
+      zIndex: 10000 + (number || Number(allRequests[allRequests.length-1]?.number) + 1),
+      countdownStatus: "idle" as TCountdownStatus,
     };
   };
 
@@ -332,7 +348,7 @@ function AcceptRide() {
       return;
     }
 
-    const newRequest = createRideRequest(ride, true);
+    const newRequest = createRideRequest({ride,shown: true, number: currentRiderOfferIndex});
     const requests = [...allRequests, newRequest];
 
     dispatch(setRideState({ key: "allRequests", value: requests }));
@@ -343,8 +359,21 @@ function AcceptRide() {
         request?.rideStatus === "requesting"
     );
 
-    dispatch(setRideState({ key: "currentRequest", value: {...newRequest, countdownStatus: 'running' as TCountdownStatus} }));
-    dispatch(setRideState({key: 'countdownStatus', value: 'running' as TCountdownStatus}))
+    dispatch(
+      setRideState({
+        key: "currentRequest",
+        value: {
+          ...newRequest,
+          countdownStatus: "started" as TCountdownStatus,
+        },
+      })
+    );
+    dispatch(
+      setRideState({
+        key: "countdownStatus",
+        value: "started" as TCountdownStatus,
+      })
+    );
     dispatch(
       setRideState({ key: "unAcceptedRequests", value: newUnAcceptedRequests })
     );
@@ -363,10 +392,14 @@ function AcceptRide() {
       (request) => String(request?._id) === String(ride?._id)
     );
 
-    if (requestPresent) return; 
+    if (requestPresent) return;
 
-    const newRequest = createRideRequest(ride, true);
-    console.log({newRequest}, 'N E W R E Q U E S T');
+    const newRequest = createRideRequest(
+      {ride,
+      shown: countdownStatus == "completed" ? true : false,
+    },
+    );
+    console.log({ newRequest }, "N E W R E Q U E S T");
 
     const requests = [...allRequests, newRequest];
 
@@ -382,18 +415,32 @@ function AcceptRide() {
       setRideState({ key: "unAcceptedRequests", value: newUnAcceptedRequests })
     );
 
-    if (countdownStatus == 
-      'completed'
-    ) {
-      // console.log({ countdownStatus }, "from handleAccept");
+    if (currentRequest?.countdownStatus == "completed") {
+      console.log(
+        { "currentRequest?.countdownStatus": currentRequest?.countdownStatus },
+        "from handleAccept"
+      );
       dispatch(
         setRideState({
           key: "currentRiderOfferIndex",
           value: Number(newRequest?.number || currentRequest?.number),
         })
       );
-      dispatch(setRideState({ key: "currentRequest", value: {...newRequest, countdownStatus: 'running' as TCountdownStatus} }));
-      dispatch(setRideState({key: 'countdownStatus', value: 'running' as TCountdownStatus}))
+      dispatch(
+        setRideState({
+          key: "currentRequest",
+          value: {
+            ...newRequest,
+            countdownStatus: "started" as TCountdownStatus,
+          },
+        })
+      );
+      dispatch(
+        setRideState({
+          key: "countdownStatus",
+          value: "started" as TCountdownStatus,
+        })
+      );
     }
   };
 
@@ -408,7 +455,7 @@ function AcceptRide() {
 
     if (requestPresent) return;
 
-    const newRequest = createRideRequest(ride);
+    const newRequest = createRideRequest({ride});
     const requests = [...allRequests, newRequest];
 
     dispatch(setRideState({ key: "allRequests", value: requests }));
@@ -496,7 +543,7 @@ function AcceptRide() {
 
             {/* //!Time Down Block */}
             {/* {countdownShown && ( */}
-            {countdownShown && currentRequest?.shown && (
+            {countdownShown && (
               <RequestCountdown
                 request={
                   (currentUnacceptedRequest as IRequest) ||
@@ -549,136 +596,85 @@ function AcceptRide() {
 }
 
 export default AcceptRide;
-
 const RequestCountdown = ({ request }: { request: IRequest }) => {
-  const { showBottomSheet } = useBottomSheet();
-  const dispatch = useAppDispatch();
-  const {
-    driverOnline,
-    query,
-    currentRiderOfferIndex,
-    allRequests,
-    unAcceptedRequests,
-    selectedRoute,
-    countdownStatus,
-    currentRequest,
-  } = useAppSelector((state: RootState) => state.ride);
-  // const [[_, query], setQuery] = useStorageState(RideConstants.localDB.query);
-  const { hideBottomSheet } = useBottomSheet();
-  const path = usePathname();
+  const dispatch = useAppDispatch()
+  const { unAcceptedRequests, currentRiderOfferIndex, currentRequest } = useAppSelector(
+    (state: RootState) => state.ride,
+  )
 
-  const [state, setState] = useState({
-    // Counter state
-    counterDuration: 30,
-    // UI visibility states
-    dropoffShown: false,
-    nextBusstopShown: false,
-    countdownShown: false,
-    newRequestsShown: false,
-    // New requests state
-    newRequests: [] as IRequest[],
+  const [counterDuration] = useState(20)
+  const [done, setDone] = useState(false)
 
-    topRequestId: null,
-  });
-
-  const {
-    counterDuration,
-    dropoffShown,
-    countdownShown,
-    newRequestsShown,
-    nextBusstopShown,
-    newRequests,
-    topRequestId,
-  } = state;
-
-  console.log({request}, {currentRequest})
-
-  // Countdown hook
-  const { start, seconds, reset, restart, completed } = useCountdown({
-    duration: counterDuration,
-    changeCondition: [allRequests, unAcceptedRequests],
-  });
-
+  // Reset done state when request changes
   useEffect(() => {
-    // console.log({countdownStatus}, {unAcceptedRequests}, {completed}, {currentRequest})
-    if (
-      unAcceptedRequests.length > 1 &&
-      // (countdownStatus == 'completed' && completed) &&
-      (countdownStatus == 'completed' && request?.countdownStatus == 'completed') &&
-      Number(request?.number) === Number(currentRequest?.number)
-    ) {
-     
-      console.log("Just completed", 
-        ` unAcceptedRequests.length > 1 &&
-      // (countdownStatus == 'completed' && completed) &&
-      (countdownStatus == 'completed' && request?.countdownStatus == 'completed') &&
-      Number(request?.number) === Number(currentRequest?.number)
-        `
-      );
+    setDone(false)
+  }, [request._id])
+  // Reset done state when request changes
 
+  // Handle countdown completion
+  useEffect(() => {
+    if (done) {
+      // Mark global count down status as completed
       dispatch(
         setRideState({
-          key: "currentRiderOfferIndex",
-          value:
-            currentRiderOfferIndex == unAcceptedRequests.length + 1
-              ? 1
-              : Math.min(
-                  Number(currentRiderOfferIndex) + 1,
-                  unAcceptedRequests.length + 1
-                ),
-        })
-      );
-      restart();
-      start();
-    }
-  }, [countdownStatus, unAcceptedRequests, completed, currentRequest]);
+          key: "countdownStatus",
+          value: "completed" as TCountdownStatus,
+        }),
+      )
+      // Mark global count down status as completed
 
-  // T E S T I N G
-  useEffect(() => {
-    console.log({ countdownStatus });
-  }, [countdownStatus]);
-  // T E S T I N G
+      const updatedRequests = unAcceptedRequests.map((req) => {
+        if (Number(req.number) === Number(currentRequest?.number)) {
+          return {
+            ...req,
+            shown: false,
+            countdownStatus: "completed" as TCountdownStatus,
+          }
+        }
+        return req
+      })
+
+      // Updating the list
+      dispatch(
+        setRideState({
+          key: "unAcceptedRequests",
+          value: updatedRequests,
+        }),
+      );
+      // Updating the list
+
+      // Update to the next request
+      (request?.number == currentRequest?.number) && (unAcceptedRequests.length > 1) && dispatch(
+        setRideState({
+          key: "currentRiderOfferIndex",
+          value: currentRiderOfferIndex < unAcceptedRequests[unAcceptedRequests.length-1]?.number ? Number(request?.number) +1 : 1,
+        }),
+      )
+      // Update to the next request
+    }
+  }, [done])
+  // Handle countdown completion
 
   return (
-    <View
-      style={[
-        wFull,
-        h(120),
-        flex,
-        itemsCenter,
-        justifyCenter,
-        bg(colors.transparent),
-      ]}
-    >
-      <Countdown
-        duration={20 * 1000}
-        interval={100}
-        // changeCondition={[allRequests, unAcceptedRequests, seconds]}
-        changeCondition={[countdownStatus, unAcceptedRequests.length, currentRequest, completed]}
-        onTick={({ completed, seconds }) => {
-          if (
-            !completed &&
-            seconds != 0 &&
-            (currentRequest?.number || 1) == request?.number
-          ) {
-            dispatch(setRideState({ key: "countdownStatus", value: 'running' as TCountdownStatus }));
-          }
-        }}
-        onComplete={({ restart: rs }) => {
-          dispatch(setRideState({ key: "countdownStatus", value: 'completed' as TCountdownStatus }));
-
-          const requests = unAcceptedRequests.map((requestItem) => {
-            if (Number(requestItem?.number) === Number(currentRequest?.number)) {
-              return { ...requestItem, shown: true, countdownStatus: 'completed' as TCountdownStatus };
-            } else return { ...requestItem, shown: false, countdownStatus: 'idle' as TCountdownStatus };
-          });
-          
-          dispatch(setRideState({key: 'unAcceptedRequests', value: requests}))
-        }}
-      ></Countdown>
+    <View style={[wFull, h(120), flex, itemsCenter, justifyCenter, bg(colors.transparent)]}>
+      {request?.shown && (
+        <View style={[bg(colors.green800), absolute, top0, zIndex(Number(request?.zIndex))]}>
+          <Countdown
+            duration={counterDuration * 1000}
+            interval={100}
+            request={currentRequest as IRequest}
+            changeCondition={[request._id, done]}
+            onComplete={() => {
+              if (!done) {
+                setDone(true)
+              }
+            }}
+          />
+        </View>
+      )}
     </View>
-  );
-};
+  )
+}
 
 const DriverOnlineTile = () => {
   return (
