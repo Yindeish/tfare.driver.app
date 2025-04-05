@@ -126,10 +126,7 @@ export const Countdown = forwardRef<CountdownRef, CountdownProps>(
             tw `p-[10px]`
           ]}
         >
-          {/* <Ionicons name="timer-outline" size={22} color="#27AE65" /> */}
-          {/* Testing */}
-          <Text>{'req no '}{request?.number }</Text> 
-          {/* Testing */}
+          <Ionicons name="timer-outline" size={22} color="#27AE65" />
 
           <Text style={[fs(30), fw400, colorBlack]}>{seconds}</Text>
 

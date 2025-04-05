@@ -646,7 +646,7 @@ const RequestCountdown = ({ request }: { request: IRequest }) => {
   return (
     <View style={[wFull, h(120), flex, itemsCenter, justifyCenter, bg(colors.transparent)]}>
       {request?.shown && (
-        <View style={[bg(colors.green800), absolute, top0, zIndex(Number(request?.zIndex))]}>
+        <View style={[absolute, top0, zIndex(Number(request?.zIndex))]}>
           <Countdown
             duration={counterDuration * 1000}
             interval={100}
