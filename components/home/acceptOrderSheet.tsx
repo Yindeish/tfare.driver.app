@@ -131,21 +131,20 @@ function AcceptOrderSheet() {
 
         setTooltipState({key: 'message', value: msg})
         setTooltipState({key: 'visible', value: true})
-        const riderRideAccepted: IRiderRideDetails | null =
-          data?.riderRideAccepted || data?.rideAlreadyAccepted;
+        const riderRideAccepted: IRiderRideDetails | null = data?.riderRide || data?.riderRideAccepted || data?.rideAlreadyAccepted;
         const currentRide =
           data?.currentRideSaved ||
           data?.existingCurrentRideSaved ||
           data?.currentRide;
-        console.log({ currentRide });
+        console.log({ currentRide, riderRideAccepted });
 
         setFetchState((prev) => ({ ...prev, loading: "idle", msg, code }));
 
         dispatch(setRideState({ key: "currentRide", value: currentRide }));
 
         if (
-          code &&
-          (code == 200 || code == 201) &&
+          (code &&
+          (code == 200 || code == 201)) &&
           riderRideAccepted &&
           currentRide
         ) {
@@ -166,6 +165,7 @@ function AcceptOrderSheet() {
               request?.rideStatus == "pending" ||
               request?.rideStatus == "requesting"
           );
+          console.log({requestsNotAccepted})
 
           dispatch(
             setRideState({
@@ -174,7 +174,8 @@ function AcceptOrderSheet() {
             })
           );
 
-          if (requestsNotAccepted.length == 1) {
+          // if (requestsNotAccepted.length == 1) {
+          if (allRequests.length == 1) {
             dispatch(
               setRideState({
                 key: "rideRequestInView",
@@ -183,8 +184,8 @@ function AcceptOrderSheet() {
             );
             dispatch(
               setRideState({
-                key: "currentRequest",
-                value: requestsNotAccepted[0],
+                key: "rideRequestInView",
+                value: allRequests[0],
               })
             );
             dispatch(

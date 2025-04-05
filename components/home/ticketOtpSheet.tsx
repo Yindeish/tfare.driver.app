@@ -130,14 +130,15 @@ function TicketOtpSheet() {
         setTooltipState({key: 'visible', value: true})
         const riderRide: IRiderRideDetails | null = data?.riderRide;
         const currentRide = data?.currentRide;
-        console.log({ currentRide, riderRide });
+        console.log({ currentRide, riderRide, code });
 
         setFetchState((prev) => ({ ...prev, loading: false, }));
 
-        if (code && (code == 200 || code == 201) && riderRide && currentRide) {
+        if ((code && (code == 200 || code == 201 || code == 400)) && riderRide && currentRide) {
           const rideSaved = ridesAccepted.find(
             (ride) => ride._id == riderRide?._id
           );
+          
           if (!rideSaved) {
             dispatch(
               setRideState({
@@ -151,9 +152,10 @@ function TicketOtpSheet() {
 
             dispatch(setRideState({key: 'query', value: RideConstants.query.pause_trip}))
             showBottomSheet([300, 550], <OnTripSheet />);
+            return;
           }
         }
-        if(code != 200) setFetchState((prev) => ({ ...prev, msg, code }));
+        else setFetchState((prev) => ({ ...prev, msg, code }));
       })
       .catch((err: any) => {
         console.log({ err });

@@ -111,7 +111,7 @@ function OnTripSheet() {
 
   const getCurrentRide = async () => {
     await FetchService.getWithBearerToken({
-      url: `/user/driver/me/ride/${currentRide?._id}/ride-details`,
+      url: `/user/driver/me/ride/${currentRide?._id}`,
       token: token as string,
     })
       .then(async (res: any) => {
@@ -119,16 +119,22 @@ function OnTripSheet() {
         const code = data?.code;
         const msg = data?.msg;
 
-        setTooltipState({key: 'message', value: msg})
-        setTooltipState({key: 'visible', value: true})
-        const rides = data?.rides;
+        const currentRide = data?.currentRide;
+        const rides = currentRide?.ridersRides;
+        console.log({rides})
 
-        if (code && code == 200 && rides) {
+        if ((code && (code == 200 || code == 201)) && currentRide) {
           dispatch(setRideState({ key: "rides", value: rides }));
+          dispatch(setRideState({ key: "currentRide", value: currentRide }));
           setFetchState((prev) => ({
             ...prev,
             loading: false,
           }));
+        }
+
+        else {
+          setTooltipState({key: 'message', value: msg})
+          setTooltipState({key: 'visible', value: true})
         }
       })
       .catch((err) => {
@@ -145,10 +151,6 @@ function OnTripSheet() {
   };
 
   // const selectTrip = (request: IRiderRideDetails) => {
-  const selectTrip = (request: IRequest) => {
-    dispatch(setRideState({ key: "currentRequest", value: request }));
-    showBottomSheet([450], <DropoffSheet />, true);
-  };
 
   useEffect(() => {
     getCurrentRide();
@@ -169,7 +171,7 @@ function OnTripSheet() {
                   value: RideConstants.query.start_trip,
                 })
               );
-              showBottomSheet([500, 600], <TicketOtpSheet />, true);
+              showBottomSheet([300, 500, 600], <TicketOtpSheet />, true);
             }}
           >
             <Ionicons name="chevron-back" size={24} color="black" />
@@ -245,9 +247,10 @@ function OnTripSheet() {
             >
               {currentRide?.ridersRides
               ?.filter((riderRide) => 
-                allRequests?.find((request) => String(request?._id) == String(riderRide?._id))
-              &&
-              riderRide?.rideStatus == 'booked'
+              //   allRequests?.find((request) => String(request?._id) == String(riderRide?._id))
+              // &&
+              riderRide?.rideStatus == 'booked' ||
+              riderRide?.rideStatus == 'started'
             )
               ?.map((riderRide) => {
                 const equivalentrequest = allRequests?.find((request) => String(request?._id) == String(riderRide?._id));
@@ -267,50 +270,10 @@ function OnTripSheet() {
                 }
               })
               ?.map((request, index) => (
-                <TouchableOpacity
-                  onPress={() => {
-                    selectTrip(request as IRequest);
-                  }}
-                  style={[
-                    wFull,
-                    h(80),
-                    flex,
-                    justifyBetween,
-                    bg("#F9F7F8"),
-                    py(7),
-                    borderB(0.7, Colors.light.border),
-                    px(20),
-                  ]}
+                <PassengerTile
                   key={index}
-                >
-                  <Image
-                    style={[{ width: 60, height: 60, objectFit: "cover" }, tw `rounded-[60px]`]}
-                    source={{
-                      uri:
-                        (request?.riderPicture as string),
-                    }}
-                  />
-
-                  <View
-                    style={[
-                      flexCol,
-                      justifyCenter,
-                      gap(16),
-                      { flexBasis: "55%" },
-                    ]}
-                  >
-                    <Text style={[c(colors.black), fw700, fs14]}>
-                      {request?.riderName}
-                    </Text>
-                    <Text style={[c(Colors.light.darkGrey), fw400, fs12]}>
-                      Arrived location
-                    </Text>
-                  </View>
-
-                  <Text style={[fw500, fs14, colorBlack]}>
-                    ₦ {request?.riderCounterOffer}
-                  </Text>
-                </TouchableOpacity>
+                  riderRideId={request?._id as string}
+                />
               ))}
 
               {/* //!Seat left block */}
@@ -362,3 +325,64 @@ function OnTripSheet() {
 }
 
 export default OnTripSheet;
+
+
+const PassengerTile = ({riderRideId}: {riderRideId: string}) => {
+  const dispatch = useAppDispatch();
+  const { showBottomSheet } = useBottomSheet();
+  const {ridesAccepted, allRequests} = useAppSelector((state: RootState) => state.ride);
+  // const request = ridesAccepted?.find((request) => String(request?._id) == String(riderRideId));
+  const request = allRequests?.find((request) => String(request?._id) == String(riderRideId));
+
+  const selectTrip = (request: IRequest) => {
+    dispatch(setRideState({ key: "rideRequestInView", value: request }));
+    showBottomSheet([450], <DropoffSheet />, true);
+  };
+
+  return ( 
+    <TouchableOpacity
+                  onPress={() => {
+                    selectTrip(request as IRequest);
+                  }}
+                  style={[
+                    wFull,
+                    h(80),
+                    flex,
+                    justifyBetween,
+                    bg("#F9F7F8"),
+                    py(7),
+                    borderB(0.7, Colors.light.border),
+                    px(20),
+                  ]}
+                >
+                  <Image
+                    style={[{ width: 60, height: 60, objectFit: "cover" }, tw `rounded-[60px]`]}
+                    source={{
+                      uri:
+                        (request?.riderPicture as string),
+                    }}
+                  />
+
+                  <View
+                    style={[
+                      flexCol,
+                      justifyCenter,
+                      gap(16),
+                      { flexBasis: "55%" },
+                    ]}
+                  >
+                    <Text style={[c(colors.black), fw700, fs14]}>
+                      {request?.riderName}
+                    </Text>
+                    <Text style={[c(Colors.light.darkGrey), fw400, fs12]}>
+                      Arrived location
+                    </Text>
+                  </View>
+
+                  <Text style={[fw500, fs14, colorBlack]}>
+                    ₦ {request?.riderCounterOffer}
+                  </Text>
+                </TouchableOpacity>
+   );
+}
+ 

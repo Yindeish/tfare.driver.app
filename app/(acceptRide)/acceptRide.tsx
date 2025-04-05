@@ -593,7 +593,7 @@ const RequestCountdown = ({ request }: { request: IRequest }) => {
   // Reset done state when request changes
   useEffect(() => {
     setDone(false)
-  }, [request._id])
+  }, [request?._id])
   // Reset done state when request changes
 
   // Handle countdown completion

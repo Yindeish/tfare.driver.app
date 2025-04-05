@@ -124,7 +124,7 @@ function ArrivedPickupSheet() {
                 <Text style={[c(colors.black), fw700, fs14]}>{rideRequestInView?.riderName}</Text>
                 <Text style={[c(Colors.light.darkGrey), fw400, fs12]}>
                   {/* {"5 min"} away */}
-                  {"few mins"} {'index:'} {currentRiderOfferIndex} away
+                  {"few mins"} away
                 </Text>
               </View>
             </View>
