@@ -127,13 +127,9 @@ export function getLowestInArray(arr: number[]) {
 const NewRequestTile = ({
   props: { style, ...others },
   request,
-  isTopRequest,
-  onRequestRearranged,
 }: {
   props: ViewProps;
   request: IRequest;
-  isTopRequest: boolean;
-  onRequestRearranged: (requestId: string) => void;
 }) => {
   const dispatch = useAppDispatch();
   const { token } = useAppSelector((state: RootState) => state.user);
@@ -148,8 +144,6 @@ const NewRequestTile = ({
 
   const [counterDuration] = useState(20);
 
-  // Individual countdown for this tile
-  const [countdownActive, setCountdownActive] = useState(true);
   const [done, setDone] = useState(false);
 
   // Countdown hook
@@ -164,45 +158,11 @@ const NewRequestTile = ({
   //   // setCountdownActive(true);
   //   setDone(false);
   // }, [request._id]);
-  
+
   // Reset active and done state when request changes
 
   //  Updating done
-  useEffect(() => {
-    if (done) {
-
-      dispatch(setRideState({key: 'currentRequest', value: {...currentRequest, countdownStatus: 'completed'}}))
-
-      setTimeout(() => {
-        // setCountdownActive(true);
-        dispatch(setRideState({key: 'currentRequest', value: {...currentRequest, countdownStatus: 'completed'}}))
-      }, 300);
-
-      if (
-        Number(request?.number) == Number(currentRequest?.number) &&
-        unAcceptedRequests.length > 1
-      ) {
-        console.log(` Number(request?.number) == Number(currentRequest?.number) &&
-        unAcceptedRequests.length > 1 `);
-
-        dispatch(
-          setRideState({
-            key: "currentRiderOfferIndex",
-            value:
-              currentRiderOfferIndex <
-              Number(unAcceptedRequests[unAcceptedRequests.length - 1]?.number)
-                ? Number(currentRequest?.number) + 1
-                : 1,
-          })
-        );
-      }
-
-      // setCountdownActive(false);
-      
-      console.log({ unAcceptedRequests }, "from topIndex and lowindex");
-    }
-  }, [done]);
-  //  Updating done
+  
 
   useEffect(() => {
     if (completed) {
@@ -210,9 +170,6 @@ const NewRequestTile = ({
         Number(request?.number) == Number(currentRequest?.number) &&
         unAcceptedRequests.length > 1
       ) {
-        console.log(` Number(request?.number) == Number(currentRequest?.number) &&
-        unAcceptedRequests.length > 1 `);
-
         dispatch(
           setRideState({
             key: "currentRiderOfferIndex",
@@ -225,13 +182,10 @@ const NewRequestTile = ({
         );
       }
 
-      // setCountdownActive(false);
-      
-      console.log({ unAcceptedRequests }, "from topIndex and lowindex");
       restart();
-    start()
+      start();
     }
-  }, [completed])
+  }, [completed]);
 
   return (
     <View
@@ -252,34 +206,33 @@ const NewRequestTile = ({
       {...others}
     >
       {/* Count down */}
-        <Countdown
-          duration={counterDuration * 1000}
-          interval={100}
-          containerStyle={{
-            borderWidth: 1,
-            borderColor: Colors.light.background,
-            height: 35,
-            width: 35,
-            marginTop: "auto",
-            marginBottom: "auto",
-            borderRadius: 20,
-            ...flexCenter,
-          }}
-          changeCondition={[request._id, done]}
-          onComplete={({ restart: rs }) => {
-            if (!done) setDone(true);
-          }}
-        >
-          <Text style={[fs14, colorBlack]}>{seconds}</Text>
-        </Countdown>
+      <Countdown
+        duration={counterDuration * 1000}
+        interval={100}
+        containerStyle={{
+          borderWidth: 1,
+          borderColor: Colors.light.background,
+          height: 35,
+          width: 35,
+          marginTop: "auto",
+          marginBottom: "auto",
+          borderRadius: 20,
+          ...flexCenter,
+        }}
+        changeCondition={[request._id, done]}
+        onComplete={({ restart: rs }) => {
+          if (!done) setDone(true);
+        }}
+      >
+        <Text style={[fs14, colorBlack]}>{seconds}</Text>
+      </Countdown>
       {/* Count down */}
 
       {/* Rider Info Block */}
       <View style={[w("auto"), { flex: 1 }, flexCol, gap(5), justifyCenter]}>
         <Text style={[fw500, fs14, colorBlack]}>{request?.riderName}</Text>
         <Text style={[fw500, fs14, colorBlack]}>
-          ₦ {request?.riderCounterOffer} {"index: "} {currentRiderOfferIndex}{" "}
-          {"req: "} {request?.number}
+          ₦ {request?.riderCounterOffer}
         </Text>
       </View>
       {/* Rider Info Block */}
@@ -331,58 +284,3 @@ const NewRequestTile = ({
 };
 
 export default NewRequestTile;
-
-[
-  {
-    _id: "67f0948c5c6c30144d79ee23",
-    countdownStatus: "idle",
-    dropoffId: "67a1783659fc4f22135d9729",
-    dropoffName: "ikate",
-    number: 1,
-    pickupId: "67a17d571cd4d43ae0528a3f",
-    pickupName: "oshodi",
-    rideStatus: "requesting",
-    riderCounterOffer: 650,
-    riderId: "67a1f29b46f6cc3c9d7bd22e",
-    riderName: "Joe Adeshina",
-    riderPhoneNo: undefined,
-    riderPicture:
-      "https://res.cloudinary.com/dg46gpi4v/image/upload/v1739105883/ridersImages/tlr6xxazxntelgdjvaen.jpg",
-    shown: false,
-    zIndex: 10003,
-  },
-  {
-    _id: "67f094915c6c30144d79ee43",
-    countdownStatus: "idle",
-    dropoffId: "67a1783659fc4f22135d9729",
-    dropoffName: "ikate",
-    number: 2,
-    pickupId: "67a17d571cd4d43ae0528a3f",
-    pickupName: "oshodi",
-    rideStatus: "requesting",
-    riderCounterOffer: 650,
-    riderId: "67a1f30546f6cc3c9d7bd236",
-    riderName: "Biden trump",
-    riderPhoneNo: undefined,
-    riderPicture: undefined,
-    shown: false,
-    zIndex: 10002,
-  },
-  {
-    _id: "67f094965c6c30144d79ee63",
-    countdownStatus: "started",
-    dropoffId: "67a1783659fc4f22135d9729",
-    dropoffName: "ikate",
-    number: 3,
-    pickupId: "67a17d571cd4d43ae0528a3f",
-    pickupName: "oshodi",
-    rideStatus: "requesting",
-    riderCounterOffer: 650,
-    riderId: "67a1f34746f6cc3c9d7bd23d",
-    riderName: "Brad Traversy",
-    riderPhoneNo: undefined,
-    riderPicture: undefined,
-    shown: true,
-    zIndex: 10003,
-  },
-];

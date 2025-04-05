@@ -107,8 +107,6 @@ function AcceptOrderSheet() {
   });
   const { code, msg, loading } = fetchState;
 
-  // const currentUnacceptedRequest =
-  //   unAcceptedRequests.find((reqItem) => Number(reqItem?.number || 1) === currentRiderOfferIndex);
 
   const acceptOffer = async (requestId: string) => {
     showTooltip();

@@ -563,10 +563,6 @@ function AcceptRide() {
                             style: [tw``, { top: topPosition, zIndex: Number(req?.zIndex) }],
                           }}
                           request={req}
-                          isTopRequest={
-                            String(req._id) === String(topRequestId)
-                          }
-                          onRequestRearranged={handleRequestRearranged}
                           key={index}
                         />
                       );
