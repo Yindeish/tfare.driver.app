@@ -193,19 +193,6 @@ function AcceptRide() {
     }
   };
 
-  // Testing
-  // useEffect(() => {
-  //   console.log(
-  //     { allRequestsLen: allRequests.length },
-  //     { unAcceptedRequestsLen: unAcceptedRequests.length }
-  //   );
-  // }, [allRequests.length, unAcceptedRequests.length]);
-
-  useEffect(() => {
-    console.log({ currentRequest }, {totalUnaccepted:unAcceptedRequests}, {unAcceptedRequests});
-  }, [currentRequest]);
-  // Testing
-
   // Getting a request (coutdown) with currentIndex and updating it's visibility
   useEffect(() => {
     if (unAcceptedRequests.length === 0) return
@@ -596,6 +583,7 @@ function AcceptRide() {
 }
 
 export default AcceptRide;
+
 const RequestCountdown = ({ request }: { request: IRequest }) => {
   const dispatch = useAppDispatch()
   const { unAcceptedRequests, currentRiderOfferIndex, currentRequest } = useAppSelector(
