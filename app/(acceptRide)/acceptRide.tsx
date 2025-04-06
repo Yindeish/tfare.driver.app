@@ -154,45 +154,6 @@ function AcceptRide() {
     topRequestId,
   } = state;
 
-  const handleRequestRearranged = (requestId: string) => {
-    // Find the next request to show at the top
-    const remainingRequests = unAcceptedRequests.filter(
-      (req) => String(req._id) !== requestId
-    );
-
-    if (remainingRequests.length > 0) {
-      // Sort by zIndex to find the next highest
-      const sortedRequests = [...remainingRequests].sort(
-        (a, b) => (Number(b.zIndex) || 0) - (Number(a.zIndex) || 0)
-      );
-
-      // Update the top request
-      setState((prev) => ({
-        ...prev,
-        topRequestId: (sortedRequests[0]?._id as any) || null,
-      }));
-
-      // Rearrange the requests with updated zIndex values
-      const rearrangedRequests = unAcceptedRequests.map((req) => {
-        if (String(req._id) === String(sortedRequests[0]?._id)) {
-          // New top request
-          return { ...req, zIndex: 10000, shown: true };
-        } else if (String(req._id) === requestId) {
-          // Request that just timed out
-          return { ...req, zIndex: 1000, shown: false };
-        }
-        return req;
-      });
-
-      dispatch(
-        setRideState({
-          key: "unAcceptedRequests",
-          value: rearrangedRequests,
-        })
-      );
-    }
-  };
-  console.log({allRequests})
 
   // Getting a request (coutdown) with currentIndex and updating it's visibility
   useEffect(() => {
@@ -722,6 +683,7 @@ const DriverOnlineTile = () => {
 };
 
 const DropoffTile = () => {
+  const {allRequests} = useAppSelector((state: RootState) => state.ride);
   return (
     <View
       style={[
@@ -760,7 +722,7 @@ const DropoffTile = () => {
 
       {/* //!Drop off Input Block */}
       <View style={[wFull, flex, gap(16), itemsCenter, justifyStart]}>
-        <Text style={[fw500, fs14, colorBlack]}>{"Ojodu Berger Bus Stop"}</Text>
+        <Text style={[fw500, fs14, colorBlack]}>{allRequests.filter((req) => req?.rideStatus == 'started')[0]?.dropoffName}</Text>
       </View>
       {/* //!Drop off Input Block */}
     </View>
@@ -768,6 +730,7 @@ const DropoffTile = () => {
 };
 
 const NextBusstop = () => {
+  const {allRequests} = useAppSelector((state: RootState) => state.ride);
   return (
     <View
       style={[
@@ -805,7 +768,7 @@ const NextBusstop = () => {
 
       {/* //!Next Bus Stop Value Block */}
       <View style={[wFull, flex, gap(16), itemsCenter, justifyStart]}>
-        <Text style={[fw500, fs14, colorBlack]}>{"Ojodu Berger Bus Stop"}</Text>
+        <Text style={[fw500, fs14, colorBlack]}>{allRequests.find((req) => req?.rideStatus == 'started')?.dropoffName}</Text>
       </View>
       {/* //!Next Bus Stop Value Block */}
     </View>
