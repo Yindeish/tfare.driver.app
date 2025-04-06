@@ -192,6 +192,7 @@ function AcceptRide() {
       );
     }
   };
+  console.log({allRequests})
 
   // Getting a request (coutdown) with currentIndex and updating it's visibility
   useEffect(() => {
@@ -243,14 +244,32 @@ function AcceptRide() {
         unAcceptedRequests.length > 0,
 
       // Show dropoff UI when trip has started
-      dropoffShown: query === RideConstants.query.start_trip,
+      dropoffShown: 
+      (
+        query === RideConstants.query.start_trip
+        || query === RideConstants.query.arrived_pickup
+        || query === RideConstants.query.accepting
+        || query === RideConstants.query.pause_trip
+      )
+        && allRequests.some((req) => req?.rideStatus == "started")
+        && (allRequests.filter((req) => req.rideStatus == 'started').length == 1),
+      nextBusstopShown: 
+      (
+        query === RideConstants.query.start_trip
+        || query === RideConstants.query.arrived_pickup
+        || query === RideConstants.query.accepting
+        || query === RideConstants.query.pause_trip
+      )
+        && allRequests.some((req) => req?.rideStatus == "started")
+        && (allRequests.filter((req) => req.rideStatus == 'started').length > 1),
 
       // Show new requests when not in accepting/searching mode
       newRequestsShown:
         query !== RideConstants.query.accepting &&
         query !== RideConstants.query.searching,
     }));
-  }, [query, unAcceptedRequests.length]);
+  // }, [query, unAcceptedRequests.length]);
+  }, [query, unAcceptedRequests.length, allRequests.length]);
 
   const currentUnacceptedRequest = unAcceptedRequests.find(
     (reqItem) => reqItem?.shown == true

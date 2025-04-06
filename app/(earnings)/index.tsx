@@ -176,6 +176,7 @@ const formatTime = (date: Date = new Date()) => {
           <PageTitle
             title="Earnings"
             onPress={() => router.push("/(home)/account")}
+            backBtnColor={colors.grey600}
           />
 
           <View style={[wFull, flexCol, gap(32)]}>

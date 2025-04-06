@@ -1,5 +1,5 @@
 import { Text } from "react-native-paper";
-import { StyleSheet } from "react-native";
+import { StyleSheet, TextStyle } from "react-native";
 import { fonts } from "@/constants/fonts";
 
 function TabBartTitle({ title, color }: { title: string, color: string }) {
@@ -10,12 +10,14 @@ function TabBartTitle({ title, color }: { title: string, color: string }) {
             fontWeight: '400',
             fontSize: 12,
             lineHeight: 24,
-            color
-        }
+            color,
+            width: 50,
+            textAlign: 'center',
+        } as TextStyle
     });
 
     return (
-        <Text style={[titleText,]}>{title}</Text>
+        <Text style={[titleText,] as TextStyle[]}>{title}</Text>
     )
 }
 

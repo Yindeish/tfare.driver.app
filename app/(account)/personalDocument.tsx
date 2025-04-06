@@ -178,6 +178,7 @@ function PersonalDocument() {
           <PageTitle
             title="Personal Documents"
             onPress={() => router.push("/(home)/account" as Href)}
+            backBtnColor={colors.grey600}
           />
           <View style={[flexCol, gap(32)]}>
             <TouchableOpacity

@@ -1,4 +1,4 @@
-import { View, Text, Image } from 'react-native'
+import { View, Text, Image, ViewStyle } from 'react-native'
 import React, { useEffect } from 'react'
 import SafeScreen from '@/components/shared/safeScreen'
 import PaddedScreen from '@/components/shared/paddedScreen'
@@ -11,6 +11,7 @@ import AccountSelectors from '@/state/selectors/account'
 import CupertinoBtnListTile from '@/components/shared/cupertinoBtnListTile'
 import { useAppDispatch } from '@/state/hooks/useReduxToolkit'
 import { setUserNotificationField, setUserNotifications } from '@/state/slices/account'
+import { colors } from '@/constants/Colors'
 
 export default function notifications() {
     const dispatch = useAppDispatch()
@@ -18,7 +19,7 @@ export default function notifications() {
 
     return (
         <SafeScreen>
-            <View style={[wHFull,]}>
+            <View style={[wHFull,] as ViewStyle[]}>
                 <PaddedScreen>
                     {/* Page Header */}
 
@@ -26,6 +27,7 @@ export default function notifications() {
                         title='Notifications'
                         onPress={() => router.push(`/(home)/account` as Href)}
                         style={[]}
+                        backBtnColor={colors.grey600}
                     />
 
                     {/* Page Header */}

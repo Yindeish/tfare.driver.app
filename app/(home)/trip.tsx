@@ -71,6 +71,7 @@ function Trip() {
                     {/* //!Page Title */}
                     <PageTitle
                         title='Trips'
+                        backBtnColor={colors.grey600}
                     />
                     {/* //!Page Title */}
 

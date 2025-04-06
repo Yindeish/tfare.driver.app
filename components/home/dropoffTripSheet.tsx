@@ -56,7 +56,7 @@ import { RootState } from "@/state/store";
 import tw from "@/constants/tw";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { EQuery, IRiderRideDetails } from "@/state/types/ride";
+import { EQuery, IRiderRideDetails, TRideStatus } from "@/state/types/ride";
 import { setRideState } from "@/state/slices/ride";
 import FetchService from "@/services/api/fetch.service";
 import { useState } from "react";
@@ -68,7 +68,7 @@ function DropoffSheet() {
   const { showBottomSheet, hideBottomSheet } = useBottomSheet();
   const dispatch = useAppDispatch();
   const { token } = useAppSelector((state: RootState) => state.user);
-  const { selectedRoute, currentRide, rideRequestInView } = useAppSelector(
+  const { selectedRoute, currentRide, rideRequestInView, allRequests, unAcceptedRequests } = useAppSelector(
     (state: RootState) => state.ride
   );
   // const [[_, query], setQuery] = useStorageState(RideConstants.localDB.query);
@@ -109,6 +109,30 @@ function DropoffSheet() {
         setFetchState((prev) => ({ ...prev, loading: false, msg, code }));
 
         if (code && (code == 200 || code == 201)) {
+          const requests = allRequests.map((request) => {
+            if (request?._id == riderRide?._id) {
+              return {
+                ...request,
+                rideStatus: "ended" as TRideStatus,
+              };
+            }
+            return request;
+          });
+          dispatch(setRideState({ key: "allRequests", value: requests }));
+
+          const requestsNotAccepted = requests.filter(
+            (request) =>
+              request?.rideStatus == "pending" ||
+              request?.rideStatus == "requesting"
+          );
+
+          dispatch(
+            setRideState({
+              key: "unAcceptedRequests",
+              value: requestsNotAccepted,
+            })
+          );
+
           dispatch(setRideState({ key: "currentRide", value: currentRide }));
           dispatch(setRideState({ key: "rideRequestInView", value: riderRide }));
 

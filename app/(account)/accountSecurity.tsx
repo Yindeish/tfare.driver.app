@@ -1,4 +1,4 @@
-import { View, } from 'react-native'
+import { View, ViewStyle, } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import SafeScreen from '@/components/shared/safeScreen'
 import PaddedScreen from '@/components/shared/paddedScreen'
@@ -12,6 +12,7 @@ import CupertinoBtnListTile from '@/components/shared/cupertinoBtnListTile'
 import AccountSecurityListTile from '@/components/account/accountSecurityListTile'
 import AccountSecuritySheet from '@/components/account/accountSecuritySheet'
 import { useBottomSheet } from '@/contexts/useBottomSheetContext'
+import { colors } from '@/constants/Colors'
 
 export default function accountSecurity() {
     const { stateInput, } = AccountSelectors();
@@ -24,7 +25,7 @@ export default function accountSecurity() {
 
     return (
         <SafeScreen>
-            <View style={[wHFull,]}>
+            <View style={[wHFull,] as ViewStyle[]}>
                 <PaddedScreen>
                     {/* Page Header */}
 
@@ -32,6 +33,7 @@ export default function accountSecurity() {
                         title='Account Security'
                         onPress={() => router.push(`/(home)/${tabs.account}` as Href)}
                         style={[mt(47), mb(28),]}
+                        backBtnColor={colors.grey600}
                     />
 
                     {/* Page Header */}

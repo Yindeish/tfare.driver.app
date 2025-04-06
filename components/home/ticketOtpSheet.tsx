@@ -63,7 +63,7 @@ import { useFormik } from "formik";
 import { number, ObjectSchema, string } from "yup";
 import { Ionicons } from "@expo/vector-icons";
 import { setRideState } from "@/state/slices/ride";
-import { EQuery, IRiderRideDetails } from "@/state/types/ride";
+import { EQuery, IRiderRideDetails, TRideStatus } from "@/state/types/ride";
 import ArrivedPickupSheet from "./arrivedPickupSheet";
 import FetchService from "@/services/api/fetch.service";
 import { useSnackbar } from "@/contexts/snackbar.context";
@@ -74,7 +74,7 @@ import { useTooltip } from "../shared/tooltip";
 function TicketOtpSheet() {
   const { hideBottomSheet, showBottomSheet } = useBottomSheet();
   const dispatch = useAppDispatch();
-  const { rideRequestInView, currentRide, ridesAccepted } = useAppSelector(
+  const { rideRequestInView, currentRide, ridesAccepted, allRequests, unAcceptedRequests } = useAppSelector(
     (state: RootState) => state.ride
   );
   const { token } = useAppSelector((state: RootState) => state.user);
@@ -144,6 +144,30 @@ function TicketOtpSheet() {
               setRideState({
                 key: "ridesAccepted",
                 value: [...ridesAccepted, riderRide],
+              })
+            );
+
+            const requests = allRequests.map((request) => {
+              if (request?._id == riderRide?._id) {
+                return {
+                  ...request,
+                  rideStatus: "started" as TRideStatus,
+                };
+              }
+              return request;
+            });
+            dispatch(setRideState({ key: "allRequests", value: requests }));
+  
+            const requestsNotAccepted = requests.filter(
+              (request) =>
+                request?.rideStatus == "pending" ||
+                request?.rideStatus == "requesting"
+            );
+  
+            dispatch(
+              setRideState({
+                key: "unAcceptedRequests",
+                value: requestsNotAccepted,
               })
             );
 
@@ -310,7 +334,7 @@ function TicketOtpSheet() {
           <OtpInput
             numberOfDigits={4}
             blurOnFilled
-            autoFocus={true}
+            autoFocus={false}
             textInputProps={{
               value: values.otp,
               style: {
@@ -329,7 +353,6 @@ function TicketOtpSheet() {
 
         {/* //!Start-Cancel Trip CTAs */}
         <View style={[flexCol, gap(20)]}>
-          {!loading ? (
             <CtaBtn
             img={{
               src: tripImgs.arrivedpickupImage,
@@ -337,10 +360,9 @@ function TicketOtpSheet() {
             onPress={() => handleSubmit()}
             text={{ name: "Start Trip" }}
             bg={{ color: Colors.light.background }}
+            loading={loading}
+            loaderProps={{color: colors.white, style: [tw `w-[20px] h-[20px]`]}}
           />
-          ) : (
-            <ActivityIndicator size={'small'} />
-          )}
 
           <CtaBtn
             img={{

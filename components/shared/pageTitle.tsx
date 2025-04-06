@@ -7,7 +7,7 @@ import { router } from "expo-router";
 import { TouchableOpacity, View, ViewStyle } from "react-native";
 import { Text } from "react-native-paper";
 
-export default function PageTitle({ onPress, style, title, children }: { onPress?: Function, style?: ViewStyle | ViewStyle[], title: string, children?: React.ReactNode }) {
+export default function PageTitle({ onPress, style, title, children, backBtnColor }: { onPress?: Function, style?: ViewStyle | ViewStyle[], title: string, children?: React.ReactNode, backBtnColor?: string }) {
 
     return (
 
@@ -18,7 +18,7 @@ export default function PageTitle({ onPress, style, title, children }: { onPress
                     onPress && onPress();
                 }}>
                     {/* <Ionicons name="chevron-back" size={20} color={Colors.light.darkGrey} /> */}
-                    <Ionicons name="chevron-back" size={20} color={colors.white} />
+                    <Ionicons name="chevron-back" size={20} color={backBtnColor || colors.white} />
                 </TouchableOpacity>
 
                 <Text style={[colorBlack, fs16, fw700, neurialGrotesk,]}>{title}</Text>

@@ -1,4 +1,4 @@
-import { Image, View, TouchableOpacity, ScrollView, Pressable, Platform } from 'react-native'
+import { Image, View, TouchableOpacity, ScrollView, Pressable, Platform, ViewStyle } from 'react-native'
 import { ActivityIndicator, Button, Snackbar, Text } from 'react-native-paper'
 import React, { useEffect } from 'react'
 import SafeScreen from '@/components/shared/safeScreen'
@@ -24,11 +24,12 @@ function NotificationsMessages() {
 
     return (
         <SafeScreen>
-            <ScrollView style={[wHFull, relative]}>
+            <ScrollView style={[wHFull, relative] as ViewStyle[]}>
                 <PaddedScreen>
                     <PageTitle
                         title='Account'
                         onPress={() => router.push('/(home)/account')}
+                        backBtnColor={colors.grey600}
                     />
 
                     <View style={[wFull, flexCol, gap(12)]}>
@@ -42,7 +43,7 @@ function NotificationsMessages() {
                         </View>
 
                         <View style={[flexCol, gap(16)]}>
-                            {Array.from({ length: 12 }).map((_, index) => (
+                            {Array.from({ length: 0 }).map((_, index) => (
                                 <View style={[flexCol, gap(7)]} key={index}>
                                     <Text style={[fw500, fs16, colorBlack]}>Frenponq cancelled ride</Text>
 

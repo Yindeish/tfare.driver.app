@@ -95,7 +95,7 @@ export default function Account() {
     <SafeScreen>
       <ScrollView style={[wHFull as ViewStyle, relative]}>
         <PaddedScreen>
-          <PageTitle title="Account" />
+          <PageTitle backBtnColor={colors.grey600} title="Account" />
 
           <View style={[wFull, flexCol, gap(32)]}>
             <TouchableOpacity

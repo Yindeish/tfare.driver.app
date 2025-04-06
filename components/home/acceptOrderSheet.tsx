@@ -160,7 +160,6 @@ function AcceptOrderSheet() {
               request?.rideStatus == "pending" ||
               request?.rideStatus == "requesting"
           );
-          console.log({requestsNotAccepted})
 
           dispatch(
             setRideState({
