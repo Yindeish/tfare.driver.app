@@ -310,7 +310,7 @@ function TicketOtpSheet() {
           <OtpInput
             numberOfDigits={4}
             blurOnFilled
-            autoFocus={false}
+            autoFocus={true}
             textInputProps={{
               value: values.otp,
               style: {

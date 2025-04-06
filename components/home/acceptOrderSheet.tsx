@@ -67,12 +67,7 @@ import { useSnackbar } from "@/contexts/snackbar.context";
 import { RideConstants } from "@/constants/ride";
 import { supabase } from "@/supabase/supabase.config";
 import { Swiper } from "../shared/swiper";
-// import { useTooltip } from "@/contexts/use-tooltip";
-import { useCountdown } from "@/contexts/useCountdown";
-import { IUserAccount } from "@/state/types/account";
-import SearchingOrder from "./searchingOrderSheet";
 import { useTooltip } from "../shared/tooltip";
-// import { useTooltip } from "@/hooks/useTooltip";
 
 function AcceptOrderSheet() {
   const dispatch = useAppDispatch();

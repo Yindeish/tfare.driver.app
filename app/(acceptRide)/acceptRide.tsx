@@ -793,29 +793,3 @@ const NextBusstop = () => {
   );
 };
 
-
-
-
-
-// useEffect(() => {
-//     rideAcceptStage === RideConstants.query.searching && showBottomSheet([300], <SearchingOrder />, true)
-
-//     if(rideAcceptStage === RideConstants.query.accepting) {
-//         showBottomSheet([400], <AcceptOrderSheet />, true)
-//     }
-//     if(rideAcceptStage === RideConstants.query.arrived_pickup) {
-//         showBottomSheet([350, 400], <ArrivedPickupSheet />, true);
-//     }
-//     if(rideAcceptStage === RideConstants.query.start_trip) {
-//         showBottomSheet([500, 600], <TicketOtpSheet />, true)
-//     }
-//     if(rideAcceptStage === RideConstants.query.pause_trip) {
-//         showBottomSheet([300, 550], <OnTripSheet />, true);
-//     }
-//     if(rideAcceptStage === RideConstants.query.dropoff) {
-//         showBottomSheet([450], <DropoffSheet />, true);
-//     }
-//     // setTimeout(() => {
-//     //     showBottomSheet([400], <AcceptOrderSheet />)
-//     // }, 3000)
-// }, [rideAcceptStage])

@@ -95,7 +95,6 @@ const { height } = Dimensions.get("window");
 
 function OnTripSheet() {
   const { showBottomSheet } = useBottomSheet();
-  const [passengersShown, setPassengersShown] = useState(false);
   const dispatch = useAppDispatch();
   const { token } = useAppSelector((state: RootState) => state.user);
   const { selectedRoute, currentRide, allRequests } = useAppSelector(
@@ -103,11 +102,12 @@ function OnTripSheet() {
   );
   // const [[_, query], setQuery] = useStorageState(RideConstants.localDB.query);
   const {setTooltipState} = useTooltip()
-
+  
   const [fetchState, setFetchState] = useState({
     loading: false,
   });
   const { loading } = fetchState;
+  const [passengersShown, setPassengersShown] = useState(true);
 
   const getCurrentRide = async () => {
     await FetchService.getWithBearerToken({
@@ -149,8 +149,6 @@ function OnTripSheet() {
   const pauseTrip = () => {
     
   };
-
-  // const selectTrip = (request: IRiderRideDetails) => {
 
   useEffect(() => {
     getCurrentRide();
