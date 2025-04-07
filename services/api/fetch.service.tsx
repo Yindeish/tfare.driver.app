@@ -36,7 +36,7 @@ const get = async ({ url, timeout }: { url: string, timeout?: number }) => {
 const getWithBearerToken = async ({url, timeout = 20000 }: { token: string, url: string, timeout?: number }) => {
     const controller = new AbortController();
     const signal = controller.signal;
-    const token = await getItemAsync('token');
+    const token = await getItemAsync('drivertoken');
 
     // const fetchTimeout = setTimeout(() => {
     //     controller.abort();
@@ -106,7 +106,7 @@ const postWithBearerToken = async ({ data: formData, url,timeout = 20000 }: { to
     console.log({ formData })
     const controller = new AbortController();
     const signal = controller.signal;
-    const token = await getItemAsync('token');
+    const token = await getItemAsync('drivertoken');
 
     // const fetchTimeout = setTimeout(() => {
     //     controller.abort();
@@ -145,7 +145,7 @@ const postWithBearerToken = async ({ data: formData, url,timeout = 20000 }: { to
 const patchWithBearerToken = async ({ data: formData, url, timeout = 20000 }: { token: string, url: string, data?: object, timeout?: number }) => {
     const controller = new AbortController();
     const signal = controller.signal;
-    const token = await getItemAsync('token');
+    const token = await getItemAsync('drivertoken');
 
     // const fetchTimeout = setTimeout(() => {
     //     controller.abort();

@@ -102,7 +102,7 @@ function VerifyEmail() {
         setFetchState((prev) => ({
           ...prev,
           msg: returnedData?.msg,
-          code: returnedData.code,
+          code: returnedData?.code,
           loading: false,
         }));
 

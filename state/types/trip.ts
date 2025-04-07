@@ -97,16 +97,6 @@ export interface ITicket {
   rideFee?: number;
 }
 
-export interface IStateInput {
-  pickupBusstopInput: IBusStop | null;
-  dropoffBusstopInput: IBusStop | null;
-  userCounterFareInput: number | null;
-  driverRatingInput: number | null;
-  driverRatingCommentInput: string;
-  cancelRideReasonInput: string;
-  userRideInput: Partial<IRide>;
-  paymentOptionInput: string;
-}
 // ? Ride
 
 export interface IPlan {
@@ -120,13 +110,15 @@ export interface IPlan {
   };
 }
 
-export interface ICurrentRide {
+export interface ICurrentTrip {
   _id: string;
   driverId: string;
-  availableSeats: number;
-  vehicleName: string;
-  // inRideDropoffs: IBusStop[];
+  availableSeats: { type: Number; required: true };
+  departureDate: { type: Date; required: true };
+  departureTime: { type: Date; required: true };
+  vehicleName: String;
   routeId: string;
+  route?: IRoute;  
   ridersRides: IRiderRideDetails[];
 }
 
@@ -165,44 +157,18 @@ export interface IRequest {
   countdownStatus: TCountdownStatus;
 }
 
-export interface IRide {
-  _id?: string;
-  pickupBusstop: IBusStop;
-  dropoffBusstop: IBusStop;
-  saved: boolean;
-  tickets?: ITicket[] | [];
-  status: "idle" | "cancelled" | "accepted" | "started";
-  duration?: string;
-  availableSeats?: number;
-  seats?: number;
-  driverDetails?: IDriverDetails;
-  busStops?: IBusStop[] | [];
-}
 
-export interface IRideState {
+export interface ITripState {
   pickupBusstopInput: IBusStop | null;
   dropoffBusstopInput: IBusStop | null;
-  dropoffsInput: {
-    name: string;
-    city: ICity;
-    order: number;
-  }[];
-  driverOnline: boolean;
-  driverEligible: boolean;
-  ridersOffers: IRiderRideDetails[];
-  currentRiderOfferIndex: number;
+  departureDateInput: string;
+  departureTimeInput: string;
+  intripDropoffsInput: IBusStop[];
+  presetTrips: ICurrentTrip[];
+  upcomingTrips: ICurrentTrip[];
   presetRoutes: IRoute[];
-  query: TQuery;
-  ridesAccepted: IRiderRideDetails[];
-  selectedRoute: IRoute | null;
-  // currentRequest: IRiderRideDetails | null;
-  currentRequest: IRequest | null;
-  currentRide: ICurrentRide | null;
-  rides: IRiderRideDetails[];
-  allRequests: IRequest[];
-  unAcceptedRequests: IRequest[];
-  countdownStatus: TCountdownStatus;
-  rideRequestInView: IRequest | null; // for Arrived pickup, Ticket Otp, Dropoff, Pause trip
+  currentUpcomingTrip: ICurrentTrip | null;
+  currentPresetTrip: ICurrentTrip | null;
 }
 // ? Ride
 

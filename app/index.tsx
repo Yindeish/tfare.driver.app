@@ -18,7 +18,7 @@ export default function Index() {
     const parsedSigninTimeSession = signedinTimeSession ? JSON.parse(signedinTimeSession as string) : null;
 
     // setToken(null); //testing
-    console.log({tokenSession})
+    console.log({tokenSession}, {userString})
 
 
     // Updating the user state in RTK (Redux Toolkit Query)

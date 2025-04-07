@@ -59,12 +59,12 @@ export function SignupProvider(props: React.PropsWithChildren) {
 
         notify();
         onChange('loadingState', 'idle' as TSignupLoadingState);
-        onChange('code', returnedData.code as number);
-        onChange('msg', returnedData.msg);
+        onChange('code', returnedData?.code as number);
+        onChange('msg', returnedData?.msg);
         onChange('signedUpUser', returnedData.signedUpUser as IUserAccount);
 
 
-        if (returnedData.code === 201) router.replace(`/(auth)/signin`);
+        if (returnedData?.code === 201) router.replace(`/(auth)/signin`);
     }
 
     const setSecurityQuestion = async (data: ISetSecurityQuestionRequestData) => {
@@ -75,10 +75,10 @@ export function SignupProvider(props: React.PropsWithChildren) {
 
         notify();
         onChange('loadingState', 'idle' as TSignupLoadingState);
-        onChange('code', returnedData.code as number);
-        onChange('msg', returnedData.msg);
+        onChange('code', returnedData?.code as number);
+        onChange('msg', returnedData?.msg);
 
-        if (returnedData.code === 200) router.replace(`/(auth)/signin` as Href);
+        if (returnedData?.code === 200) router.replace(`/(auth)/signin` as Href);
     }
 
     return (

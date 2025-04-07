@@ -5,12 +5,12 @@ import tripImgs from "@/constants/images/trip";
 import { colordarkGrey, fs12, fw400, fw500, neurialGrotesk } from "@/utils/fontStyles";
 import { image } from "@/utils/imageStyles";
 import { bg, border, borderGrey, flex, flexCol, gap, h, hFull, itemsCenter, px, rounded, wFull } from "@/utils/styles";
-import { Image, NativeSyntheticEvent, TextInput, TextInputFocusEventData, TextStyle, View, ViewStyle } from "react-native";
+import { Component, ComponentProps } from "react";
+import { Image, NativeSyntheticEvent, TextInput, TextInputFocusEventData, TextInputProps, TextStyle, View, ViewStyle } from "react-native";
 import { Text } from "react-native-paper";
 
 
-function CustomizeRouteInputTile({ label, onBlur, onChangeText, value, onFocus }: { label: string, value: string, onChangeText: ((text: string) => void) | undefined, onBlur: ((e: NativeSyntheticEvent<TextInputFocusEventData>) => void) | undefined, onFocus?: ((e: NativeSyntheticEvent<TextInputFocusEventData>) => void) | undefined
-}) {
+function CustomizeRouteInputTile({ label, inputProps: {props: {style, placeholder, placeholderTextColor,...otherInputProps}} }: { label: string; inputProps: Pick<Component<TextInputProps>, 'props'> }) {
 
 
     return (
@@ -26,11 +26,12 @@ function CustomizeRouteInputTile({ label, onBlur, onChangeText, value, onFocus }
                     style={[hFull, bg(colors.transparent), border(0, colors.transparent), fw500, { flexBasis: '90%' }] as TextStyle[]}
                     placeholder='Select Bust stop'
                     placeholderTextColor={colors.black}
-                    keyboardType='default'
-                    value={value}
-                    onChangeText={onChangeText}
-                    onFocus={onFocus}
-                    onBlur={onBlur}
+                    {...otherInputProps}
+                    // keyboardType='default'
+                    // value={value}
+                    // onChangeText={onChangeText}
+                    // onFocus={onFocus}
+                    // onBlur={onBlur}
                 />
 
             </View>

@@ -205,8 +205,8 @@ export default function Signup() {
             const token = data?.token;
             console.log({token, signedinTime})
 
-            await setItemAsync("token", token);
-            await setItemAsync("signedinTime", JSON.stringify(signedinTime));
+            await setItemAsync("drivertoken", token);
+            await setItemAsync("driversignedinTime", JSON.stringify(signedinTime));
           })
           .catch((err) => {
             console.log({ err });

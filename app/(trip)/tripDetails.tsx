@@ -11,7 +11,9 @@ import tripImgs from "@/constants/images/trip";
 import FetchService from "@/services/api/fetch.service";
 import { useAppDispatch, useAppSelector } from "@/state/hooks/useReduxToolkit";
 import { setRideState } from "@/state/slices/ride";
+import { setTripState } from "@/state/slices/trip";
 import { RootState } from "@/state/store";
+import { Utils } from "@/utils";
 import {
   c,
   colorBlack,
@@ -50,7 +52,7 @@ import {
   t,
 } from "@/utils/styles";
 import { Href, router, useGlobalSearchParams } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
     ActivityIndicator,
   Image,
@@ -63,15 +65,15 @@ import {
 import { Text } from "react-native-paper";
 
 function TripDetails() {
-  const { selectedRoute } = useAppSelector((state: RootState) => state.ride);
+  const { currentPresetTrip, currentUpcomingTrip } = useAppSelector((state: RootState) => state.trip);
   const { id } = useGlobalSearchParams();
   const { token } = useAppSelector((state: RootState) => state.user);
   const dispatch = useAppDispatch();
 
-  console.log({token})
-
-  const [disabled, setDisabled] = useState(false);
-  const [showCustomize, setShowCustomize] = useState(selectedRoute?.editable);
+  const [showCustomize, setShowCustomize] = useState(currentPresetTrip?.driverId);
+  const [disabled, setDisabled] = useState(!showCustomize && Number(currentUpcomingTrip?.ridersRides?.length) > 0);
+  const trip = currentPresetTrip || currentUpcomingTrip;
+  const route = currentPresetTrip?.route || currentUpcomingTrip?.route;
 
   const [fetchState, setFetchState] = useState({
     loading: false,
@@ -91,7 +93,6 @@ function TripDetails() {
         const code = data?.code;
         const msg = data?.msg;
         const routeDetails = data?.route;
-        console.log({ routeDetails });
 
         setFetchState((prev) => ({ ...prev, loading: false, msg, code }));
 
@@ -108,19 +109,44 @@ function TripDetails() {
       });
   };
 
+  // Mounting the inputs
+    useEffect(() => {
+      dispatch(
+        setTripState({
+          key: "pickupBusstopInput",
+          value: currentPresetTrip?.route?.pickupBusstop,
+        })
+      );
+      dispatch(
+        setTripState({
+          key: "dropoffBusstopInput",
+          value: currentPresetTrip?.route?.dropoffBusstop,
+        })
+      );
+      dispatch(
+        setTripState({
+          key: "intripDropoffsInput",
+          value: currentPresetTrip?.route?.inTripDropoffs.map(
+            (dropoff, index) => ({ ...dropoff, number: index + 1 })
+          ),
+        })
+      );
+    }, []);
+    // Mounting the inputs
+
   return (
     <SafeScreen>
       <ScrollView
-        refreshControl={
-          <RefreshControl onRefresh={getRouteDetails} refreshing={loading} />
-        }
+        // refreshControl={
+        //   <RefreshControl onRefresh={getRouteDetails} refreshing={loading} />
+        // }
       >
-        <View style={[wHFull as ViewStyle, relative]}>
+        <View style={[wHFull as ViewStyle, relative, pb(150)]}>
           {/* //!Page Header */}
           <PaddedScreen>
             <View style={[flex, itemsCenter, justifyBetween, mb(10)]}>
               {/* //!Page Title */}
-              <PageTitle title="Trip Details" />
+              <PageTitle title="Trip Details" backBtnColor={colors.grey600} />
               {/* //!Page Title */}
 
               {/* //!Edit-Delete CTAs */}
@@ -139,6 +165,9 @@ function TripDetails() {
                       gap(16),
                       { opacity: disabled ? 0.3 : 1 },
                     ]}
+                    onPress={() => {
+                      router.push("/(trip)/customizeTrip" as Href);
+                    }}
                   >
                     <Image
                       style={[image.w(24), image.h(24)]}
@@ -174,7 +203,7 @@ function TripDetails() {
               {/* //!Customize CTA */}
               {showCustomize && ( //testing
                 <TouchableOpacity
-                  onPress={() => router.push("/(trip)/customizeTrip/1" as Href)}
+                  onPress={() => router.push("/(trip)/customizeTrip" as Href)}
                   style={[
                     bg("#F9F7F8"),
                     borderGrey(0.7),
@@ -236,7 +265,7 @@ function TripDetails() {
                   </Text>
                 </View>
                 <Text style={[fw700, fs14, c(colors.black)]}>
-                  {selectedRoute?.pickupBusstop?.name}
+                  {route?.pickupBusstop?.name}
                 </Text>
               </View>
 
@@ -263,7 +292,7 @@ function TripDetails() {
                   </Text>
                 </View>
                 <Text style={[fw700, fs14, c(colors.black)]}>
-                  {selectedRoute?.dropoffBusstop?.name}
+                  {route?.dropoffBusstop?.name}
                 </Text>
               </View>
             </View>
@@ -283,7 +312,7 @@ function TripDetails() {
                     Date
                   </Text>
                 </View>
-                <Text style={[fw500, fs14, colorBlack]}>{"April 14"}</Text>
+                <Text style={[fw500, fs14, colorBlack]}>{Utils.formatDate(trip?.departureTime as unknown as string)}</Text>
               </View>
               {/* //!Startoff Date Block */}
 
@@ -299,7 +328,7 @@ function TripDetails() {
                     Time
                   </Text>
                 </View>
-                <Text style={[fw500, fs14, colorBlack]}>{"7:30 AM"}</Text>
+                <Text style={[fw500, fs14, colorBlack]}>{Utils.formatTime(trip?.departureTime as unknown as string)}</Text>
               </View>
               {/* //!Startoff Time Block */}
             </View>
@@ -317,7 +346,7 @@ function TripDetails() {
               </View>
 
               <View style={[flexCol, gap(16), { overflow: "scroll" }]}>
-                {selectedRoute?.inTripDropoffs?.map((dropoff, index) => (
+                {route?.inTripDropoffs?.map((dropoff, index) => (
                   <InTripDropffTile
                     index={index + 1}
                     dropoff={dropoff}
@@ -328,17 +357,7 @@ function TripDetails() {
             </View>)}
             {/* //!In Trip Dropoffs */}
 
-            {/* //!Create Trip CTA */}
-            <CtaBtn
-              img={{ src: tripImgs.whiteBgTripImage, h: 20, w: 20 }}
-              onPress={() => {
-                router.push("/(trip)/trips" as Href);
-              }}
-              text={{ name: "Create Trip", color: colors.white }}
-              bg={{ color: Colors.light.background }}
-              style={{ container: { ...mb(30) } }}
-            />
-            {/* //!Create Trip CTA */}
+           
           </PaddedScreen>
         </View>
       </ScrollView>

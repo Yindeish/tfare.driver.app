@@ -92,8 +92,8 @@ export function SessionProvider(props: React.PropsWithChildren) {
     });
 
     onChange("loadingState", "idle" as TSigninLoadingState);
-    onChange("code", returnedData.code as number);
-    onChange("msg", returnedData.msg);
+    onChange("code", returnedData?.code as number);
+    onChange("msg", returnedData?.msg);
 
     returnedData.user && setSession(JSON.stringify(returnedData.user));
     returnedData.user && signInwithToken(returnedData.token);
@@ -113,13 +113,13 @@ export function SessionProvider(props: React.PropsWithChildren) {
     // const returnedData: IResponseData = await FetchService.postWithBearerToken({ url: '/auth/signout', token: tokenSession as string })
 
     // onChange('loadingState', 'idle' as TSigninLoadingState);
-    // onChange('code', returnedData.code as number);
-    // onChange('msg', returnedData.msg);
+    // onChange('code', returnedData?.code as number);
+    // onChange('msg', returnedData?.msg);
 
-    // if (Number(returnedData.code) === 400) {
+    // if (Number(returnedData?.code) === 400) {
     //   notify();
     // }
-    // if (Number(returnedData.code) === 200) {
+    // if (Number(returnedData?.code) === 200) {
     //   setSession(null);
     //   // signTokenOut(); just signout user
     // }

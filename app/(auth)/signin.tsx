@@ -138,6 +138,7 @@ export default function Signin() {
   const { closeSnackbar, snackbarVisible, Snackbar, notify } = useSnackbar();
   const { tokenSession, signIn: signinToken } = userTokenSession();
   const dispatch = useAppDispatch();
+  console.log({tokenSession})
 
   // signinToken('x')
 
@@ -171,20 +172,20 @@ export default function Signin() {
         setFetchState((prev) => ({
           ...prev,
           msg: returnedData?.msg,
-          code: returnedData.code,
+          code: returnedData?.code,
           loading: false,
         }));
        
-        if (returnedData.code === 200 || returnedData.code === 201)
+        if (returnedData?.code === 200 || returnedData?.code === 201)
           {
             const signedinTime = new Date();
             const user = returnedData?.user;
             const token = returnedData?.token;
   
             try {
-              await setItemAsync('user', JSON.stringify(user));
-              await setItemAsync('token', token);
-              await setItemAsync('signedinTime', JSON.stringify(signedinTime));
+              await setItemAsync('driveruser', JSON.stringify(user));
+              await setItemAsync('drivertoken', token);
+              await setItemAsync('driversignedinTime', JSON.stringify(signedinTime));
   
               dispatch(setUserState({key:'user', value: user}));
               dispatch(setUserState({key:'token', value: token}));
