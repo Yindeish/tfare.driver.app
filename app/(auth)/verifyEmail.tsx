@@ -92,6 +92,7 @@ function VerifyEmail() {
           token: token,
           data: {
             otp,
+            // email: 
           },
           url: "/auth/verify-email",
         });
@@ -106,7 +107,7 @@ function VerifyEmail() {
           loading: false,
         }));
 
-        notify({ msg });
+        // notify({ msg });
 
         router.replace('/(home)')
       } catch (error: any) {

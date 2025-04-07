@@ -195,6 +195,7 @@ export default function Signup() {
           url: "/auth/auto-signin",
           data: {
             email: signedUpUser?.email,
+            role: 'driver'
           },
         })
           .then(async (res: any) => {
