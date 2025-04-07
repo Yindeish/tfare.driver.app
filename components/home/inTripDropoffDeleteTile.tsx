@@ -19,8 +19,10 @@ function InTripDropoffDeleteTile({dropoff}: {dropoff: IBusStop & {number: number
     const dropoffs = intripDropoffsInput as (IBusStop & {number: number})[];
 
     const removeDropoff = () => {
-       const updatedDropoffs = dropoffs.filter((dropoffItem) => Number(dropoffItem.number) != Number(dropoff?.number));
-       dispatch(setTripState({key: 'intripDropoffsInput', value: updatedDropoffs.map(({number, ...dropoffItem}) => dropoffItem)}));
+       const updatedDropoffs = dropoffs
+       .filter((dropoffItem) => Number(dropoffItem.number) != Number(dropoff?.number))
+       .map((dropoffItem, index) => (({...dropoffItem, number: index + 1})));
+       dispatch(setTripState({key: 'intripDropoffsInput', value: updatedDropoffs}));
     }
 
     return (

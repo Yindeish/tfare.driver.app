@@ -65,7 +65,7 @@ import { useAppDispatch, useAppSelector } from "@/state/hooks/useReduxToolkit";
 import { RootState } from "@/state/store";
 import FetchService from "@/services/api/fetch.service";
 import { setTripState } from "@/state/slices/trip";
-import { IRoute } from "@/state/types/trip";
+import { ICurrentTrip, IRoute } from "@/state/types/trip";
 
 function Trip() {
   const dispatch = useAppDispatch();
@@ -80,6 +80,19 @@ function Trip() {
     code: null,
   });
   const { code, msg, loading } = fetchState;
+
+  const [searchState, setSearchState] = useState<{
+    searchText: string,
+    matchUpcomingTrips: ICurrentTrip[],
+    matchPresetTrips: ICurrentTrip[],
+    focused: boolean
+  }>({
+    searchText: '',
+    matchUpcomingTrips: upcomingTrips,
+    matchPresetTrips: presetTrips,
+    focused: false
+  });
+  const {focused, matchPresetTrips, matchUpcomingTrips, searchText} = searchState;
 
   const getTrips = async () => {
     setFetchState((prev) => ({ ...prev, loading: true, msg: "", code: null }));
@@ -163,10 +176,31 @@ function Trip() {
                   bg("#F9F7F8"),
                 ] as TextStyle[]
               }
-              placeholder="Search Bus stop"
+              // placeholder="Search Bus stop"
+              placeholder="Search Trip"
               placeholderTextColor={Colors.light.darkGrey}
-              value={""}
-              onChangeText={() => {}}
+              value={searchText}
+              onFocus={() => {
+                setSearchState((prev => ({ ...prev, focused: true })));
+              }}
+              onBlur={() => {
+                setSearchState((prev => ({ ...prev, focused: false })));
+              }}
+              onChangeText={(text) => {
+                setSearchState((prev => ({ ...prev, searchText: text })));
+                if (text.length > 0) {
+                  const matchUpcomingTripsArr = upcomingTrips.filter((trip) => {
+                    return trip?.route?.pickupBusstop?.name.toLowerCase().includes(text.toLowerCase()) || trip?.route?.dropoffBusstop?.name.toLowerCase().includes(text.toLowerCase());
+                  });
+                  const matchPresetTripsArr = presetTrips.filter((trip) => {
+                    return trip?.route?.pickupBusstop?.name.toLowerCase().includes(text.toLowerCase()) || trip?.route?.dropoffBusstop?.name.toLowerCase().includes(text.toLowerCase());
+                  });
+                  setSearchState((prev => ({ ...prev, matchPresetTrips: matchPresetTripsArr, matchUpcomingTrips: matchUpcomingTripsArr })));
+                }
+                if (text.length == 0) {
+                  setSearchState((prev => ({ ...prev, matchTrips: [] })));
+                }
+              }}
             />
           </View>
           {/* //!Search Block */}
@@ -189,7 +223,7 @@ function Trip() {
 
           {/* //!Upcoming trips */}
           <View style={[wFull, flexCol, gap(24)]}>
-            {!loading && upcomingTrips.map((trip, index) => (
+            {!loading && matchUpcomingTrips.map((trip, index) => (
               <PresetRouteSheetTile trip={trip} key={index} />
             ))}
             {loading && <ActivityIndicator size={'small'} />}
@@ -213,7 +247,7 @@ function Trip() {
 
           {/* //!Preset trips */}
           <View style={[wFull, flexCol, gap(24)]}>
-            {!loading && presetTrips.map((trip, index) => (
+            {!loading && matchPresetTrips.map((trip, index) => (
               <PresetRouteSheetTile trip={trip} key={index} />
             ))}
             {loading && <ActivityIndicator size={'small'} />}

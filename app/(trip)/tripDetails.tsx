@@ -3,6 +3,7 @@ import CtaBtn from "@/components/shared/ctaBtn";
 import PaddedScreen from "@/components/shared/paddedScreen";
 import PageTitle from "@/components/shared/pageTitle";
 import SafeScreen from "@/components/shared/safeScreen";
+import { useTooltip } from "@/components/shared/tooltip";
 import Colors, { colors } from "@/constants/Colors";
 import { homeImgs } from "@/constants/images/home";
 import sharedImg from "@/constants/images/shared";
@@ -69,6 +70,7 @@ function TripDetails() {
   const { id } = useGlobalSearchParams();
   const { token } = useAppSelector((state: RootState) => state.user);
   const dispatch = useAppDispatch();
+  const {setTooltipState} = useTooltip()
 
   const [showCustomize, setShowCustomize] = useState(currentPresetTrip?.driverId);
   const [disabled, setDisabled] = useState(!showCustomize && Number(currentUpcomingTrip?.ridersRides?.length) > 0);
@@ -101,6 +103,32 @@ function TripDetails() {
           setFetchState((prev) => ({
             ...prev,
           }));
+        }
+      })
+      .catch((err) => console.log({ err }))
+      .finally(() => {
+        setFetchState((prev) => ({ ...prev, loading: false }));
+      });
+  };
+
+  const deleteTrip = async () => {
+    setFetchState((prev) => ({ ...prev, loading: true, msg: "", code: null }));
+    await FetchService.deleteWithBearerToken({
+      url: `user/driver/me/trip/${currentPresetTrip?._id}/delete`,
+      token: token as string,
+    })
+      .then(async (res) => {
+        const data = res?.body ? await res.body : res;
+        const code = data?.code;
+        const msg = data?.msg;
+
+        setTooltipState({key:'visible', value: true});
+        setTooltipState({key:'message', value: msg});
+
+        setFetchState((prev) => ({ ...prev, loading: false, msg, code }));
+
+        if (code && (code == 201 || code == 200)) {
+          router.push("/(home)/trip" as Href);
         }
       })
       .catch((err) => console.log({ err }))
@@ -179,6 +207,7 @@ function TripDetails() {
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
+                    onPress={deleteTrip}
                     style={[
                       bg("#F9F7F8"),
                       borderGrey(0.7),
@@ -191,10 +220,10 @@ function TripDetails() {
                       { opacity: disabled ? 0.3 : 1 },
                     ]}
                   >
-                    <Image
+                   {!loading ? (<Image
                       style={[image.w(24), image.h(24)]}
                       source={tripImgs.redBgDeleteBtn}
-                    />
+                    />) : (<ActivityIndicator color={'#CF0707'} size={'small'} />)}
                   </TouchableOpacity>
                 </View>
               )}
@@ -338,7 +367,7 @@ function TripDetails() {
 
           <PaddedScreen>
             {/* //!In Trip Dropoffs */}
-            {loading? (<ActivityIndicator />) : (<View style={[flexCol, mt(32), mb(30)]}>
+            <View style={[flexCol, mt(32), mb(30)]}>
               <View style={[borderB(0.7, Colors.light.border), pb(16)]}>
                 <Text style={[fw700, fs14, c(colors.black)]}>
                   In-Trip Dropoffs
@@ -354,7 +383,7 @@ function TripDetails() {
                   />
                 ))}
               </View>
-            </View>)}
+            </View>
             {/* //!In Trip Dropoffs */}
 
            

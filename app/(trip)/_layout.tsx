@@ -48,6 +48,7 @@ import { images } from "@/constants/images/splash";
 import tripImgs from "@/constants/images/trip";
 import { setTripState } from "@/state/slices/trip";
 import { useTooltip } from "@/components/shared/tooltip";
+import { IBusStop } from "@/state/types/ride";
 
 const {height} = Dimensions.get("window");
 
@@ -94,7 +95,7 @@ export default function TripDetailsLayout() {
         pickupBusstop: pickupBusstopInput,
         dropoffBusstop: dropoffBusstopInput,
         city: currentPresetTrip?.route?.city,
-        inTripDropoffs: intripDropoffsInput,
+        inTripDropoffs: (intripDropoffsInput as (IBusStop & {number: number})[]).map(({number, ...dropoffItem}) => dropoffItem),
       },
     })
       .then(async (res) => {
