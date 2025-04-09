@@ -1,4 +1,4 @@
-import { View, ImageSourcePropType, Image, ViewStyle } from 'react-native'
+import { View, ImageSourcePropType, Image, ViewStyle, ScrollView } from 'react-native'
 import { Text, } from 'react-native-paper'
 import React, { useEffect, useState } from 'react'
 import SafeScreen from '@/components/shared/safeScreen'
@@ -60,7 +60,7 @@ export default function profileInfo() {
 
     return (
         <SafeScreen>
-            <View style={[wHFull as ViewStyle,]}>
+            <ScrollView style={[wHFull as ViewStyle,]}>
                 <PaddedScreen>
 
                     {/* Page Header */}
@@ -69,6 +69,7 @@ export default function profileInfo() {
                         title='Profile Information'
                         onPress={() => router.push(`/(home)/${tabs.account}` as Href)}
                         style={[]}
+                        backBtnColor={colors.grey600}
                     >
                         {/* Edit / Save profile Btn */}
 
@@ -96,7 +97,7 @@ export default function profileInfo() {
                     <View style={[mt(28), flexCol, gap(16), itemsCenter, wFull, h(134)]}>
                         {/* {(user?.picture) ? */}
                         {(user?.picture || user?.avatar) ?
-                            (<Image source={user?.picture as any} style={[image.w(100), image.h(100), image.rounded(100)]} />)
+                            (<Image source={{uri: (user?.picture || user?.avatar) as string}} style={[image.w(100), image.h(100), image.rounded(100)]} />)
                             :
                             // (<Image source={imageInput !== '' || avatarInput !== '' ? { uri: imageInput || avatarInput } : { uri: images.fallbackAvatar }} style={[image.w(100), image.h(100), image.rounded(100)]} />)
                             // (<Image source={false ? {} : images.fallbackAvatar} style={[image.w(100), image.h(100), image.rounded(100)]} />)
@@ -168,7 +169,7 @@ export default function profileInfo() {
                     </View>
 
                 </PaddedScreen>
-            </View>
+            </ScrollView>
         </SafeScreen>
     )
 }

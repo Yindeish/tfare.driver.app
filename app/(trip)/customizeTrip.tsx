@@ -365,7 +365,7 @@ function CustomizeTrip() {
               </View>
 
               <View style={[flexCol, gap(16), { overflow: "scroll" }]}>
-                {intripDropoffsInput.map((dropoff, index) => (
+                {intripDropoffsInput?.map((dropoff, index) => (
                   <InTripDropoffDeleteTile
                     dropoff={dropoff as IBusStop & { number: number }}
                     key={index}

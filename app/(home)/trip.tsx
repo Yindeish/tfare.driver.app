@@ -65,7 +65,7 @@ import { useAppDispatch, useAppSelector } from "@/state/hooks/useReduxToolkit";
 import { RootState } from "@/state/store";
 import FetchService from "@/services/api/fetch.service";
 import { setTripState } from "@/state/slices/trip";
-import { ICurrentTrip, IRoute } from "@/state/types/trip";
+import { ICurrentTrip, } from "@/state/types/trip";
 
 function Trip() {
   const dispatch = useAppDispatch();
@@ -117,6 +117,7 @@ function Trip() {
         ) {
           dispatch(setTripState({ key: "presetTrips", value: presetTrips }));
           dispatch(setTripState({ key: "upcomingTrips", value: upcomingTrips }));
+          setSearchState((prev) => ({ ...prev, matchPresetTrips: presetTrips, matchUpcomingTrips: upcomingTrips }));
         }
       })
       .catch((err) => console.log({ err }))

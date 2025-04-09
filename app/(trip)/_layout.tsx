@@ -49,8 +49,15 @@ import tripImgs from "@/constants/images/trip";
 import { setTripState } from "@/state/slices/trip";
 import { useTooltip } from "@/components/shared/tooltip";
 import { IBusStop } from "@/state/types/ride";
+import { IRequest } from "@/state/types/trip";
+import {
+  DropoffTile,
+  NextBusstop,
+  RequestCountdown,
+} from "@/components/trip/tripDetailsComponents";
+import NewRequestTile from "@/components/ride/new-request-tile";
 
-const {height} = Dimensions.get("window");
+const { height } = Dimensions.get("window");
 
 export default function TripDetailsLayout() {
   const dispatch = useAppDispatch();
@@ -72,8 +79,10 @@ export default function TripDetailsLayout() {
     departureTimeInput,
     pickupBusstopInput,
     dropoffBusstopInput,
+    unAcceptedRequests,
+    allRequests,
   } = useAppSelector((state: RootState) => state.trip);
-  const {setTooltipState} = useTooltip()
+  const { setTooltipState } = useTooltip();
 
   const [fetchState, setFetchState] = useState({
     loading: false,
@@ -81,6 +90,34 @@ export default function TripDetailsLayout() {
     code: null,
   });
   const { code, loading, msg } = fetchState;
+
+  const [state, setState] = useState({
+    // Counter state
+    counterDuration: 30,
+    // UI visibility states
+    dropoffShown: false,
+    nextBusstopShown: false,
+    countdownShown: false,
+    newRequestsShown: false,
+    // New requests state
+    newRequests: [] as IRequest[],
+
+    topRequestId: null,
+  });
+
+  const {
+    counterDuration,
+    dropoffShown,
+    countdownShown,
+    newRequestsShown,
+    nextBusstopShown,
+    newRequests,
+    topRequestId,
+  } = state;
+
+  const currentUnacceptedRequest = unAcceptedRequests.find(
+    (reqItem) => reqItem?.shown == true
+  );
 
   const createTrip = async () => {
     setFetchState((prev) => ({ ...prev, loading: true, msg: "", code: null }));
@@ -95,7 +132,9 @@ export default function TripDetailsLayout() {
         pickupBusstop: pickupBusstopInput,
         dropoffBusstop: dropoffBusstopInput,
         city: currentPresetTrip?.route?.city,
-        inTripDropoffs: (intripDropoffsInput as (IBusStop & {number: number})[]).map(({number, ...dropoffItem}) => dropoffItem),
+        inTripDropoffs: (
+          intripDropoffsInput as (IBusStop & { number: number })[]
+        ).map(({ number, ...dropoffItem }) => dropoffItem),
       },
     })
       .then(async (res) => {
@@ -104,8 +143,8 @@ export default function TripDetailsLayout() {
         const msg = data?.msg;
         const newTrip = data?.newTrip;
 
-        setTooltipState({key:'visible', value: true});
-        setTooltipState({key:'message', value: msg});
+        setTooltipState({ key: "visible", value: true });
+        setTooltipState({ key: "message", value: msg });
 
         setFetchState((prev) => ({ ...prev, loading: false, msg, code }));
 
@@ -124,28 +163,121 @@ export default function TripDetailsLayout() {
       });
   };
 
+  // Consolidated useEffect for UI states
+  useEffect(() => {
+    setState((prev) => ({
+      ...prev,
+      // Show countdown when accepting/searching and there are unaccepted requests
+      countdownShown:
+        (query === RideConstants.query.accepting ||
+          query === RideConstants.query.searching) &&
+        unAcceptedRequests.length > 0,
+
+      // Show dropoff UI when trip has started
+      dropoffShown:
+        (query === RideConstants.query.start_trip ||
+          query === RideConstants.query.arrived_pickup ||
+          query === RideConstants.query.accepting ||
+          query === RideConstants.query.pause_trip) &&
+        allRequests.some((req) => req?.rideStatus == "started") &&
+        allRequests.filter((req) => req.rideStatus == "started").length == 1,
+
+      nextBusstopShown:
+        (query === RideConstants.query.start_trip ||
+          query === RideConstants.query.arrived_pickup ||
+          query === RideConstants.query.accepting ||
+          query === RideConstants.query.pause_trip) &&
+        allRequests.some((req) => req?.rideStatus == "started") &&
+        allRequests.filter((req) => req.rideStatus == "started").length > 1,
+
+      // Show new requests when not in accepting/searching mode
+      newRequestsShown:
+      query != null && (query !== RideConstants.query.accepting &&
+        query !== RideConstants.query.searching),
+    }));
+    // }, [query, unAcceptedRequests.length]);
+  }, [query, unAcceptedRequests.length, allRequests.length]);
+
+  console.log({query})
+
+
   return (
     <View style={tw`w-full h-full flex flex-col relative`}>
+      {/* Statuses */}
+      {(unAcceptedRequests.length >= 1) &&(dropoffShown || nextBusstopShown || countdownShown || newRequestsShown) && 
+      <View
+        style={[
+          zIndex(10000000),
+          { position: "absolute", top: '25%' },
+          tw`w-full h-[230px] bg-red-700`,
+        ]}
+      >
+        {/* //!Drop off Block */}
+        {dropoffShown && <DropoffTile />}
+        {/* //!Drop off Block */}
+
+        {/* //!Next Bus Stop Block */}
+        {nextBusstopShown && <NextBusstop />}
+        {/* //!Next Bus Stop Block */}
+
+        {/* //!Time Down Block */}
+        {/* {countdownShown && ( */}
+        {countdownShown && (
+          <RequestCountdown
+            request={
+              (currentUnacceptedRequest as IRequest) || unAcceptedRequests[0]
+            }
+          />
+        )}
+        {/* //!Time Down Block */}
+
+        {/* New Requests */}
+        {newRequestsShown && (
+          <View
+            style={[tw`w-full h-[40px] relative mt-[20px]`, { zIndex: 999 }]}
+          >
+            {[...unAcceptedRequests].map((req, index) => {
+              const topPosition = (unAcceptedRequests.length - 1 - index) * 5;
+
+              return (
+                <NewRequestTile
+                  props={{
+                    style: [
+                      tw``,
+                      { top: topPosition, zIndex: Number(req?.zIndex) },
+                    ],
+                  }}
+                  request={req}
+                  key={index}
+                />
+              );
+            })}
+          </View>
+        )}
+        {/* New Requests */}
+      </View>}
+      {/* Statuses */}
+
       {/* //!Create Trip CTA */}
       {currentPresetTrip &&
         !currentUpcomingTrip &&
         (path === "/tripDetails" || path === "/customizeTrip") && (
-         <View style={[tw `fixed px-[20px]`, {zIndex: 10000000, top: '80%'}]}>
-           <CtaBtn
-            img={{ src: tripImgs.whiteBgTripImage, h: 20, w: 20 }}
-            onPress={() => {
-              createTrip();
-            }}
-            text={{ name: "Create Trip", color: colors.white }}
-            bg={{ color: Colors.light.background }}
-            style={{ container: {  } }}
-            loading={loading}
-            loaderProps={{
-              color: Colors.light.border,
-              style: [tw`w-[20px] h-[20px]`],
-            }}
-          />
-         </View>
+          <View style={[tw`fixed px-[20px]`, { zIndex: 10000000, top: "80%" }]}>
+            <CtaBtn
+              img={{ src: tripImgs.whiteBgTripImage, h: 20, w: 20 }}
+              onPress={() => {
+                createTrip();
+              }}
+              text={{ name: "Create Trip", color: colors.white }}
+              bg={{ color: Colors.light.background }}
+              style={{ container: {} }}
+              loading={loading}
+              loaderProps={{
+                color: Colors.light.border,
+                style: [tw`w-[20px] h-[20px]`],
+              }}
+            />
+          </View>
         )}
       {/* //!Create Trip CTA */}
 
@@ -166,10 +298,17 @@ export default function TripDetailsLayout() {
         screenOptions={{
           animation: "slide_from_left",
           headerShown: false,
+          headerTitle: "",
         }}
       >
-        <Stack.Screen name={"tripDetails"} />
-        <Stack.Screen name={"customizeTrip"} />
+        <Stack.Screen
+          name={"tripDetails"}
+          options={{ headerShown: false, headerTitle: "" }}
+        />
+        <Stack.Screen
+          name={"customizeTrip"}
+          options={{ headerShown: false, headerTitle: "" }}
+        />
       </Stack>
     </View>
   );

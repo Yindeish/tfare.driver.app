@@ -61,14 +61,16 @@ import { RootState } from "@/state/store";
 import tw from "@/constants/tw";
 import { setUserState } from "@/state/slices/user";
 import { useStorageState } from "@/hooks/useStorageState";
+import { IUserAccount } from "@/state/types/account";
 
 export default function Account() {
   const { signIn, loadingState, userSession } = useSession();
   const { closeSnackbar, snackbarVisible, Snackbar } = useSnackbar();
-  const { user, wallet } = useAppSelector((state: RootState) => state.user);
+  const { wallet } = useAppSelector((state: RootState) => state.user);
   const dispatch = useAppDispatch();
-  const [[_, __], setSession] = useStorageState("user");
+  const [[_, userString], setSession] = useStorageState("user");
   const [[___, ____], setToken] = useStorageState("token");
+  const user = JSON.parse(userString as string) as IUserAccount;
 
   const [fetchState, setFetchState] = useState({
     loading: false,
@@ -80,13 +82,18 @@ export default function Account() {
   const signOut = () => {
     setFetchState((prev) => ({ ...prev, loading: true }));
 
-    dispatch(setUserState({ key: "user", value: null }));
-    dispatch(setUserState({ key: "token", value: null }));
-    setSession(null);
-    setToken(null);
+    // dispatch(setUserState({ key: "user", value: null }));
+    // dispatch(setUserState({ key: "token", value: null }));
+    // setSession(null);
+    // setToken(null);
 
     setTimeout(() => {
       setFetchState((prev) => ({ ...prev, loading: false }));
+
+      dispatch(setUserState({ key: "user", value: null }));
+      dispatch(setUserState({ key: "token", value: null }));
+      setSession(null);
+      setToken(null);
       router.replace("/(auth)/signin" as Href);
     }, 1500);
   };
@@ -176,9 +183,11 @@ export default function Account() {
                 </Text>
               </View>
 
-              <TouchableOpacity onPress={() => {
-                router.push('/(earnings)');
-              }}>
+              <TouchableOpacity
+                onPress={() => {
+                  router.push("/(earnings)");
+                }}
+              >
                 <View
                   style={[
                     flex,

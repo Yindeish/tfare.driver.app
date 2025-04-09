@@ -38,9 +38,11 @@ import { useAppDispatch } from "@/state/hooks/useReduxToolkit";
 import { setTripState } from "@/state/slices/trip";
 import { ICurrentTrip } from "@/state/types/trip";
 import { Utils } from "@/utils";
+import AcceptOrderSheet from "./acceptOrderSheet";
+import SearchingOrder from "./searchingOrderSheet";
 
 function PresetRouteSheetTile({ trip }: { trip: ICurrentTrip }) {
-  const { hideBottomSheet } = useBottomSheet();
+  const { hideBottomSheet, showBottomSheet } = useBottomSheet();
   const dispatch = useAppDispatch();
 
   const upcomingTrip = trip?.driverId;
@@ -131,7 +133,22 @@ function PresetRouteSheetTile({ trip }: { trip: ICurrentTrip }) {
               dispatch(
                 setTripState({ key: "currentUpcomingTrip", value: upcomingTrip ? trip: null })
               );
+              dispatch(
+                setTripState({
+                  key: "pickupBusstopInput",
+                  value: trip?.route?.pickupBusstop,
+                })
+              );
+              dispatch(
+                setTripState({
+                  key: "dropoffBusstopInput",
+                  value: trip?.route?.dropoffBusstop,
+                })
+              );
+              dispatch(setTripState({key: 'intripDropoffsInput', value: trip?.route?.inTripDropoffs}))
               router.push(`/(trip)/tripDetails?id=${route?._id}` as Href);
+              showBottomSheet([150, 300], <SearchingOrder />, true)
+              // showBottomSheet([100, 400], <AcceptOrderSheet />, true);
             }}
             style={[
               h(45),

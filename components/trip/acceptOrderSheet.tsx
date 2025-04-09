@@ -55,7 +55,7 @@ import TicketOtpSheet from "./ticketOtpSheet";
 import { router, usePathname } from "expo-router";
 import ArrivedPickupSheet from "./arrivedPickupSheet";
 import { useAppDispatch, useAppSelector } from "@/state/hooks/useReduxToolkit";
-import { setRideState } from "@/state/slices/ride";
+import { setTripState } from "@/state/slices/trip";
 import { RootState } from "@/state/store";
 import { useEffect, useState } from "react";
 import { EQuery, IRequest, IRiderRideDetails } from "@/state/types/ride";
@@ -76,13 +76,12 @@ function AcceptOrderSheet() {
   const {
     ridersOffers,
     currentRiderOfferIndex,
-    ridesAccepted,
     unAcceptedRequests,
     query,
     currentRequest
-  } = useAppSelector((state: RootState) => state.ride);
-  const { selectedRoute, allRequests } = useAppSelector(
-    (state: RootState) => state.ride
+  } = useAppSelector((state: RootState) => state.trip);
+  const { selectedRoute, allRequests, currentUpcomingTrip } = useAppSelector(
+    (state: RootState) => state.trip
   );
   const { Snackbar, snackbarVisible, notify, closeSnackbar } = useSnackbar();
   // const [[_, query], setQuery] = useStorageState(RideConstants.localDB.query)
@@ -113,9 +112,9 @@ function AcceptOrderSheet() {
       code: null,
     }));
     await FetchService.postWithBearerToken({
-      url: `/user/driver/me/ride/accept-ride/${selectedRoute?._id}`,
+      url: `/user/driver/me/trip/${currentUpcomingTrip?._id}/accept-trip`,
       data: {
-        riderRideId: requestId,
+        requestId: requestId,
       },
       token: token as string,
     })
@@ -127,21 +126,21 @@ function AcceptOrderSheet() {
         setTooltipState({key: 'message', value: msg})
         setTooltipState({key: 'visible', value: true})
         const riderRideAccepted: IRiderRideDetails | null = data?.riderRide || data?.riderRideAccepted || data?.rideAlreadyAccepted;
-        const currentRide =
-          data?.currentRideSaved ||
-          data?.existingCurrentRideSaved ||
-          data?.currentRide;
-        console.log({ currentRide, riderRideAccepted });
+        const currenTrip =
+          data?.currenTripSaved ||
+          data?.existingCurrenTripSaved ||
+          data?.currenTrip;
+        console.log({ currenTrip, riderRideAccepted });
 
         setFetchState((prev) => ({ ...prev, loading: "idle", msg, code }));
 
-        dispatch(setRideState({ key: "currentRide", value: currentRide }));
+        dispatch(setTripState({ key: "currentUpcomingTrip", value: currenTrip }));
 
         if (
           (code &&
           (code == 200 || code == 201)) &&
           riderRideAccepted &&
-          currentRide
+          currenTrip
         ) {
          
           const requests = allRequests.map((request) => {
@@ -153,7 +152,7 @@ function AcceptOrderSheet() {
             }
             return request;
           });
-          dispatch(setRideState({ key: "allRequests", value: requests }));
+          dispatch(setTripState({ key: "allRequests", value: requests }));
 
           const requestsNotAccepted = requests.filter(
             (request) =>
@@ -162,28 +161,27 @@ function AcceptOrderSheet() {
           );
 
           dispatch(
-            setRideState({
+            setTripState({
               key: "unAcceptedRequests",
               value: requestsNotAccepted,
             })
           );
 
-          // if (requestsNotAccepted.length == 1) {
           if (allRequests.length == 1) {
             dispatch(
-              setRideState({
-                key: "rideRequestInView",
+              setTripState({
+                key: "tripRequestInView",
                 value: requestsNotAccepted[0],
               })
             );
             dispatch(
-              setRideState({
-                key: "rideRequestInView",
+              setTripState({
+                key: "tripRequestInView",
                 value: allRequests[0],
               })
             );
             dispatch(
-              setRideState({
+              setTripState({
                 key: "query",
                 value: RideConstants.query.arrived_pickup,
               })
@@ -193,10 +191,10 @@ function AcceptOrderSheet() {
           }
 
           dispatch(
-            setRideState({
+            setTripState({
               key: "currentRiderOfferIndex",
               value:
-                currentRiderOfferIndex == unAcceptedRequests.length+1
+              currentRiderOfferIndex == unAcceptedRequests.length+1
                   ? 1
                   : Math.min(
                       Number(currentRiderOfferIndex) + 1,
@@ -215,55 +213,18 @@ function AcceptOrderSheet() {
 
   const cancelOffer = () => {
     hideBottomSheet();
-    dispatch(setRideState({ key: "selectedRoute", value: null }));
-    dispatch(setRideState({ key: "driverEligible", value: false }));
-    dispatch(setRideState({ key: "driverOnline", value: false }));
-    dispatch(setRideState({ key: "dropoffBusstopInput", value: null }));
-    dispatch(setRideState({ key: "pickupBusstopInput", value: null }));
-    dispatch(setRideState({ key: "ridersOffers", value: [] }));
+    dispatch(setTripState({ key: "selectedRoute", value: null }));
+    dispatch(setTripState({ key: "driverEligible", value: false }));
+    dispatch(setTripState({ key: "driverOnline", value: false }));
+    dispatch(setTripState({ key: "dropoffBusstopInput", value: null }));
+    dispatch(setTripState({ key: "pickupBusstopInput", value: null }));
+    dispatch(setTripState({ key: "ridersOffers", value: [] }));
 
     setTooltipState({key: 'message', value: 'Ride request cancelled'})
     setTooltipState({key: 'visible', value: true})
     router.push(`/(home)`);
   };
 
-  const getRidersOffers = async () => {
-    setFetchState((prev) => ({ ...prev, loading: "loading-requests" }));
-    await FetchService.getWithBearerToken({
-      url: `/user/driver/me/ride/requests/${selectedRoute?._id}`,
-      token: token as string,
-    })
-      .then(async (res) => {
-        setFetchState((prev) => ({ ...prev, loading: "idle" }));
-
-        const data = res?.body ? await res.body : res;
-        const code = data?.code;
-        const msg = data?.msg;
-        const ridersOffers = data?.todayRidersRides;
-        console.log({
-          ridersOffers1: ridersOffers[0]?._doc,
-          "ridersOffers[0]?.ridr": ridersOffers[0]?.rider,
-        });
-
-        if (
-          code &&
-          code == 200 &&
-          ridersOffers &&
-          Number(ridersOffers?.length) > 0
-        ) {
-          dispatch(setRideState({ key: "ridersOffers", value: ridersOffers }));
-          setFetchState((prev) => ({
-            ...prev,
-            ridersOffers,
-          }));
-          dispatch(setRideState({ key: "currentRiderOfferIndex", value: 0 }));
-        }
-      })
-      .catch((err) => {
-        setFetchState((prev) => ({ ...prev, loading: "idle" }));
-        console.log({ err });
-      });
-  };
 
   return (
     <PaddedScreen>
@@ -284,15 +245,9 @@ function AcceptOrderSheet() {
             {/* //!Rider Details Block */}
             <TouchableOpacity
               onPress={() => {
-                // dispatch(
-                //   setRideState({
-                //     key: "currentRequest",
-                //     value: currentRequest,
-                //   })
-                // );
-                dispatch(setRideState({key: 'rideRequestInView', value: currentRequest}))
+                dispatch(setTripState({key: 'tripRequestInView', value: currentRequest}))
                 dispatch(
-                  setRideState({
+                  setTripState({
                     key: "query",
                     value: RideConstants.query.arrived_pickup,
                   })
@@ -470,9 +425,9 @@ export default AcceptOrderSheet;
 //               {/* //!Rider Details Block */}
 //               <TouchableOpacity
 //               onPress={() => {
-//                 dispatch(setRideState({key:'currentRequest', value: request}))
+//                 dispatch(setTripState({key:'currentRequest', value: request}))
 //                 dispatch(
-//                     setRideState({
+//                     setTripState({
 //                       key: "rideAcceptStage",
 //                       value: RideConstants.query.arrived_pickup,
 //                     })
@@ -627,10 +582,10 @@ export default AcceptOrderSheet;
 //               <TouchableOpacity
 //                 onPress={() => {
 //                   dispatch(
-//                     setRideState({ key: "currentRequest", value: slide })
+//                     setTripState({ key: "currentRequest", value: slide })
 //                   );
 //                   dispatch(
-//                     setRideState({
+//                     setTripState({
 //                       key: "rideAcceptStage",
 //                       value: RideConstants.query.arrived_pickup,
 //                     })
@@ -670,7 +625,7 @@ export default AcceptOrderSheet;
 //                         0,
 //                         7
 //                       )}{" "}
-//                       {`index ${currentRiderOfferIndex}`} away
+//                       {`index ${currenRiderOfferIndex}`} away
 //                     </Text>
 //                   </View>
 //                 </View>

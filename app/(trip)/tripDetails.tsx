@@ -1,19 +1,35 @@
+import AcceptOrderSheet from "@/components/trip/acceptOrderSheet";
 import InTripDropffTile from "@/components/home/inTripDropoffTile";
+import NewRequestTile from "@/components/ride/new-request-tile";
 import CtaBtn from "@/components/shared/ctaBtn";
 import PaddedScreen from "@/components/shared/paddedScreen";
 import PageTitle from "@/components/shared/pageTitle";
 import SafeScreen from "@/components/shared/safeScreen";
 import { useTooltip } from "@/components/shared/tooltip";
+import {
+  DriverOnlineTile,
+  DropoffTile,
+  NextBusstop,
+  RequestCountdown,
+} from "@/components/trip/tripDetailsComponents";
 import Colors, { colors } from "@/constants/Colors";
 import { homeImgs } from "@/constants/images/home";
 import sharedImg from "@/constants/images/shared";
 import { images } from "@/constants/images/splash";
 import tripImgs from "@/constants/images/trip";
+import { RideConstants } from "@/constants/ride";
+import tw from "@/constants/tw";
+import { useBottomSheet } from "@/contexts/useBottomSheetContext";
 import FetchService from "@/services/api/fetch.service";
 import { useAppDispatch, useAppSelector } from "@/state/hooks/useReduxToolkit";
-import { setRideState } from "@/state/slices/ride";
 import { setTripState } from "@/state/slices/trip";
 import { RootState } from "@/state/store";
+import { IUserAccount } from "@/state/types/account";
+import {
+  IRequest,
+  IRiderRideDetails,
+  TCountdownStatus,
+} from "@/state/types/trip";
 import { Utils } from "@/utils";
 import {
   c,
@@ -51,11 +67,12 @@ import {
   relative,
   rounded,
   t,
+  zIndex,
 } from "@/utils/styles";
 import { Href, router, useGlobalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
+  ActivityIndicator,
   Image,
   RefreshControl,
   ScrollView,
@@ -66,55 +83,207 @@ import {
 import { Text } from "react-native-paper";
 
 function TripDetails() {
-  const { currentPresetTrip, currentUpcomingTrip } = useAppSelector((state: RootState) => state.trip);
+  const { currentPresetTrip, currentUpcomingTrip } = useAppSelector(
+    (state: RootState) => state.trip
+  );
   const { id } = useGlobalSearchParams();
   const { token } = useAppSelector((state: RootState) => state.user);
   const dispatch = useAppDispatch();
-  const {setTooltipState} = useTooltip()
+  const { setTooltipState } = useTooltip();
+  const {
+    driverOnline,
+    query,
+    currentRiderOfferIndex,
+    allRequests,
+    unAcceptedRequests,
+    selectedRoute,
+    countdownStatus,
+    currentRequest,
+    presetRoutes,
+  } = useAppSelector((state: RootState) => state.trip);
+  const { hideBottomSheet, showBottomSheet } = useBottomSheet();
 
-  const [showCustomize, setShowCustomize] = useState(currentPresetTrip?.driverId);
-  const [disabled, setDisabled] = useState(!showCustomize && Number(currentUpcomingTrip?.ridersRides?.length) > 0);
+  const [showCustomize, setShowCustomize] = useState(
+    currentPresetTrip?.driverId
+  );
+  const [disabled, setDisabled] = useState(
+    !showCustomize && Number(currentUpcomingTrip?.ridersRides?.length) > 0
+  );
   const trip = currentPresetTrip || currentUpcomingTrip;
   const route = currentPresetTrip?.route || currentUpcomingTrip?.route;
 
-  const [fetchState, setFetchState] = useState({
-    loading: false,
+  const [fetchState, setFetchState] = useState<{
+    loading: "idle" | "fetching" | "deleting";
+    msg: string;
+    code: number | null;
+  }>({
+    loading: "idle",
     msg: "",
     code: null,
   });
   const { code, msg, loading } = fetchState;
 
-  const getRouteDetails = async () => {
-    setFetchState((prev) => ({ ...prev, loading: true, msg: "", code: null }));
+  const createTripRequest = ({
+    ride,
+    number,
+    shown,
+  }: {
+    ride: IRiderRideDetails & { rider: IUserAccount };
+    shown?: boolean;
+    number?: number;
+  }) => {
+    return {
+      _id: ride?._id,
+      // number: (Number(allRequests[allRequests.length]?.number) || 0) + 1,
+      number: number || Number(allRequests[allRequests.length - 1]?.number) + 1,
+      dropoffId: ride?.dropoffBusstop?._id,
+      dropoffName: ride?.dropoffBusstop?.name,
+      pickupId: ride?.pickupBusstop?._id,
+      pickupName: ride?.pickupBusstop?.name,
+      riderCounterOffer: ride?.riderCounterOffer,
+      riderId: ride?.riderId,
+      rideStatus: ride?.rideStatus,
+      riderName: ride?.rider?.fullName,
+      riderPhoneNo: ride?.rider?.phoneNo,
+      riderPicture: ride?.rider?.picture || ride?.rider?.avatar,
+      shown: shown ? true : false,
+      // zIndex: (Number(allRequests[allRequests.length]?.zIndex) || 10000) + 1,
+      zIndex:
+        10000 +
+        (number || Number(allRequests[allRequests.length - 1]?.number) + 1),
+      countdownStatus: "idle" as TCountdownStatus,
+    };
+  };
+
+  const handleAcceptingState = (
+    ride: IRiderRideDetails & { rider: IUserAccount }
+  ) => {
+    if (!allRequests) return;
+
+    const requestPresent = allRequests.find(
+      (request) => String(request?._id) === String(ride?._id)
+    );
+
+    if (requestPresent) return;
+
+    const newRequest = createTripRequest({
+      ride,
+      shown:
+        countdownStatus == "completed" || allRequests.length == 0
+          ? true
+          : false,
+    });
+    console.log({ newRequest }, "N E W R E Q U E S T");
+
+    const requests = [...allRequests, newRequest];
+    console.log({ requests });
+
+    dispatch(setTripState({ key: "allRequests", value: requests }));
+
+    const newUnAcceptedRequests = requests.filter(
+      (request) =>
+        request?.rideStatus === "pending" ||
+        request?.rideStatus === "requesting"
+    );
+
+    dispatch(
+      setTripState({ key: "unAcceptedRequests", value: newUnAcceptedRequests })
+    );
+
+    if (
+      currentRequest?.countdownStatus == "completed" 
+    ) {
+      console.log(
+        { "currentRequest?.countdownStatus": currentRequest?.countdownStatus },
+        "from handleAccept"
+      );
+      dispatch(
+        setTripState({
+          key: "currentRiderOfferIndex",
+          value: Number(newRequest?.number || currentRequest?.number),
+        })
+      );
+      dispatch(
+        setTripState({
+          key: "currentRequest",
+          value: {
+            ...newRequest,
+            countdownStatus: "started" as TCountdownStatus,
+          },
+        })
+      );
+      dispatch(
+        setTripState({
+          key: "countdownStatus",
+          value: "started" as TCountdownStatus,
+        })
+      );
+    }
+  };
+
+  const getRequests = async () => {
+    console.log("getting requests");
+    setFetchState((prev) => ({
+      ...prev,
+      loading: "fetching",
+    }));
     await FetchService.getWithBearerToken({
-      url: `/ride/route/${id}`,
+      url: `/user/driver/me/trip/${currentUpcomingTrip?._id}/requests`,
       token: token as string,
     })
       .then(async (res) => {
+        setFetchState((prev) => ({
+          ...prev,
+          loading: "idle",
+        }));
         const data = res?.body ? await res.body : res;
         const code = data?.code;
         const msg = data?.msg;
-        const routeDetails = data?.route;
+        const ridersRides = data?.ridersRides as (IRiderRideDetails & {
+          rider: IUserAccount;
+        })[];
+        console.log({ ridersRides });
 
-        setFetchState((prev) => ({ ...prev, loading: false, msg, code }));
+        if (code && (code == 200 || code == 201) && ridersRides) {
+          const firstRide = ridersRides[0];
 
-        if (code && code == 200 && routeDetails) {
-          dispatch(setRideState({ key: "selectedRoute", value: routeDetails }));
-          setFetchState((prev) => ({
-            ...prev,
-          }));
+          if (ridersRides.length == 1) {
+            handleAcceptingState(firstRide);
+          }
+          if (ridersRides.length > 1) {
+            handleAcceptingState(firstRide);
+            const otherRequests = ridersRides.filter(
+              (ride) => String(ride?._id) !== String(firstRide?._id)
+            );
+
+            otherRequests.forEach((ride) => {
+              handleAcceptingState(ride);
+            });
+          }
+        } else {
+          setTooltipState({ key: "visible", value: true });
+          setTooltipState({ key: "message", value: msg });
         }
       })
-      .catch((err) => console.log({ err }))
-      .finally(() => {
-        setFetchState((prev) => ({ ...prev, loading: false }));
-      });
+      .catch((err) => {
+        console.log({ err });
+        setTooltipState({ key: "visible", value: true });
+        setTooltipState({ key: "message", value: err?.message });
+      })
+      .finally(() => {});
   };
 
   const deleteTrip = async () => {
-    setFetchState((prev) => ({ ...prev, loading: true, msg: "", code: null }));
+    if (disabled) return;
+
+    setFetchState((prev) => ({
+      ...prev,
+      loading: "deleting",
+      msg: "",
+      code: null,
+    }));
     await FetchService.deleteWithBearerToken({
-      url: `user/driver/me/trip/${currentPresetTrip?._id}/delete`,
+      url: `/user/driver/me/trip/${currentPresetTrip?._id}/delete`,
       token: token as string,
     })
       .then(async (res) => {
@@ -122,10 +291,10 @@ function TripDetails() {
         const code = data?.code;
         const msg = data?.msg;
 
-        setTooltipState({key:'visible', value: true});
-        setTooltipState({key:'message', value: msg});
+        setTooltipState({ key: "visible", value: true });
+        setTooltipState({ key: "message", value: msg });
 
-        setFetchState((prev) => ({ ...prev, loading: false, msg, code }));
+        setFetchState((prev) => ({ ...prev, loading: "idle", msg, code }));
 
         if (code && (code == 201 || code == 200)) {
           router.push("/(home)/trip" as Href);
@@ -133,41 +302,51 @@ function TripDetails() {
       })
       .catch((err) => console.log({ err }))
       .finally(() => {
-        setFetchState((prev) => ({ ...prev, loading: false }));
+        setFetchState((prev) => ({ ...prev, loading: "idle" }));
       });
   };
 
-  // Mounting the inputs
-    useEffect(() => {
-      dispatch(
-        setTripState({
-          key: "pickupBusstopInput",
-          value: currentPresetTrip?.route?.pickupBusstop,
-        })
-      );
-      dispatch(
-        setTripState({
-          key: "dropoffBusstopInput",
-          value: currentPresetTrip?.route?.dropoffBusstop,
-        })
-      );
-      dispatch(
-        setTripState({
-          key: "intripDropoffsInput",
-          value: currentPresetTrip?.route?.inTripDropoffs.map(
-            (dropoff, index) => ({ ...dropoff, number: index + 1 })
-          ),
-        })
-      );
-    }, []);
-    // Mounting the inputs
+  useEffect(() => {
+    console.log({ allRequests, unAcceptedRequests });
+    if (
+      query === RideConstants.query.searching &&
+      allRequests.length === 0 &&
+      loading == "idle"
+    ) {
+      console.log("searching");
+      const intervalId = setInterval(() => {
+        if (allRequests.length === 0 && loading == "idle") {
+          getRequests();
+        }
+      }, 4000);
+
+      return () => clearInterval(intervalId);
+    }
+    if (
+      query === RideConstants.query.accepting &&
+      allRequests.length >= 1 &&
+      loading == 'idle'
+    ) {
+      console.log("accepting");
+      const intervalId = setInterval(() => {
+        if (allRequests.length >= 1 && loading == "idle") {
+          getRequests();
+        }
+      }, 4000);
+
+      return () => clearInterval(intervalId);
+    }
+  }, [query, loading, allRequests.length]);
 
   return (
     <SafeScreen>
       <ScrollView
-        // refreshControl={
-        //   <RefreshControl onRefresh={getRouteDetails} refreshing={loading} />
-        // }
+        refreshControl={
+          <RefreshControl
+            onRefresh={getRequests}
+            refreshing={loading == "fetching"}
+          />
+        }
       >
         <View style={[wHFull as ViewStyle, relative, pb(150)]}>
           {/* //!Page Header */}
@@ -194,7 +373,9 @@ function TripDetails() {
                       { opacity: disabled ? 0.3 : 1 },
                     ]}
                     onPress={() => {
-                      router.push("/(trip)/customizeTrip" as Href);
+                     if(disabled) return;
+                     hideBottomSheet();
+                     router.push("/(trip)/customizeTrip" as Href);
                     }}
                   >
                     <Image
@@ -220,10 +401,14 @@ function TripDetails() {
                       { opacity: disabled ? 0.3 : 1 },
                     ]}
                   >
-                   {!loading ? (<Image
-                      style={[image.w(24), image.h(24)]}
-                      source={tripImgs.redBgDeleteBtn}
-                    />) : (<ActivityIndicator color={'#CF0707'} size={'small'} />)}
+                    {loading == "deleting" ? (
+                      <ActivityIndicator color={"#CF0707"} size={"small"} />
+                    ) : (
+                      <Image
+                        style={[image.w(24), image.h(24)]}
+                        source={tripImgs.redBgDeleteBtn}
+                      />
+                    )}
                   </TouchableOpacity>
                 </View>
               )}
@@ -341,7 +526,9 @@ function TripDetails() {
                     Date
                   </Text>
                 </View>
-                <Text style={[fw500, fs14, colorBlack]}>{Utils.formatDate(trip?.departureTime as unknown as string)}</Text>
+                <Text style={[fw500, fs14, colorBlack]}>
+                  {Utils.formatDate(trip?.departureTime as unknown as string)}
+                </Text>
               </View>
               {/* //!Startoff Date Block */}
 
@@ -357,7 +544,9 @@ function TripDetails() {
                     Time
                   </Text>
                 </View>
-                <Text style={[fw500, fs14, colorBlack]}>{Utils.formatTime(trip?.departureTime as unknown as string)}</Text>
+                <Text style={[fw500, fs14, colorBlack]}>
+                  {Utils.formatTime(trip?.departureTime as unknown as string)}
+                </Text>
               </View>
               {/* //!Startoff Time Block */}
             </View>
@@ -385,8 +574,6 @@ function TripDetails() {
               </View>
             </View>
             {/* //!In Trip Dropoffs */}
-
-           
           </PaddedScreen>
         </View>
       </ScrollView>

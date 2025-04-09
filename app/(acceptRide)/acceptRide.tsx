@@ -111,7 +111,11 @@ import { supabase } from "@/supabase/supabase.config";
 import { IUserAccount } from "@/state/types/account";
 import FetchService from "@/services/api/fetch.service";
 import { setUserAccountSecurityFeild } from "@/state/slices/account";
-import NewRequestTile, { getHighestInArray } from "@/components/ride/new-request-tile";
+import NewRequestTile, {
+  getHighestInArray,
+} from "@/components/ride/new-request-tile";
+import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
+import { useTooltip } from "@/components/shared/tooltip";
 
 function AcceptRide() {
   const { showBottomSheet } = useBottomSheet();
@@ -125,10 +129,13 @@ function AcceptRide() {
     selectedRoute,
     countdownStatus,
     currentRequest,
+    presetRoutes,
   } = useAppSelector((state: RootState) => state.ride);
   // const [[_, query], setQuery] = useStorageState(RideConstants.localDB.query);
   const { hideBottomSheet } = useBottomSheet();
   const path = usePathname();
+  const { token } = useAppSelector((state: RootState) => state.user);
+  const {setTooltipState} = useTooltip();
 
   const [state, setState] = useState({
     // Counter state
@@ -154,24 +161,45 @@ function AcceptRide() {
     topRequestId,
   } = state;
 
+  const [fetchState, setFetchState] = useState({
+    loading: false,
+    msg: "",
+    code: null,
+  });
+  const { code, msg, loading } = fetchState;
+
+  const routeIds = presetRoutes.map((route) => String(route?._id));
+
+  const [rideChannels, setRideChannels] = useState<any[]>([]);
 
   // Getting a request (coutdown) with currentIndex and updating it's visibility
   useEffect(() => {
-    if (unAcceptedRequests.length === 0) return
+    if (unAcceptedRequests.length === 0) return;
 
     const requests = unAcceptedRequests.map((requestItem, index) => {
-      const topIndex = getHighestInArray(unAcceptedRequests.map((req) => Number(req?.zIndex)));
-        return {
-          ...requestItem,
-          shown: Number(requestItem?.number) === currentRiderOfferIndex,
-          countdownStatus: Number(requestItem?.number) === currentRiderOfferIndex ? "started" as TCountdownStatus : "idle" as TCountdownStatus,
-          zIndex: Number(requestItem?.number) === currentRiderOfferIndex ? topIndex : topIndex - ((Number(requestItem?.number) - 1))
-      }
-    })
+      const topIndex = getHighestInArray(
+        unAcceptedRequests.map((req) => Number(req?.zIndex))
+      );
+      return {
+        ...requestItem,
+        shown: Number(requestItem?.number) === currentRiderOfferIndex,
+        countdownStatus:
+          Number(requestItem?.number) === currentRiderOfferIndex
+            ? ("started" as TCountdownStatus)
+            : ("idle" as TCountdownStatus),
+        zIndex:
+          Number(requestItem?.number) === currentRiderOfferIndex
+            ? topIndex
+            : topIndex - (Number(requestItem?.number) - 1),
+      };
+    });
 
-    dispatch(setRideState({ key: "unAcceptedRequests", value: requests }))
+    dispatch(setRideState({ key: "unAcceptedRequests", value: requests }));
 
-    const request = requests.find((requestItem) => Number(requestItem?.number || 1) === currentRiderOfferIndex)
+    const request = requests.find(
+      (requestItem) =>
+        Number(requestItem?.number || 1) === currentRiderOfferIndex
+    );
 
     if (request) {
       dispatch(
@@ -182,16 +210,16 @@ function AcceptRide() {
             shown: true,
             countdownStatus: "started" as TCountdownStatus,
           },
-        }),
-      )
+        })
+      );
       dispatch(
         setRideState({
           key: "countdownStatus",
           value: "started" as TCountdownStatus,
-        }),
-      )
+        })
+      );
     }
-  }, [currentRiderOfferIndex, unAcceptedRequests.length])
+  }, [currentRiderOfferIndex, unAcceptedRequests.length]);
   // Getting a request (coutdown) with currentIndex and updating it's visibility
 
   // Consolidated useEffect for UI states
@@ -205,51 +233,66 @@ function AcceptRide() {
         unAcceptedRequests.length > 0,
 
       // Show dropoff UI when trip has started
-      dropoffShown: 
-      (
-        query === RideConstants.query.start_trip
-        || query === RideConstants.query.arrived_pickup
-        || query === RideConstants.query.accepting
-        || query === RideConstants.query.pause_trip
-      )
-        && allRequests.some((req) => req?.rideStatus == "started")
-        && (allRequests.filter((req) => req.rideStatus == 'started').length == 1),
-      nextBusstopShown: 
-      (
-        query === RideConstants.query.start_trip
-        || query === RideConstants.query.arrived_pickup
-        || query === RideConstants.query.accepting
-        || query === RideConstants.query.pause_trip
-      )
-        && allRequests.some((req) => req?.rideStatus == "started")
-        && (allRequests.filter((req) => req.rideStatus == 'started').length > 1),
+      dropoffShown:
+        (query === RideConstants.query.start_trip ||
+          query === RideConstants.query.arrived_pickup ||
+          query === RideConstants.query.accepting ||
+          query === RideConstants.query.pause_trip) &&
+        allRequests.some((req) => req?.rideStatus == "started") &&
+        allRequests.filter((req) => req.rideStatus == "started").length == 1,
+      nextBusstopShown:
+        (query === RideConstants.query.start_trip ||
+          query === RideConstants.query.arrived_pickup ||
+          query === RideConstants.query.accepting ||
+          query === RideConstants.query.pause_trip) &&
+        allRequests.some((req) => req?.rideStatus == "started") &&
+        allRequests.filter((req) => req.rideStatus == "started").length > 1,
 
       // Show new requests when not in accepting/searching mode
       newRequestsShown:
         query !== RideConstants.query.accepting &&
         query !== RideConstants.query.searching,
     }));
-  // }, [query, unAcceptedRequests.length]);
+    // }, [query, unAcceptedRequests.length]);
   }, [query, unAcceptedRequests.length, allRequests.length]);
 
   const currentUnacceptedRequest = unAcceptedRequests.find(
     (reqItem) => reqItem?.shown == true
   );
 
-  const setupRideRequestChannel = () => {
-    const channel = supabase.channel(
-      `${RideConstants.channel.ride_requesting}${selectedRoute?._id}`
-    );
+  // const setupRideRequestChannel = () => {
+  //   const channel = supabase.channel(
+  //     `${RideConstants.channel.ride_requesting}${selectedRoute?._id}`
+  //   );
 
-    channel
-      .on(
-        "broadcast",
-        { event: RideConstants.event.ride_requested },
-        handleRideRequestEvent
-      )
-      .subscribe();
+  //   channel
+  //     .on(
+  //       "broadcast",
+  //       { event: RideConstants.event.ride_requested },
+  //       handleRideRequestEvent
+  //     )
+  //     .subscribe();
 
-    return channel;
+  //   return channel;
+  // };
+  const setupRideRequestChannels = (routeIds: string[]) => {
+    const channels = routeIds.map((routeId) => {
+      const channel = supabase.channel(
+        `${RideConstants.channel.ride_requesting}${routeId}`
+      );
+
+      channel
+        .on(
+          "broadcast",
+          { event: RideConstants.event.ride_requested },
+          handleRideRequestEvent
+        )
+        .subscribe();
+
+      return channel;
+    });
+
+    return channels;
   };
 
   const handleRideRequestEvent = (payload: any) => {
@@ -275,15 +318,19 @@ function AcceptRide() {
     }
   };
 
-  const createRideRequest = ({ride, number, shown}:
-    {ride: IRiderRideDetails & { rider: IUserAccount },
-    shown?: boolean,
-    number?: number,}
-  ) => {
+  const createRideRequest = ({
+    ride,
+    number,
+    shown,
+  }: {
+    ride: IRiderRideDetails & { rider: IUserAccount };
+    shown?: boolean;
+    number?: number;
+  }) => {
     return {
       _id: ride?._id,
       // number: (Number(allRequests[allRequests.length]?.number) || 0) + 1,
-      number: number || Number(allRequests[allRequests.length-1]?.number) + 1,
+      number: number || Number(allRequests[allRequests.length - 1]?.number) + 1,
       dropoffId: ride?.dropoffBusstop?._id,
       dropoffName: ride?.dropoffBusstop?.name,
       pickupId: ride?.pickupBusstop?._id,
@@ -296,7 +343,9 @@ function AcceptRide() {
       riderPicture: ride?.rider?.picture || ride?.rider?.avatar,
       shown: shown ? true : false,
       // zIndex: (Number(allRequests[allRequests.length]?.zIndex) || 10000) + 1,
-      zIndex: 10000 + (number || Number(allRequests[allRequests.length-1]?.number) + 1),
+      zIndex:
+        10000 +
+        (number || Number(allRequests[allRequests.length - 1]?.number) + 1),
       countdownStatus: "idle" as TCountdownStatus,
     };
   };
@@ -316,7 +365,11 @@ function AcceptRide() {
       return;
     }
 
-    const newRequest = createRideRequest({ride,shown: true, number: currentRiderOfferIndex});
+    const newRequest = createRideRequest({
+      ride,
+      shown: true,
+      number: currentRiderOfferIndex,
+    });
     const requests = [...allRequests, newRequest];
 
     dispatch(setRideState({ key: "allRequests", value: requests }));
@@ -362,11 +415,10 @@ function AcceptRide() {
 
     if (requestPresent) return;
 
-    const newRequest = createRideRequest(
-      {ride,
+    const newRequest = createRideRequest({
+      ride,
       shown: countdownStatus == "completed" ? true : false,
-    },
-    );
+    });
     console.log({ newRequest }, "N E W R E Q U E S T");
 
     const requests = [...allRequests, newRequest];
@@ -423,7 +475,7 @@ function AcceptRide() {
 
     if (requestPresent) return;
 
-    const newRequest = createRideRequest({ride});
+    const newRequest = createRideRequest({ ride });
     const requests = [...allRequests, newRequest];
 
     dispatch(setRideState({ key: "allRequests", value: requests }));
@@ -451,15 +503,96 @@ function AcceptRide() {
     }
   };
 
+  const getRequests = async () => {
+    setFetchState((prev) => ({
+      ...prev,
+      loading: true,
+    }));
+    await FetchService.getWithBearerToken({
+      url: `/user/driver/me/ride/requests/${selectedRoute?._id}`,
+      token: token as string,
+    })
+      .then(async (res) => {
+        setFetchState((prev) => ({
+          ...prev,
+          loading: false,
+        }));
+        const data = res?.body ? await res.body : res;
+        const code = data?.code;
+        const msg = data?.msg;
+        const todayRidersRides = data?.todayRidersRides as (IRiderRideDetails & { rider: IUserAccount })[];
+
+        if((code && (code == 200 || code == 201)) && todayRidersRides) {
+          const firstRide = todayRidersRides[0];
+
+          if(todayRidersRides.length == 1) {
+            handleSearchingState(firstRide);
+          }
+          if(todayRidersRides.length > 1) {
+            handleSearchingState(firstRide);
+            const otherRequests = todayRidersRides.filter((ride) => String(ride?._id) !== String(firstRide?._id));
+
+            otherRequests.forEach((ride) => {
+              handleAcceptingState(ride);
+            });
+          }
+        }
+        else {
+          setTooltipState({key: 'visible', value: true});
+          setTooltipState({key: 'message', value: msg});
+        }
+      })
+      .catch((err) => {
+        console.log({ err })
+        setTooltipState({key: 'visible', value: true});
+          setTooltipState({key: 'message', value: err?.message});
+      })
+      .finally(() => {
+      });
+  };
+
   // Initialize the channel
-  const rideChannel = setupRideRequestChannel();
+  // const rideChannel = setupRideRequestChannel();
 
   // Clean up on component unmount
+  // useEffect(() => {
+  //   return () => {
+  //     rideChannel.unsubscribe();
+  //   };
+  // }, []);
+  // Subscribe when selectedRoutes change
   useEffect(() => {
+    if (!routeIds.length) return;
+
+    const channels = setupRideRequestChannels(routeIds);
+    setRideChannels(channels);
+
     return () => {
-      rideChannel.unsubscribe();
+      channels.forEach((channel) => channel.unsubscribe());
     };
-  }, []);
+  }, [JSON.stringify(routeIds)]);
+
+  useEffect(() => {
+    if (query === RideConstants.query.searching && allRequests.length === 0 && !loading) {
+      const intervalId = setInterval(() => {
+        if (allRequests.length === 0 && !loading) {
+          // getRequests();
+        }
+      }, 4000);
+      
+      return () => clearInterval(intervalId);
+    }
+    if (query === RideConstants.query.accepting && allRequests.length >=1 && !loading) {
+      const intervalId = setInterval(() => {
+        if (allRequests.length >= 1 && !loading) {
+          // getRequests();
+        }
+      }, 4000);
+  
+      return () => clearInterval(intervalId);
+    }
+  }, [query, loading, allRequests.length]);
+  
 
   return (
     <SafeScreen>
@@ -523,7 +656,7 @@ function AcceptRide() {
 
             {/* New Requests */}
             {
-            // unAcceptedRequests.some((req) => req.shown == false) &&
+              // unAcceptedRequests.some((req) => req.shown == false) &&
               newRequestsShown && (
                 // <View style={[tw`w-full h-[40px] relative mt-[50px]`, {zIndex: 999}]}>
                 <View
@@ -532,23 +665,26 @@ function AcceptRide() {
                     { zIndex: 999 },
                   ]}
                 >
-                  {[...unAcceptedRequests]
-                    .map((req, index) => {
-                      const topPosition =
+                  {[...unAcceptedRequests].map((req, index) => {
+                    const topPosition =
                       (unAcceptedRequests.length - 1 - index) * 5;
 
-                      return (
-                       <NewRequestTile
-                          props={{
-                            style: [tw``, { top: topPosition, zIndex: Number(req?.zIndex) }],
-                          }}
-                          request={req}
-                          key={index}
-                        />
-                      );
-                    })}
+                    return (
+                      <NewRequestTile
+                        props={{
+                          style: [
+                            tw``,
+                            { top: topPosition, zIndex: Number(req?.zIndex) },
+                          ],
+                        }}
+                        request={req}
+                        key={index}
+                      />
+                    );
+                  })}
                 </View>
-              )}
+              )
+            }
             {/* New Requests */}
           </View>
           {/* Statuses */}
@@ -562,18 +698,17 @@ function AcceptRide() {
 export default AcceptRide;
 
 const RequestCountdown = ({ request }: { request: IRequest }) => {
-  const dispatch = useAppDispatch()
-  const { unAcceptedRequests, currentRiderOfferIndex, currentRequest } = useAppSelector(
-    (state: RootState) => state.ride,
-  )
+  const dispatch = useAppDispatch();
+  const { unAcceptedRequests, currentRiderOfferIndex, currentRequest } =
+    useAppSelector((state: RootState) => state.ride);
 
-  const [counterDuration] = useState(20)
-  const [done, setDone] = useState(false)
+  const [counterDuration] = useState(20);
+  const [done, setDone] = useState(false);
 
   // Reset done state when request changes
   useEffect(() => {
-    setDone(false)
-  }, [request?._id])
+    setDone(false);
+  }, [request?._id]);
   // Reset done state when request changes
 
   // Handle countdown completion
@@ -584,8 +719,8 @@ const RequestCountdown = ({ request }: { request: IRequest }) => {
         setRideState({
           key: "countdownStatus",
           value: "completed" as TCountdownStatus,
-        }),
-      )
+        })
+      );
       // Mark global count down status as completed
 
       const updatedRequests = unAcceptedRequests.map((req) => {
@@ -594,34 +729,49 @@ const RequestCountdown = ({ request }: { request: IRequest }) => {
             ...req,
             shown: unAcceptedRequests.length == 1 ? true : false,
             countdownStatus: "completed" as TCountdownStatus,
-          }
+          };
         }
-        return req
-      })
+        return req;
+      });
 
       // Updating the list
       dispatch(
         setRideState({
           key: "unAcceptedRequests",
           value: updatedRequests,
-        }),
+        })
       );
       // Updating the list
 
       // Update to the next request
-      (request?.number == currentRequest?.number) && (unAcceptedRequests.length > 1) && dispatch(
-        setRideState({
-          key: "currentRiderOfferIndex",
-          value: currentRiderOfferIndex < unAcceptedRequests[unAcceptedRequests.length-1]?.number ? Number(request?.number) +1 : 1,
-        }),
-      )
+      request?.number == currentRequest?.number &&
+        unAcceptedRequests.length > 1 &&
+        dispatch(
+          setRideState({
+            key: "currentRiderOfferIndex",
+            value:
+              currentRiderOfferIndex <
+              unAcceptedRequests[unAcceptedRequests.length - 1]?.number
+                ? Number(request?.number) + 1
+                : 1,
+          })
+        );
       // Update to the next request
     }
-  }, [done])
+  }, [done]);
   // Handle countdown completion
 
   return (
-    <View style={[wFull, h(120), flex, itemsCenter, justifyCenter, bg(colors.transparent)]}>
+    <View
+      style={[
+        wFull,
+        h(120),
+        flex,
+        itemsCenter,
+        justifyCenter,
+        bg(colors.transparent),
+      ]}
+    >
       {request?.shown && (
         <View style={[absolute, top0, zIndex(Number(request?.zIndex))]}>
           <Countdown
@@ -631,15 +781,15 @@ const RequestCountdown = ({ request }: { request: IRequest }) => {
             changeCondition={[request._id, done]}
             onComplete={() => {
               if (!done) {
-                setDone(true)
+                setDone(true);
               }
             }}
           />
         </View>
       )}
     </View>
-  )
-}
+  );
+};
 
 const DriverOnlineTile = () => {
   return (
@@ -683,7 +833,7 @@ const DriverOnlineTile = () => {
 };
 
 const DropoffTile = () => {
-  const {allRequests} = useAppSelector((state: RootState) => state.ride);
+  const { allRequests } = useAppSelector((state: RootState) => state.ride);
   return (
     <View
       style={[
@@ -722,7 +872,12 @@ const DropoffTile = () => {
 
       {/* //!Drop off Input Block */}
       <View style={[wFull, flex, gap(16), itemsCenter, justifyStart]}>
-        <Text style={[fw500, fs14, colorBlack]}>{allRequests.filter((req) => req?.rideStatus == 'started')[0]?.dropoffName}</Text>
+        <Text style={[fw500, fs14, colorBlack]}>
+          {
+            allRequests.filter((req) => req?.rideStatus == "started")[0]
+              ?.dropoffName
+          }
+        </Text>
       </View>
       {/* //!Drop off Input Block */}
     </View>
@@ -730,7 +885,7 @@ const DropoffTile = () => {
 };
 
 const NextBusstop = () => {
-  const {allRequests} = useAppSelector((state: RootState) => state.ride);
+  const { allRequests } = useAppSelector((state: RootState) => state.ride);
   return (
     <View
       style={[
@@ -768,10 +923,11 @@ const NextBusstop = () => {
 
       {/* //!Next Bus Stop Value Block */}
       <View style={[wFull, flex, gap(16), itemsCenter, justifyStart]}>
-        <Text style={[fw500, fs14, colorBlack]}>{allRequests.find((req) => req?.rideStatus == 'started')?.dropoffName}</Text>
+        <Text style={[fw500, fs14, colorBlack]}>
+          {allRequests.find((req) => req?.rideStatus == "started")?.dropoffName}
+        </Text>
       </View>
       {/* //!Next Bus Stop Value Block */}
     </View>
   );
 };
-

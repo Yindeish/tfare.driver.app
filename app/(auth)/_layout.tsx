@@ -11,7 +11,7 @@ import { Text } from 'react-native-paper';
 function AuthLayout() {
     const { userSession, isLoading, signOut } = useSession();
     // signOut()
-    console.log({ userSession, layout: 'auth' })
+    // console.log({ userSession, layout: 'auth' })
 
     const { width, height } = Dimensions.get('window');
 
@@ -19,7 +19,7 @@ function AuthLayout() {
         return <View style={{ width, height, backgroundColor: '#D8D8D8' }} />;
     }
 
-    if (userSession) return <Redirect href={"/(home)/" as Href} />;
+    // if (userSession) return <Redirect href={"/(home)/" as Href} />;
 
     return (
         <Stack
