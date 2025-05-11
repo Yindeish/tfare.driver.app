@@ -45,6 +45,7 @@ const getWithBearerToken = async ({url, timeout = 20000 }: { token: string, url:
         const response = await fetch(`${baseUrl}${url}`, {
             headers: {
                 ...headers,
+                 'Cache-Control': 'no-cache',
                 credentials: 'include',
                 Authorization: `Bearer ${token}`
             },

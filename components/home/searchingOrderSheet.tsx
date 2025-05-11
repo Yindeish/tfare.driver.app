@@ -92,7 +92,9 @@ const SearchingOrder = () => {
     dropoffBusstopInput,
     selectedRoute,
     allRequests,
-    query
+    query,
+    isOnline,
+    driverOnline
   } = useAppSelector((state: RootState) => state.ride);
   // const [[_, query], setQuery] = useStorageState(RideConstants.localDB.query);
 
@@ -150,7 +152,7 @@ const SearchingOrder = () => {
       dispatch(setRideState({key: 'query', value: RideConstants.query.accepting}));
       showBottomSheet([400], <AcceptOrderSheet />, true)
   }
-    // else getRidersOffers();
+    else getRidersOffers();
   }, [router])
 
   return (

@@ -79,7 +79,8 @@ function AcceptOrderSheet() {
     ridesAccepted,
     unAcceptedRequests,
     query,
-    currentRequest
+    currentRequest,
+    currentRide
   } = useAppSelector((state: RootState) => state.ride);
   const { selectedRoute, allRequests } = useAppSelector(
     (state: RootState) => state.ride
@@ -116,6 +117,7 @@ function AcceptOrderSheet() {
       url: `/user/driver/me/ride/accept-ride/${selectedRoute?._id}`,
       data: {
         riderRideId: requestId,
+        currentRideId: currentRide?._id
       },
       token: token as string,
     })

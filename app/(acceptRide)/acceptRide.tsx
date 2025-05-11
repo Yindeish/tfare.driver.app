@@ -53,6 +53,7 @@ import {
   justifyBetween,
   justifyCenter,
   justifyStart,
+  l,
   left0,
   mb,
   mt,
@@ -75,6 +76,7 @@ import {
 import { router, usePathname } from "expo-router";
 import { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Dimensions,
   Image,
@@ -130,12 +132,13 @@ function AcceptRide() {
     countdownStatus,
     currentRequest,
     presetRoutes,
+    isOnline
   } = useAppSelector((state: RootState) => state.ride);
   // const [[_, query], setQuery] = useStorageState(RideConstants.localDB.query);
   const { hideBottomSheet } = useBottomSheet();
   const path = usePathname();
   const { token } = useAppSelector((state: RootState) => state.user);
-  const {setTooltipState} = useTooltip();
+  const { setTooltipState } = useTooltip();
 
   const [state, setState] = useState({
     // Counter state
@@ -520,35 +523,38 @@ function AcceptRide() {
         const data = res?.body ? await res.body : res;
         const code = data?.code;
         const msg = data?.msg;
-        const todayRidersRides = data?.todayRidersRides as (IRiderRideDetails & { rider: IUserAccount })[];
+        const todayRidersRides =
+          data?.todayRidersRides as (IRiderRideDetails & {
+            rider: IUserAccount;
+          })[];
 
-        if((code && (code == 200 || code == 201)) && todayRidersRides) {
+        if (code && (code == 200 || code == 201) && todayRidersRides) {
           const firstRide = todayRidersRides[0];
 
-          if(todayRidersRides.length == 1) {
+          if (todayRidersRides.length == 1) {
             handleSearchingState(firstRide);
           }
-          if(todayRidersRides.length > 1) {
+          if (todayRidersRides.length > 1) {
             handleSearchingState(firstRide);
-            const otherRequests = todayRidersRides.filter((ride) => String(ride?._id) !== String(firstRide?._id));
+            const otherRequests = todayRidersRides.filter(
+              (ride) => String(ride?._id) !== String(firstRide?._id)
+            );
 
             otherRequests.forEach((ride) => {
               handleAcceptingState(ride);
             });
           }
-        }
-        else {
-          setTooltipState({key: 'visible', value: true});
-          setTooltipState({key: 'message', value: msg});
+        } else {
+          setTooltipState({ key: "visible", value: true });
+          setTooltipState({ key: "message", value: msg });
         }
       })
       .catch((err) => {
-        console.log({ err })
-        setTooltipState({key: 'visible', value: true});
-          setTooltipState({key: 'message', value: err?.message});
+        console.log({ err });
+        setTooltipState({ key: "visible", value: true });
+        setTooltipState({ key: "message", value: err?.message });
       })
-      .finally(() => {
-      });
+      .finally(() => {});
   };
 
   // Initialize the channel
@@ -573,26 +579,37 @@ function AcceptRide() {
   }, [JSON.stringify(routeIds)]);
 
   useEffect(() => {
-    if (query === RideConstants.query.searching && allRequests.length === 0 && !loading) {
+    if(driverOnline && isOnline) getRequests();
+  }, [isOnline,driverOnline])
+
+  useEffect(() => {
+    if (
+      query === RideConstants.query.searching &&
+      allRequests.length === 0 &&
+      !loading
+    ) {
       const intervalId = setInterval(() => {
         if (allRequests.length === 0 && !loading) {
           // getRequests();
         }
       }, 4000);
-      
+
       return () => clearInterval(intervalId);
     }
-    if (query === RideConstants.query.accepting && allRequests.length >=1 && !loading) {
+    if (
+      query === RideConstants.query.accepting &&
+      allRequests.length >= 1 &&
+      !loading
+    ) {
       const intervalId = setInterval(() => {
         if (allRequests.length >= 1 && !loading) {
           // getRequests();
         }
       }, 4000);
-  
+
       return () => clearInterval(intervalId);
     }
   }, [query, loading, allRequests.length]);
-  
 
   return (
     <SafeScreen>
@@ -792,8 +809,104 @@ const RequestCountdown = ({ request }: { request: IRequest }) => {
 };
 
 const DriverOnlineTile = () => {
+  const dispatch = useAppDispatch();
+  const { selectedRoute, currentRide, isOnline, driverOnline } = useAppSelector(
+    (state: RootState) => state.ride
+  );
+  const { token } = useAppSelector((state: RootState) => state.user);
+  const { setTooltipState } = useTooltip();
+
+  const [fetchState, setFetchState] = useState({
+    loading: false,
+    msg: "",
+    code: null,
+  });
+  const { code, msg, loading } = fetchState;
+
+  const [online, setOnline] = useState(isOnline && driverOnline);
+
+  const goOnline = async () => {
+    setFetchState((prev) => ({
+      ...prev,
+      loading: true,
+      msg: "",
+      code: null,
+    }));
+
+    await FetchService.postWithBearerToken({
+      url: `/user/driver/me/go-online/${selectedRoute?._id}`,
+      data: {
+        currentRideById: currentRide?._id,
+      },
+      token: token as string,
+    })
+      .then(async (res) => {
+        const data = res?.body ? await res.body : res;
+        const code = data?.code;
+        const msg = data?.msg;
+
+        setTooltipState({ key: "message", value: msg });
+        setTooltipState({ key: "visible", value: true });
+
+        const currentRideObject = data?.currentRide;
+
+        setFetchState((prev) => ({ ...prev, loading: false, msg, code }));
+
+        if (code && (code == 200 || code == 201) && data?.isOnline == true) {
+          dispatch(setRideState({ key: "isOnline", value: true }));
+          dispatch(
+            setRideState({ key: "currentRide", value: currentRideObject })
+          );
+        }
+      })
+      .catch((err) => {
+        console.log({ err });
+      });
+  };
+
+  const goOffline = async () => {
+    setFetchState((prev) => ({
+      ...prev,
+      loading: true,
+      msg: "",
+      code: null,
+    }));
+
+    await FetchService.postWithBearerToken({
+      url: `/user/driver/me/go-offline/${selectedRoute?._id}`,
+      token: token as string,
+    })
+      .then(async (res) => {
+        const data = res?.body ? await res.body : res;
+        const code = data?.code;
+        const msg = data?.msg;
+
+        setTooltipState({ key: "message", value: msg });
+        setTooltipState({ key: "visible", value: true });
+
+        setFetchState((prev) => ({ ...prev, loading: false, msg, code }));
+
+        if (data?.isOnline == false) {
+                console.log('data?.isOnline', data?.isOnline)
+          dispatch(setRideState({ key: "isOnline", value: false }));
+        }
+      })
+      .catch((err) => {
+        console.log({ err });
+      });
+  };
+
+  useEffect(() => {
+    setOnline(isOnline && driverOnline);
+  }, [isOnline, driverOnline]);
+
   return (
     <TouchableOpacity
+    disabled={loading}
+      onPress={() => {
+        if (online && !loading) goOffline();
+        if(!online && !loading) goOnline();
+      }}
       style={[
         w(110),
         h(40),
@@ -802,9 +915,10 @@ const DriverOnlineTile = () => {
         flex,
         itemsCenter,
         relative,
+        {opacity: (loading && !online)? 0.3 : !online ? 0.5 : 1}
       ]}
     >
-      <Text
+     {online && <Text
         style={[
           fw700,
           fs14,
@@ -815,8 +929,8 @@ const DriverOnlineTile = () => {
         ]}
       >
         ONLINE
-      </Text>
-      <View
+      </Text>}
+     {loading? (<ActivityIndicator size={'small'} style={[tw `w-[30px] h-[30px] rounded-[30px] bg-white`]} color={'#27AE65'} />) : ( <View
         style={[
           w(30),
           h(30),
@@ -824,10 +938,10 @@ const DriverOnlineTile = () => {
           bg(colors.white),
           absolute,
           t(5),
-          r(7),
+          online ? r(7) : l(7),
           { shadowColor: colors.black, shadowRadius: 10 },
         ]}
-      />
+      />)}
     </TouchableOpacity>
   );
 };
