@@ -175,7 +175,7 @@ function TicketOtpSheet() {
             dispatch(setRideState({key:'rideRequestInView', value: riderRide}));
 
             dispatch(setRideState({key: 'query', value: RideConstants.query.pause_trip}))
-            showBottomSheet([300, 550], <OnTripSheet />);
+            showBottomSheet([300, 550], <OnTripSheet />, true);
             return;
           }
         }

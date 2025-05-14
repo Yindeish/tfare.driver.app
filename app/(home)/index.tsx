@@ -1,3 +1,4 @@
+import AcceptOrderSheet from "@/components/home/acceptOrderSheet";
 import GoOnlineOptionTile from "@/components/home/goOnlineOptionTile";
 import PresetRouteSheet from "@/components/home/presetRouteSheet";
 import SearchingOrder from "@/components/home/searchingOrderSheet";
@@ -97,7 +98,7 @@ const index = () => {
     driverOnline,
     driverEligible,
     query,
-    currentRide
+    currentRide,
   } = useAppSelector((state: RootState) => state.ride);
   const dispatch = useAppDispatch();
   const { token, wallet } = useAppSelector((state: RootState) => state.user);
@@ -168,7 +169,10 @@ const index = () => {
             router.push("/(acceptRide)/acceptRide" as Href);
             // setQuery(RideConstants.query.searching);
             dispatch(
-              setRideState({ key: "query", value: RideConstants.query.searching })
+              setRideState({
+                key: "query",
+                value: RideConstants.query.searching,
+              })
             );
             showBottomSheet([300], <SearchingOrder />, true);
             return;
@@ -222,6 +226,24 @@ const index = () => {
     }
   }, [router]);
   // !Updating the preset route pop up
+
+  const continueRide = () => {
+    dispatch(setRideState({key: 'driverOnline', value: true}))
+    router.push('/(acceptRide)/acceptRide');
+     dispatch(
+      setRideState({ key: "query", value: RideConstants.query.accepting })
+    );
+    showBottomSheet([400], <AcceptOrderSheet />, true);
+  }
+  
+  const takeMoreOrders = () => {
+    dispatch(setRideState({key: 'driverOnline', value: true}))
+    router.push('/(acceptRide)/acceptRide');
+     dispatch(
+      setRideState({ key: "query", value: RideConstants.query.searching })
+    );
+    showBottomSheet([400], <SearchingOrder />, true);
+  }
 
   return (
     <SafeScreen>
@@ -435,61 +457,94 @@ const index = () => {
         {/* //!Header */}
 
         {/* //!Go Online Block */}
-        <View
-          style={[
-            wFull,
-            selectedRoute && !driverEligible && !driverOnline
-              ? borderT(0.7, Colors.light.darkGrey)
-              : {},
-            flexCol,
-            gap(40),
-            itemsCenter,
-            pt(20),
-            pb(35),
-            bg(
+        {(!currentRide || currentRide?.ridersRides?.length == 0) && (
+          <View
+            style={[
+              wFull,
               selectedRoute && !driverEligible && !driverOnline
-                ? colors.white
-                : colors.transparent
-            ),
-            mTAuto,
-            absolute,
-            b("8%"),
-            left0,
-            zIndex(4),
-          ]}
-        >
-          {/* //!Options */}
-          {selectedRoute && !driverEligible && !driverOnline && (
-            <View style={[flexCol, gap(16)]}>
-              {options.map(({ checked, id, name }, index) => (
-                <GoOnlineOptionTile
-                  onPress={() => {
-                    let updatedArr = options.map((option) => {
-                      if (option.id === id) {
-                        return { ...option, checked: !option.checked };
-                      } else return option;
-                    });
+                ? borderT(0.7, Colors.light.darkGrey)
+                : {},
+              flexCol,
+              gap(40),
+              itemsCenter,
+              pt(20),
+              pb(35),
+              bg(
+                selectedRoute && !driverEligible && !driverOnline
+                  ? colors.white
+                  : colors.transparent
+              ),
+              mTAuto,
+              absolute,
+              b("8%"),
+              left0,
+              zIndex(4),
+            ]}
+          >
+            {/* //!Options */}
+            {selectedRoute && !driverEligible && !driverOnline && (
+              <View style={[flexCol, gap(16)]}>
+                {options.map(({ checked, id, name }, index) => (
+                  <GoOnlineOptionTile
+                    onPress={() => {
+                      let updatedArr = options.map((option) => {
+                        if (option.id === id) {
+                          return { ...option, checked: !option.checked };
+                        } else return option;
+                      });
 
-                    updateOptions(updatedArr);
-                  }}
-                  option={{ checked, name }}
-                  key={index}
-                />
-              ))}
+                      updateOptions(updatedArr);
+                    }}
+                    option={{ checked, name }}
+                    key={index}
+                  />
+                ))}
+              </View>
+            )}
+            {/* //!Options */}
+
+            {/* //!Go Online CTA */}
+            <View style={[wFull]}>
+              <CtaBtn
+                img={{ src: tripImgs.whiteBgCardinalLocation, w: 22, h: 22 }}
+                onPress={() => {
+                  if (!selectedRoute && !driverEligible) {
+                    showBottomSheet([650, 750], <PresetRouteSheet />);
+                  } else goOnline();
+                }}
+                text={{ name: !selectedRoute ? "CHOOSE ROUTE" : "GO ONLINE" }}
+                bg={{
+                  color: !selectedRoute ? Colors.light.background : "#27AE65",
+                }}
+                style={{
+                  container: {
+                    ...rounded(1000),
+                    ...w("70%"),
+                    ...mXAuto,
+                  } as ViewStyle,
+                }}
+              />
             </View>
-          )}
-          {/* //!Options */}
+            {/* //!Go Online CTA */}
+          </View>
+        )}
+        {/* //!Go Online Block */}
 
-          {/* //!Go Online CTA */}
-          <View style={[wFull]}>
+        {/* Continue Ride */}
+        {Number(
+          currentRide?.ridersRides?.filter(
+            (ride) =>
+              ride?.rideStatus == "accepted" || ride?.rideStatus == "started"
+          )?.length
+        ) > 0 && (
+          <View style={[wFull, absolute,
+              b("8%"),
+              left0,
+              zIndex(4),]}>
             <CtaBtn
-              img={{ src: tripImgs.whiteBgCardinalLocation, w: 22, h: 22 }}
-              onPress={() => {
-                if (!selectedRoute && !driverEligible) {
-                  showBottomSheet([650, 750], <PresetRouteSheet />);
-                } else goOnline();
-              }}
-              text={{ name: !selectedRoute ? "CHOOSE ROUTE" : "GO ONLINE" }}
+              img={{ src: tripImgs.whiteBgCardinalLocation, w: 0, h: 0 }}
+              onPress={() => continueRide()}
+              text={{ name: "CONTINUE RIDE"}}
               bg={{
                 color: !selectedRoute ? Colors.light.background : "#27AE65",
               }}
@@ -502,9 +557,38 @@ const index = () => {
               }}
             />
           </View>
-          {/* //!Go Online CTA */}
-        </View>
-        {/* //!Go Online Block */}
+        )}
+        {/* Continue Ride */}
+
+        {/* Take more offers */}
+        {(Number(
+          currentRide?.ridersRides?.filter(
+            (ride) =>
+              ride?.rideStatus == "requesting"
+          )?.length
+        ) > 0) && (
+          <View style={[wFull, absolute,
+              b("8%"),
+              left0,
+              zIndex(4),]}>
+            <CtaBtn
+              img={{ src: tripImgs.whiteBgCardinalLocation, w: 0, h: 0 }}
+              onPress={() => takeMoreOrders()}
+              text={{ name: "TAKE MORE ORDERS"}}
+              bg={{
+                color: !selectedRoute ? Colors.light.background : "#27AE65",
+              }}
+              style={{
+                container: {
+                  ...rounded(1000),
+                  ...w("70%"),
+                  ...mXAuto,
+                } as ViewStyle,
+              }}
+            />
+          </View>
+        )}
+        {/* Take more offers */}
 
         {/* //!Snackbar for Online Ineligibility  */}
         {Platform.OS === "ios" && (

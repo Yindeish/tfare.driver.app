@@ -171,28 +171,28 @@ function AcceptOrderSheet() {
           );
 
           // if (requestsNotAccepted.length == 1) {
-          if (allRequests.length == 1) {
-            dispatch(
-              setRideState({
-                key: "rideRequestInView",
-                value: requestsNotAccepted[0],
-              })
-            );
-            dispatch(
-              setRideState({
-                key: "rideRequestInView",
-                value: allRequests[0],
-              })
-            );
-            dispatch(
-              setRideState({
-                key: "query",
-                value: RideConstants.query.arrived_pickup,
-              })
-            );
-            // setQuery(RideConstants.query.arrived_pickup);
-            showBottomSheet([350, 400], <ArrivedPickupSheet />);
-          }
+          // if (allRequests.length == 1) {
+          //   dispatch(
+          //     setRideState({
+          //       key: "rideRequestInView",
+          //       value: requestsNotAccepted[0],
+          //     })
+          //   );
+          //   dispatch(
+          //     setRideState({
+          //       key: "rideRequestInView",
+          //       value: allRequests[0],
+          //     })
+          //   );
+          //   dispatch(
+          //     setRideState({
+          //       key: "query",
+          //       value: RideConstants.query.arrived_pickup,
+          //     })
+          //   );
+          //   // setQuery(RideConstants.query.arrived_pickup);
+          //   showBottomSheet([350, 400], <ArrivedPickupSheet />);
+          // }
 
           dispatch(
             setRideState({

@@ -648,7 +648,8 @@ function AcceptRide() {
           {/* Statuses */}
           <View style={[zIndex(3), tw`top-[-15px] h-[230px]`]}>
             {/* //!Online Status Block */}
-            {driverOnline && <DriverOnlineTile />}
+            {/* {driverOnline && <DriverOnlineTile />} */}
+            <DriverOnlineTile />
             {/* //!Online Status Block */}
 
             {/* //!Drop off Block */}
